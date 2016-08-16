@@ -1,0 +1,26 @@
+patsy.EvalFactor
+================
+
+.. currentmodule:: patsy
+.. autoclass:: EvalFactor
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~EvalFactor.__init__
+   ~EvalFactor.eval
+   ~EvalFactor.memorize_chunk
+   ~EvalFactor.memorize_finish
+   ~EvalFactor.memorize_passes_needed
+   ~EvalFactor.name
+
+
+
+
+

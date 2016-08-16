@@ -1,0 +1,6 @@
+patsy.DesignInfo.linear_constraint
+==================================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignInfo.linear_constraint

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.swapaxes
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.swapaxes

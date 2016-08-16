@@ -1,0 +1,21 @@
+patsy.FactorInfo
+================
+
+.. currentmodule:: patsy
+.. autoclass:: FactorInfo
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~FactorInfo.__init__
+
+
+
+
+

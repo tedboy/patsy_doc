@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1.2.3. patsy.DesignMatrix &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="1. patsy" href="../patsy.html"/>
+        <link rel="next" title="1.2.3.1.1. patsy.DesignMatrix.all" href="patsy.DesignMatrix.all.html"/>
+        <link rel="prev" title="1.2.2.2.5. patsy.DesignInfo.terms" href="patsy.DesignInfo.terms.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../patsy.html">1. patsy</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#functions">1.1. Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../patsy.html#classes">1.2. Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.ContrastMatrix.html">1.2.1. patsy.ContrastMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.DesignInfo.html">1.2.2. patsy.DesignInfo</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">1.2.3. patsy.DesignMatrix</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#methods">1.2.3.1. Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#attributes">1.2.3.2. Attributes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Diff.html">1.2.4. patsy.Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalEnvironment.html">1.2.5. patsy.EvalEnvironment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalFactor.html">1.2.6. patsy.EvalFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.FactorInfo.html">1.2.7. patsy.FactorInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Helmert.html">1.2.8. patsy.Helmert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LinearConstraint.html">1.2.9. patsy.LinearConstraint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LookupFactor.html">1.2.10. patsy.LookupFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.ModelDesc.html">1.2.11. patsy.ModelDesc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.NAAction.html">1.2.12. patsy.NAAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Origin.html">1.2.13. patsy.Origin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Poly.html">1.2.14. patsy.Poly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.SubtermInfo.html">1.2.15. patsy.SubtermInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Sum.html">1.2.16. patsy.Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Term.html">1.2.17. patsy.Term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Treatment.html">1.2.18. patsy.Treatment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#exceptions">1.3. Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">1. patsy</a> &raquo;</li>
+        
+      <li>1.2.3. patsy.DesignMatrix</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/generated/generated/patsy.DesignMatrix.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-designmatrix">
+<h1>1.2.3. patsy.DesignMatrix<a class="headerlink" href="#patsy-designmatrix" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="patsy.DesignMatrix">
+<em class="property">class </em><code class="descclassname">patsy.</code><code class="descname">DesignMatrix</code><a class="reference internal" href="../../_modules/patsy/design_info.html#DesignMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.DesignMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple numpy array subclass that carries design matrix metadata.</p>
+<dl class="attribute">
+<dt id="patsy.DesignMatrix.design_info">
+<code class="descname">design_info</code><a class="headerlink" href="#patsy.DesignMatrix.design_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> object containing metadata about this design
+matrix.</p>
+</dd></dl>
+
+<p>This class also defines a fancy __repr__ method with labeled
+columns. Otherwise it is identical to a regular numpy ndarray.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You should never check for this class using
+<code class="xref py py-func docutils literal"><span class="pre">isinstance()</span></code>. Limitations of the numpy API mean that it is
+impossible to prevent the creation of numpy arrays that have type
+DesignMatrix, but that are not actually design matrices (and such
+objects will behave like regular ndarrays in every way). Instead, check
+for the presence of a <code class="docutils literal"><span class="pre">.design_info</span></code> attribute &#8211; this will be
+present only on &#8220;real&#8221; DesignMatrix objects.</p>
+</div>
+<dl class="attribute">
+<dt id="patsy.DesignMatrix.__init__">
+<code class="descname">__init__</code><a class="headerlink" href="#patsy.DesignMatrix.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="methods">
+<h2>1.2.3.1. Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.all.html#patsy.DesignMatrix.all" title="patsy.DesignMatrix.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a>([axis,&nbsp;out,&nbsp;keepdims])</td>
+<td>Returns True if all elements evaluate to True.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.any.html#patsy.DesignMatrix.any" title="patsy.DesignMatrix.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a>([axis,&nbsp;out,&nbsp;keepdims])</td>
+<td>Returns True if any of the elements of <cite>a</cite> evaluate to True.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.argmax.html#patsy.DesignMatrix.argmax" title="patsy.DesignMatrix.argmax"><code class="xref py py-obj docutils literal"><span class="pre">argmax</span></code></a>([axis,&nbsp;out])</td>
+<td>Return indices of the maximum values along the given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.argmin.html#patsy.DesignMatrix.argmin" title="patsy.DesignMatrix.argmin"><code class="xref py py-obj docutils literal"><span class="pre">argmin</span></code></a>([axis,&nbsp;out])</td>
+<td>Return indices of the minimum values along the given axis of <cite>a</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.argpartition.html#patsy.DesignMatrix.argpartition" title="patsy.DesignMatrix.argpartition"><code class="xref py py-obj docutils literal"><span class="pre">argpartition</span></code></a>(kth[,&nbsp;axis,&nbsp;kind,&nbsp;order])</td>
+<td>Returns the indices that would partition this array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.argsort.html#patsy.DesignMatrix.argsort" title="patsy.DesignMatrix.argsort"><code class="xref py py-obj docutils literal"><span class="pre">argsort</span></code></a>([axis,&nbsp;kind,&nbsp;order])</td>
+<td>Returns the indices that would sort this array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.astype.html#patsy.DesignMatrix.astype" title="patsy.DesignMatrix.astype"><code class="xref py py-obj docutils literal"><span class="pre">astype</span></code></a>(dtype[,&nbsp;order,&nbsp;casting,&nbsp;subok,&nbsp;copy])</td>
+<td>Copy of the array, cast to a specified type.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.byteswap.html#patsy.DesignMatrix.byteswap" title="patsy.DesignMatrix.byteswap"><code class="xref py py-obj docutils literal"><span class="pre">byteswap</span></code></a>(inplace)</td>
+<td>Swap the bytes of the array elements</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.choose.html#patsy.DesignMatrix.choose" title="patsy.DesignMatrix.choose"><code class="xref py py-obj docutils literal"><span class="pre">choose</span></code></a>(choices[,&nbsp;out,&nbsp;mode])</td>
+<td>Use an index array to construct a new array from a set of choices.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.clip.html#patsy.DesignMatrix.clip" title="patsy.DesignMatrix.clip"><code class="xref py py-obj docutils literal"><span class="pre">clip</span></code></a>([min,&nbsp;max,&nbsp;out])</td>
+<td>Return an array whose values are limited to <code class="docutils literal"><span class="pre">[min,</span> <span class="pre">max]</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.compress.html#patsy.DesignMatrix.compress" title="patsy.DesignMatrix.compress"><code class="xref py py-obj docutils literal"><span class="pre">compress</span></code></a>(condition[,&nbsp;axis,&nbsp;out])</td>
+<td>Return selected slices of this array along given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.conj.html#patsy.DesignMatrix.conj" title="patsy.DesignMatrix.conj"><code class="xref py py-obj docutils literal"><span class="pre">conj</span></code></a>()</td>
+<td>Complex-conjugate all elements.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.conjugate.html#patsy.DesignMatrix.conjugate" title="patsy.DesignMatrix.conjugate"><code class="xref py py-obj docutils literal"><span class="pre">conjugate</span></code></a>()</td>
+<td>Return the complex conjugate, element-wise.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.copy.html#patsy.DesignMatrix.copy" title="patsy.DesignMatrix.copy"><code class="xref py py-obj docutils literal"><span class="pre">copy</span></code></a>([order])</td>
+<td>Return a copy of the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.cumprod.html#patsy.DesignMatrix.cumprod" title="patsy.DesignMatrix.cumprod"><code class="xref py py-obj docutils literal"><span class="pre">cumprod</span></code></a>([axis,&nbsp;dtype,&nbsp;out])</td>
+<td>Return the cumulative product of the elements along the given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.cumsum.html#patsy.DesignMatrix.cumsum" title="patsy.DesignMatrix.cumsum"><code class="xref py py-obj docutils literal"><span class="pre">cumsum</span></code></a>([axis,&nbsp;dtype,&nbsp;out])</td>
+<td>Return the cumulative sum of the elements along the given axis.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.diagonal.html#patsy.DesignMatrix.diagonal" title="patsy.DesignMatrix.diagonal"><code class="xref py py-obj docutils literal"><span class="pre">diagonal</span></code></a>([offset,&nbsp;axis1,&nbsp;axis2])</td>
+<td>Return specified diagonals.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.dot.html#patsy.DesignMatrix.dot" title="patsy.DesignMatrix.dot"><code class="xref py py-obj docutils literal"><span class="pre">dot</span></code></a>(b[,&nbsp;out])</td>
+<td>Dot product of two arrays.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.dump.html#patsy.DesignMatrix.dump" title="patsy.DesignMatrix.dump"><code class="xref py py-obj docutils literal"><span class="pre">dump</span></code></a>(file)</td>
+<td>Dump a pickle of the array to the specified file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.dumps.html#patsy.DesignMatrix.dumps" title="patsy.DesignMatrix.dumps"><code class="xref py py-obj docutils literal"><span class="pre">dumps</span></code></a>()</td>
+<td>Returns the pickle of the array as a string.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.fill.html#patsy.DesignMatrix.fill" title="patsy.DesignMatrix.fill"><code class="xref py py-obj docutils literal"><span class="pre">fill</span></code></a>(value)</td>
+<td>Fill the array with a scalar value.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.flatten.html#patsy.DesignMatrix.flatten" title="patsy.DesignMatrix.flatten"><code class="xref py py-obj docutils literal"><span class="pre">flatten</span></code></a>([order])</td>
+<td>Return a copy of the array collapsed into one dimension.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.getfield.html#patsy.DesignMatrix.getfield" title="patsy.DesignMatrix.getfield"><code class="xref py py-obj docutils literal"><span class="pre">getfield</span></code></a>(dtype[,&nbsp;offset])</td>
+<td>Returns a field of the given array as a certain type.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.item.html#patsy.DesignMatrix.item" title="patsy.DesignMatrix.item"><code class="xref py py-obj docutils literal"><span class="pre">item</span></code></a>(*args)</td>
+<td>Copy an element of an array to a standard Python scalar and return it.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.itemset.html#patsy.DesignMatrix.itemset" title="patsy.DesignMatrix.itemset"><code class="xref py py-obj docutils literal"><span class="pre">itemset</span></code></a>(*args)</td>
+<td>Insert scalar into an array (scalar is cast to array&#8217;s dtype, if possible)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.max.html#patsy.DesignMatrix.max" title="patsy.DesignMatrix.max"><code class="xref py py-obj docutils literal"><span class="pre">max</span></code></a>([axis,&nbsp;out])</td>
+<td>Return the maximum along a given axis.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.mean.html#patsy.DesignMatrix.mean" title="patsy.DesignMatrix.mean"><code class="xref py py-obj docutils literal"><span class="pre">mean</span></code></a>([axis,&nbsp;dtype,&nbsp;out,&nbsp;keepdims])</td>
+<td>Returns the average of the array elements along given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.min.html#patsy.DesignMatrix.min" title="patsy.DesignMatrix.min"><code class="xref py py-obj docutils literal"><span class="pre">min</span></code></a>([axis,&nbsp;out,&nbsp;keepdims])</td>
+<td>Return the minimum along a given axis.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.newbyteorder.html#patsy.DesignMatrix.newbyteorder" title="patsy.DesignMatrix.newbyteorder"><code class="xref py py-obj docutils literal"><span class="pre">newbyteorder</span></code></a>([new_order])</td>
+<td>Return the array with the same data viewed with a different byte order.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.nonzero.html#patsy.DesignMatrix.nonzero" title="patsy.DesignMatrix.nonzero"><code class="xref py py-obj docutils literal"><span class="pre">nonzero</span></code></a>()</td>
+<td>Return the indices of the elements that are non-zero.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.partition.html#patsy.DesignMatrix.partition" title="patsy.DesignMatrix.partition"><code class="xref py py-obj docutils literal"><span class="pre">partition</span></code></a>(kth[,&nbsp;axis,&nbsp;kind,&nbsp;order])</td>
+<td>Rearranges the elements in the array in such a way that value of the element in kth position is in the position it would be in a sorted array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.prod.html#patsy.DesignMatrix.prod" title="patsy.DesignMatrix.prod"><code class="xref py py-obj docutils literal"><span class="pre">prod</span></code></a>([axis,&nbsp;dtype,&nbsp;out,&nbsp;keepdims])</td>
+<td>Return the product of the array elements over the given axis</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.ptp.html#patsy.DesignMatrix.ptp" title="patsy.DesignMatrix.ptp"><code class="xref py py-obj docutils literal"><span class="pre">ptp</span></code></a>([axis,&nbsp;out])</td>
+<td>Peak to peak (maximum - minimum) value along a given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.put.html#patsy.DesignMatrix.put" title="patsy.DesignMatrix.put"><code class="xref py py-obj docutils literal"><span class="pre">put</span></code></a>(indices,&nbsp;values[,&nbsp;mode])</td>
+<td>Set <code class="docutils literal"><span class="pre">a.flat[n]</span> <span class="pre">=</span> <span class="pre">values[n]</span></code> for all <cite>n</cite> in indices.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.ravel.html#patsy.DesignMatrix.ravel" title="patsy.DesignMatrix.ravel"><code class="xref py py-obj docutils literal"><span class="pre">ravel</span></code></a>([order])</td>
+<td>Return a flattened array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.repeat.html#patsy.DesignMatrix.repeat" title="patsy.DesignMatrix.repeat"><code class="xref py py-obj docutils literal"><span class="pre">repeat</span></code></a>(repeats[,&nbsp;axis])</td>
+<td>Repeat elements of an array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.reshape.html#patsy.DesignMatrix.reshape" title="patsy.DesignMatrix.reshape"><code class="xref py py-obj docutils literal"><span class="pre">reshape</span></code></a>(shape[,&nbsp;order])</td>
+<td>Returns an array containing the same data with a new shape.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.resize.html#patsy.DesignMatrix.resize" title="patsy.DesignMatrix.resize"><code class="xref py py-obj docutils literal"><span class="pre">resize</span></code></a>(new_shape[,&nbsp;refcheck])</td>
+<td>Change shape and size of array in-place.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.round.html#patsy.DesignMatrix.round" title="patsy.DesignMatrix.round"><code class="xref py py-obj docutils literal"><span class="pre">round</span></code></a>([decimals,&nbsp;out])</td>
+<td>Return <cite>a</cite> with each element rounded to the given number of decimals.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.searchsorted.html#patsy.DesignMatrix.searchsorted" title="patsy.DesignMatrix.searchsorted"><code class="xref py py-obj docutils literal"><span class="pre">searchsorted</span></code></a>(v[,&nbsp;side,&nbsp;sorter])</td>
+<td>Find indices where elements of v should be inserted in a to maintain order.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.setfield.html#patsy.DesignMatrix.setfield" title="patsy.DesignMatrix.setfield"><code class="xref py py-obj docutils literal"><span class="pre">setfield</span></code></a>(val,&nbsp;dtype[,&nbsp;offset])</td>
+<td>Put a value into a specified place in a field defined by a data-type.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.setflags.html#patsy.DesignMatrix.setflags" title="patsy.DesignMatrix.setflags"><code class="xref py py-obj docutils literal"><span class="pre">setflags</span></code></a>([write,&nbsp;align,&nbsp;uic])</td>
+<td>Set array flags WRITEABLE, ALIGNED, and UPDATEIFCOPY, respectively.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.sort.html#patsy.DesignMatrix.sort" title="patsy.DesignMatrix.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a>([axis,&nbsp;kind,&nbsp;order])</td>
+<td>Sort an array, in-place.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.squeeze.html#patsy.DesignMatrix.squeeze" title="patsy.DesignMatrix.squeeze"><code class="xref py py-obj docutils literal"><span class="pre">squeeze</span></code></a>([axis])</td>
+<td>Remove single-dimensional entries from the shape of <cite>a</cite>.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.std.html#patsy.DesignMatrix.std" title="patsy.DesignMatrix.std"><code class="xref py py-obj docutils literal"><span class="pre">std</span></code></a>([axis,&nbsp;dtype,&nbsp;out,&nbsp;ddof,&nbsp;keepdims])</td>
+<td>Returns the standard deviation of the array elements along given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.sum.html#patsy.DesignMatrix.sum" title="patsy.DesignMatrix.sum"><code class="xref py py-obj docutils literal"><span class="pre">sum</span></code></a>([axis,&nbsp;dtype,&nbsp;out,&nbsp;keepdims])</td>
+<td>Return the sum of the array elements over the given axis.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.swapaxes.html#patsy.DesignMatrix.swapaxes" title="patsy.DesignMatrix.swapaxes"><code class="xref py py-obj docutils literal"><span class="pre">swapaxes</span></code></a>(axis1,&nbsp;axis2)</td>
+<td>Return a view of the array with <cite>axis1</cite> and <cite>axis2</cite> interchanged.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.take.html#patsy.DesignMatrix.take" title="patsy.DesignMatrix.take"><code class="xref py py-obj docutils literal"><span class="pre">take</span></code></a>(indices[,&nbsp;axis,&nbsp;out,&nbsp;mode])</td>
+<td>Return an array formed from the elements of <cite>a</cite> at the given indices.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.tobytes.html#patsy.DesignMatrix.tobytes" title="patsy.DesignMatrix.tobytes"><code class="xref py py-obj docutils literal"><span class="pre">tobytes</span></code></a>([order])</td>
+<td>Construct Python bytes containing the raw data bytes in the array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.tofile.html#patsy.DesignMatrix.tofile" title="patsy.DesignMatrix.tofile"><code class="xref py py-obj docutils literal"><span class="pre">tofile</span></code></a>(fid[,&nbsp;sep,&nbsp;format])</td>
+<td>Write array to a file as text or binary (default).</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.tolist.html#patsy.DesignMatrix.tolist" title="patsy.DesignMatrix.tolist"><code class="xref py py-obj docutils literal"><span class="pre">tolist</span></code></a>()</td>
+<td>Return the array as a (possibly nested) list.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.tostring.html#patsy.DesignMatrix.tostring" title="patsy.DesignMatrix.tostring"><code class="xref py py-obj docutils literal"><span class="pre">tostring</span></code></a>([order])</td>
+<td>Construct Python bytes containing the raw data bytes in the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.trace.html#patsy.DesignMatrix.trace" title="patsy.DesignMatrix.trace"><code class="xref py py-obj docutils literal"><span class="pre">trace</span></code></a>([offset,&nbsp;axis1,&nbsp;axis2,&nbsp;dtype,&nbsp;out])</td>
+<td>Return the sum along diagonals of the array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.transpose.html#patsy.DesignMatrix.transpose" title="patsy.DesignMatrix.transpose"><code class="xref py py-obj docutils literal"><span class="pre">transpose</span></code></a>(*axes)</td>
+<td>Returns a view of the array with axes transposed.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.var.html#patsy.DesignMatrix.var" title="patsy.DesignMatrix.var"><code class="xref py py-obj docutils literal"><span class="pre">var</span></code></a>([axis,&nbsp;dtype,&nbsp;out,&nbsp;ddof,&nbsp;keepdims])</td>
+<td>Returns the variance of the array elements, along given axis.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.view.html#patsy.DesignMatrix.view" title="patsy.DesignMatrix.view"><code class="xref py py-obj docutils literal"><span class="pre">view</span></code></a>([dtype,&nbsp;type])</td>
+<td>New view of array with the same data.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="attributes">
+<h2>1.2.3.2. Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.T.html#patsy.DesignMatrix.T" title="patsy.DesignMatrix.T"><code class="xref py py-obj docutils literal"><span class="pre">T</span></code></a></td>
+<td>Same as self.transpose(), except that self is returned if self.ndim &lt; 2.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.base.html#patsy.DesignMatrix.base" title="patsy.DesignMatrix.base"><code class="xref py py-obj docutils literal"><span class="pre">base</span></code></a></td>
+<td>Base object if memory is from some other object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.ctypes.html#patsy.DesignMatrix.ctypes" title="patsy.DesignMatrix.ctypes"><code class="xref py py-obj docutils literal"><span class="pre">ctypes</span></code></a></td>
+<td>An object to simplify the interaction of the array with the ctypes module.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.data.html#patsy.DesignMatrix.data" title="patsy.DesignMatrix.data"><code class="xref py py-obj docutils literal"><span class="pre">data</span></code></a></td>
+<td>Python buffer object pointing to the start of the array&#8217;s data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.dtype.html#patsy.DesignMatrix.dtype" title="patsy.DesignMatrix.dtype"><code class="xref py py-obj docutils literal"><span class="pre">dtype</span></code></a></td>
+<td>Data-type of the array&#8217;s elements.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.flags.html#patsy.DesignMatrix.flags" title="patsy.DesignMatrix.flags"><code class="xref py py-obj docutils literal"><span class="pre">flags</span></code></a></td>
+<td>Information about the memory layout of the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.flat.html#patsy.DesignMatrix.flat" title="patsy.DesignMatrix.flat"><code class="xref py py-obj docutils literal"><span class="pre">flat</span></code></a></td>
+<td>A 1-D iterator over the array.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.imag.html#patsy.DesignMatrix.imag" title="patsy.DesignMatrix.imag"><code class="xref py py-obj docutils literal"><span class="pre">imag</span></code></a></td>
+<td>The imaginary part of the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.itemsize.html#patsy.DesignMatrix.itemsize" title="patsy.DesignMatrix.itemsize"><code class="xref py py-obj docutils literal"><span class="pre">itemsize</span></code></a></td>
+<td>Length of one array element in bytes.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.nbytes.html#patsy.DesignMatrix.nbytes" title="patsy.DesignMatrix.nbytes"><code class="xref py py-obj docutils literal"><span class="pre">nbytes</span></code></a></td>
+<td>Total bytes consumed by the elements of the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.ndim.html#patsy.DesignMatrix.ndim" title="patsy.DesignMatrix.ndim"><code class="xref py py-obj docutils literal"><span class="pre">ndim</span></code></a></td>
+<td>Number of array dimensions.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.real.html#patsy.DesignMatrix.real" title="patsy.DesignMatrix.real"><code class="xref py py-obj docutils literal"><span class="pre">real</span></code></a></td>
+<td>The real part of the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.shape.html#patsy.DesignMatrix.shape" title="patsy.DesignMatrix.shape"><code class="xref py py-obj docutils literal"><span class="pre">shape</span></code></a></td>
+<td>Tuple of array dimensions.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.DesignMatrix.size.html#patsy.DesignMatrix.size" title="patsy.DesignMatrix.size"><code class="xref py py-obj docutils literal"><span class="pre">size</span></code></a></td>
+<td>Number of elements in the array.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.DesignMatrix.strides.html#patsy.DesignMatrix.strides" title="patsy.DesignMatrix.strides"><code class="xref py py-obj docutils literal"><span class="pre">strides</span></code></a></td>
+<td>Tuple of bytes to step in each dimension when traversing an array.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.DesignMatrix.all.html" class="btn btn-neutral float-right" title="1.2.3.1.1. patsy.DesignMatrix.all" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.DesignInfo.terms.html" class="btn btn-neutral" title="1.2.2.2.5. patsy.DesignInfo.terms" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

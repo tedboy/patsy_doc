@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.eval
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalEnvironment.eval

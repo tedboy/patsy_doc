@@ -1,0 +1,33 @@
+patsy.EvalEnvironment
+=====================
+
+.. currentmodule:: patsy
+.. autoclass:: EvalEnvironment
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~EvalEnvironment.__init__
+   ~EvalEnvironment.capture
+   ~EvalEnvironment.eval
+   ~EvalEnvironment.subset
+   ~EvalEnvironment.with_outer_namespace
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~EvalEnvironment.namespace
+

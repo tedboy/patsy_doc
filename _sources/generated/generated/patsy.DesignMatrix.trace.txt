@@ -1,0 +1,6 @@
+patsy.DesignMatrix.trace
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.trace

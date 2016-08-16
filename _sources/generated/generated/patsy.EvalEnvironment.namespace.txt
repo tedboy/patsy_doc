@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.namespace
+===============================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: EvalEnvironment.namespace

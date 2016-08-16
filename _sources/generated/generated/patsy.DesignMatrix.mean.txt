@@ -1,0 +1,6 @@
+patsy.DesignMatrix.mean
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.mean

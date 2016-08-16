@@ -1,0 +1,6 @@
+patsy.dmatrices
+===============
+
+.. currentmodule:: patsy
+
+.. autofunction:: dmatrices

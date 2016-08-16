@@ -1,0 +1,6 @@
+patsy.LookupFactor.name
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.name

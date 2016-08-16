@@ -1,0 +1,6 @@
+patsy.LookupFactor.memorize_finish
+==================================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.memorize_finish

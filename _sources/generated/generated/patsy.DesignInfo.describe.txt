@@ -1,0 +1,6 @@
+patsy.DesignInfo.describe
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignInfo.describe

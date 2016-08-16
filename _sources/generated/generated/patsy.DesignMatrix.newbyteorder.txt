@@ -1,0 +1,6 @@
+patsy.DesignMatrix.newbyteorder
+===============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.newbyteorder

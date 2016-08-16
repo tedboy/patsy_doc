@@ -1,0 +1,6 @@
+patsy.DesignMatrix.take
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.take

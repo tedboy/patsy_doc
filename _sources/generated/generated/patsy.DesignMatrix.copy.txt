@@ -1,0 +1,6 @@
+patsy.DesignMatrix.copy
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.copy

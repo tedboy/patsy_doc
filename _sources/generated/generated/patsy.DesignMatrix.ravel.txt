@@ -1,0 +1,6 @@
+patsy.DesignMatrix.ravel
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.ravel

@@ -1,0 +1,6 @@
+patsy.ModelDesc.describe
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: ModelDesc.describe

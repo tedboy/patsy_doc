@@ -1,0 +1,6 @@
+patsy.DesignMatrix.size
+=======================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.size

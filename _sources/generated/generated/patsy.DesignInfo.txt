@@ -1,0 +1,38 @@
+patsy.DesignInfo
+================
+
+.. currentmodule:: patsy
+.. autoclass:: DesignInfo
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~DesignInfo.__init__
+   ~DesignInfo.describe
+   ~DesignInfo.from_array
+   ~DesignInfo.linear_constraint
+   ~DesignInfo.slice
+   ~DesignInfo.subset
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~DesignInfo.builder
+   ~DesignInfo.column_names
+   ~DesignInfo.design_info
+   ~DesignInfo.term_names
+   ~DesignInfo.terms
+

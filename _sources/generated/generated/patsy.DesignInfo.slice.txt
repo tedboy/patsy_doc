@@ -1,0 +1,6 @@
+patsy.DesignInfo.slice
+======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignInfo.slice

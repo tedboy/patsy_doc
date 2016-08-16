@@ -1,0 +1,6 @@
+patsy.DesignMatrix.base
+=======================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.base

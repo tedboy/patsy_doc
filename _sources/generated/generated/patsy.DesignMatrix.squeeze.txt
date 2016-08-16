@@ -1,0 +1,6 @@
+patsy.DesignMatrix.squeeze
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.squeeze

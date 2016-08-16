@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.desc &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.desc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.desc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2012 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># This file defines the ModelDesc class, which describes a model at a high</span>
+<span class="c1"># level, as a list of interactions of factors. It also has the code to convert</span>
+<span class="c1"># a formula parse tree (from patsy.parse_formula) into a ModelDesc.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.parse_formula</span> <span class="k">import</span> <span class="n">ParseNode</span><span class="p">,</span> <span class="n">Token</span><span class="p">,</span> <span class="n">parse_formula</span>
+<span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="k">import</span> <span class="n">EvalEnvironment</span><span class="p">,</span> <span class="n">EvalFactor</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">uniqueify_list</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Term&quot;</span><span class="p">,</span> <span class="s2">&quot;ModelDesc&quot;</span><span class="p">,</span> <span class="s2">&quot;INTERCEPT&quot;</span><span class="p">]</span>
+
+<span class="c1"># One might think it would make more sense for &#39;factors&#39; to be a set, rather</span>
+<span class="c1"># than a tuple-with-guaranteed-unique-entries-that-compares-like-a-set. The</span>
+<span class="c1"># reason we do it this way is that it preserves the order that the user typed</span>
+<span class="c1"># and is expecting, which then ends up producing nicer names in our final</span>
+<span class="c1"># output, nicer column ordering, etc. (A similar comment applies to the</span>
+<span class="c1"># ordering of terms in ModelDesc objects as a whole.)</span>
+<div class="viewcode-block" id="Term"><a class="viewcode-back" href="../../generated/generated/patsy.Term.html#patsy.Term">[docs]</a><span class="k">class</span> <span class="nc">Term</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The interaction between a collection of factor objects.</span>
+
+<span class="sd">    This is one of the basic types used in representing formulas, and</span>
+<span class="sd">    corresponds to an expression like ``&quot;a:b:c&quot;`` in a formula string.</span>
+<span class="sd">    For details, see :ref:`formulas` and :ref:`expert-model-specification`.</span>
+
+<span class="sd">    Terms are hashable and compare by value.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">    </span>
+<span class="sd">    .. attribute:: factors</span>
+
+<span class="sd">       A tuple of factor objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Term.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Term.__init__.html#patsy.Term.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factors</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">uniqueify_list</span><span class="p">(</span><span class="n">factors</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Term</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="n">Term</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)))</span>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
+        <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="Term.name"><a class="viewcode-back" href="../../generated/generated/patsy.Term.name.html#patsy.Term.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a human-readable name for this term.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;Intercept&quot;</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="n">INTERCEPT</span> <span class="o">=</span> <span class="n">Term</span><span class="p">([])</span>
+
+<span class="k">class</span> <span class="nc">_MockFactor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+
+<span class="k">def</span> <span class="nf">test_Term</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">Term</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">factors</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">Term</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="n">Term</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="nb">hash</span><span class="p">(</span><span class="n">Term</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">Term</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">])</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;a:b&quot;</span>
+    <span class="k">assert</span> <span class="n">Term</span><span class="p">([</span><span class="n">f2</span><span class="p">,</span> <span class="n">f1</span><span class="p">])</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;b:a&quot;</span>
+    <span class="k">assert</span> <span class="n">Term</span><span class="p">([])</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Intercept&quot;</span>
+
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">Term</span><span class="p">([]))</span>
+
+<div class="viewcode-block" id="ModelDesc"><a class="viewcode-back" href="../../generated/generated/patsy.ModelDesc.html#patsy.ModelDesc">[docs]</a><span class="k">class</span> <span class="nc">ModelDesc</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple container representing the termlists parsed from a formula.</span>
+
+<span class="sd">    This is a simple container object which has exactly the same</span>
+<span class="sd">    representational power as a formula string, but is a Python object</span>
+<span class="sd">    instead. You can construct one by hand, and pass it to functions like</span>
+<span class="sd">    :func:`dmatrix` or :func:`incr_dbuilder` that are expecting a formula</span>
+<span class="sd">    string, but without having to do any messy string manipulation. For</span>
+<span class="sd">    details see :ref:`expert-model-specification`.</span>
+
+<span class="sd">    Attributes:</span>
+
+<span class="sd">    .. attribute:: lhs_termlist</span>
+<span class="sd">                   rhs_termlist</span>
+
+<span class="sd">       Two termlists representing the left- and right-hand sides of a</span>
+<span class="sd">       formula, suitable for passing to :func:`design_matrix_builders`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ModelDesc.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.ModelDesc.__init__.html#patsy.ModelDesc.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lhs_termlist</span><span class="p">,</span> <span class="n">rhs_termlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lhs_termlist</span> <span class="o">=</span> <span class="n">uniqueify_list</span><span class="p">(</span><span class="n">lhs_termlist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rhs_termlist</span> <span class="o">=</span> <span class="n">uniqueify_list</span><span class="p">(</span><span class="n">rhs_termlist</span><span class="p">)</span></div>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
+        <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                                <span class="p">[],</span>
+                                <span class="p">[(</span><span class="s2">&quot;lhs_termlist&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhs_termlist</span><span class="p">),</span>
+                                 <span class="p">(</span><span class="s2">&quot;rhs_termlist&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">)])</span>
+
+<div class="viewcode-block" id="ModelDesc.describe"><a class="viewcode-back" href="../../generated/generated/patsy.ModelDesc.describe.html#patsy.ModelDesc.describe">[docs]</a>    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a human-readable representation of this :class:`ModelDesc`</span>
+<span class="sd">        in pseudo-formula notation.</span>
+
+<span class="sd">        .. warning:: There is no guarantee that the strings returned by this</span>
+<span class="sd">           function can be parsed as formulas. They are best-effort</span>
+<span class="sd">           descriptions intended for human users. However, if this ModelDesc</span>
+<span class="sd">           was created by parsing a formula, then it should work in</span>
+<span class="sd">           practice. If you *really* have to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">term_code</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="n">INTERCEPT</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;1&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">term</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">term_code</span><span class="p">(</span><span class="n">term</span><span class="p">)</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lhs_termlist</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot; ~ &quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot;~ &quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhs_termlist</span> <span class="o">==</span> <span class="p">[</span><span class="n">INTERCEPT</span><span class="p">]:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">term_code</span><span class="p">(</span><span class="n">INTERCEPT</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">term_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">INTERCEPT</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">:</span>
+                <span class="n">term_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">)</span>
+            <span class="n">term_names</span> <span class="o">+=</span> <span class="p">[</span><span class="n">term_code</span><span class="p">(</span><span class="n">term</span><span class="p">)</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rhs_termlist</span>
+                           <span class="k">if</span> <span class="n">term</span> <span class="o">!=</span> <span class="n">INTERCEPT</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s2">&quot; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">term_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+            
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ModelDesc.from_formula"><a class="viewcode-back" href="../../generated/generated/patsy.ModelDesc.from_formula.html#patsy.ModelDesc.from_formula">[docs]</a>    <span class="k">def</span> <span class="nf">from_formula</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">tree_or_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a :class:`ModelDesc` from a formula string.</span>
+
+<span class="sd">        :arg tree_or_string: A formula string. (Or an unevaluated formula</span>
+<span class="sd">          parse tree, but the API for generating those isn&#39;t public yet. Shh,</span>
+<span class="sd">          it can be our secret.)</span>
+<span class="sd">        :returns: A new :class:`ModelDesc`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree_or_string</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">):</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">tree_or_string</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">parse_formula</span><span class="p">(</span><span class="n">tree_or_string</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">require_evalexpr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_ModelDesc</span><span class="p">():</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">ModelDesc</span><span class="p">([</span><span class="n">INTERCEPT</span><span class="p">,</span> <span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">])],</span> <span class="p">[</span><span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">]),</span> <span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">])])</span>
+    <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">lhs_termlist</span> <span class="o">==</span> <span class="p">[</span><span class="n">INTERCEPT</span><span class="p">,</span> <span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">])]</span>
+    <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">rhs_termlist</span> <span class="o">==</span> <span class="p">[</span><span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">]),</span> <span class="n">Term</span><span class="p">([</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">])]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="n">m</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;1 + a ~ 0 + a + a:b&quot;</span>
+
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">ModelDesc</span><span class="p">([],</span> <span class="p">[])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;~ 0&quot;</span>
+    <span class="k">assert</span> <span class="n">ModelDesc</span><span class="p">([</span><span class="n">INTERCEPT</span><span class="p">],</span> <span class="p">[])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;1 ~ 0&quot;</span>
+    <span class="k">assert</span> <span class="n">ModelDesc</span><span class="p">([</span><span class="n">INTERCEPT</span><span class="p">],</span> <span class="p">[</span><span class="n">INTERCEPT</span><span class="p">])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;1 ~ 1&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ModelDesc</span><span class="p">([</span><span class="n">INTERCEPT</span><span class="p">],</span> <span class="p">[</span><span class="n">INTERCEPT</span><span class="p">,</span> <span class="n">Term</span><span class="p">([</span><span class="n">f2</span><span class="p">])])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+            <span class="o">==</span> <span class="s2">&quot;1 ~ b&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_ModelDesc_from_formula</span><span class="p">():</span>
+    <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;y ~ x&quot;</span><span class="p">,</span> <span class="n">parse_formula</span><span class="p">(</span><span class="s2">&quot;y ~ x&quot;</span><span class="p">)):</span>
+        <span class="n">md</span> <span class="o">=</span> <span class="n">ModelDesc</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">md</span><span class="o">.</span><span class="n">lhs_termlist</span> <span class="o">==</span> <span class="p">[</span><span class="n">Term</span><span class="p">([</span><span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)]),]</span>
+        <span class="k">assert</span> <span class="n">md</span><span class="o">.</span><span class="n">rhs_termlist</span> <span class="o">==</span> <span class="p">[</span><span class="n">INTERCEPT</span><span class="p">,</span> <span class="n">Term</span><span class="p">([</span><span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)])]</span>
+
+<span class="k">class</span> <span class="nc">IntermediateExpr</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s2">&quot;This class holds an intermediate result while we&#39;re evaluating a tree.&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">intercept_origin</span><span class="p">,</span> <span class="n">intercept_removed</span><span class="p">,</span> <span class="n">terms</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="n">intercept</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_origin</span> <span class="o">=</span> <span class="n">intercept_origin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept_removed</span> <span class="o">=</span><span class="n">intercept_removed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">uniqueify_list</span><span class="p">(</span><span class="n">terms</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept_origin</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept_removed</span><span class="p">)</span>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_pretty_repr_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
+        <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intercept_origin</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">intercept_removed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terms</span><span class="p">])</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="k">def</span> <span class="nf">_maybe_add_intercept</span><span class="p">(</span><span class="n">doit</span><span class="p">,</span> <span class="n">terms</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">doit</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">INTERCEPT</span><span class="p">,)</span> <span class="o">+</span> <span class="n">terms</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">terms</span>
+
+<span class="k">def</span> <span class="nf">_eval_any_tilde</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">]</span>    
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Formula was like: &quot;~ foo&quot;</span>
+        <span class="c1"># We pretend that instead it was like: &quot;0 ~ foo&quot;</span>
+        <span class="n">exprs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">exprs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="c1"># Note that only the RHS gets an implicit intercept:</span>
+    <span class="k">return</span> <span class="n">ModelDesc</span><span class="p">(</span><span class="n">_maybe_add_intercept</span><span class="p">(</span><span class="n">exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">intercept</span><span class="p">,</span> <span class="n">exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">),</span>
+                     <span class="n">_maybe_add_intercept</span><span class="p">(</span><span class="ow">not</span> <span class="n">exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">intercept_removed</span><span class="p">,</span>
+                                          <span class="n">exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">_eval_binary_plus</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">left_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">right_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">intercept_origin</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span> <span class="o">+</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="n">left_expr</span><span class="o">.</span><span class="n">intercept</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">intercept_origin</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">intercept_removed</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span> <span class="o">+</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    
+
+<span class="k">def</span> <span class="nf">_eval_binary_minus</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">left_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;ONE&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">right_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">terms</span> <span class="o">=</span> <span class="p">[</span><span class="n">term</span> <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span>
+                 <span class="k">if</span> <span class="n">term</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">terms</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="n">left_expr</span><span class="o">.</span><span class="n">intercept</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">intercept_origin</span><span class="p">,</span>
+                                    <span class="n">left_expr</span><span class="o">.</span><span class="n">intercept_removed</span><span class="p">,</span>
+                                    <span class="n">terms</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_check_interactable</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">intercept</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;intercept term cannot interact with &quot;</span>
+                            <span class="s2">&quot;anything else&quot;</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">intercept_origin</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_interaction</span><span class="p">(</span><span class="n">left_expr</span><span class="p">,</span> <span class="n">right_expr</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="p">(</span><span class="n">left_expr</span><span class="p">,</span> <span class="n">right_expr</span><span class="p">):</span>
+        <span class="n">_check_interactable</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">l_term</span> <span class="ow">in</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">r_term</span> <span class="ow">in</span> <span class="n">right_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">:</span>
+            <span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Term</span><span class="p">(</span><span class="n">l_term</span><span class="o">.</span><span class="n">factors</span> <span class="o">+</span> <span class="n">r_term</span><span class="o">.</span><span class="n">factors</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">terms</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_binary_prod</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>
+                            <span class="n">exprs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span>
+                            <span class="o">+</span> <span class="n">exprs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">terms</span>
+                            <span class="o">+</span> <span class="n">_interaction</span><span class="p">(</span><span class="o">*</span><span class="n">exprs</span><span class="p">)</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+
+<span class="c1"># Division (nesting) is right-ward distributive:</span>
+<span class="c1">#   a / (b + c) -&gt; a/b + a/c -&gt; a + a:b + a:c</span>
+<span class="c1"># But left-ward, in S/R it has a quirky behavior:</span>
+<span class="c1">#   (a + b)/c -&gt; a + b + a:b:c</span>
+<span class="c1"># This is because it&#39;s meaningless for a factor to be &quot;nested&quot; under two</span>
+<span class="c1"># different factors. (This is documented in Chambers and Hastie (page 30) as a</span>
+<span class="c1"># &quot;Slightly more subtle...&quot; rule, with no further elaboration. Hopefully we</span>
+<span class="c1"># will do better.)</span>
+<span class="k">def</span> <span class="nf">_eval_binary_div</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">left_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">right_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">terms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    <span class="n">_check_interactable</span><span class="p">(</span><span class="n">left_expr</span><span class="p">)</span>
+    <span class="c1"># Build a single giant combined term for everything on the left:</span>
+    <span class="n">left_factors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">:</span>
+        <span class="n">left_factors</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">term</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+    <span class="n">left_combined_expr</span> <span class="o">=</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>
+                                          <span class="p">[</span><span class="n">Term</span><span class="p">(</span><span class="n">left_factors</span><span class="p">)])</span>
+    <span class="c1"># Then interact it with everything on the right:</span>
+    <span class="n">terms</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_interaction</span><span class="p">(</span><span class="n">left_combined_expr</span><span class="p">,</span> <span class="n">right_expr</span><span class="p">)</span><span class="o">.</span><span class="n">terms</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">terms</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_binary_interact</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">exprs</span> <span class="o">=</span> <span class="p">[</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_interaction</span><span class="p">(</span><span class="o">*</span><span class="n">exprs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_binary_power</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">left_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">_check_interactable</span><span class="p">(</span><span class="n">left_expr</span><span class="p">)</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ONE&quot;</span><span class="p">,</span> <span class="s2">&quot;NUMBER&quot;</span><span class="p">):</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">extra</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">power</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">if</span> <span class="n">power</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;&#39;**&#39; requires a positive integer&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">all_terms</span> <span class="o">=</span> <span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span>
+    <span class="n">big_expr</span> <span class="o">=</span> <span class="n">left_expr</span>
+    <span class="c1"># Small optimization: (a + b)**100 is just the same as (a + b)**2.</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left_expr</span><span class="o">.</span><span class="n">terms</span><span class="p">),</span> <span class="n">power</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">power</span><span class="p">):</span>
+        <span class="n">big_expr</span> <span class="o">=</span> <span class="n">_interaction</span><span class="p">(</span><span class="n">left_expr</span><span class="p">,</span> <span class="n">big_expr</span><span class="p">)</span>
+        <span class="n">all_terms</span> <span class="o">=</span> <span class="n">all_terms</span> <span class="o">+</span> <span class="n">big_expr</span><span class="o">.</span><span class="n">terms</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">all_terms</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_unary_plus</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_eval_unary_minus</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">elif</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;ONE&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;Unary minus can only be applied to 1 or 0&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_zero</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[])</span>
+    
+<span class="k">def</span> <span class="nf">_eval_one</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="k">def</span> <span class="nf">_eval_number</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;numbers besides &#39;0&#39; and &#39;1&#39; are &quot;</span>
+                        <span class="s2">&quot;only allowed with **&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_python_expr</span><span class="p">(</span><span class="n">evaluator</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">extra</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">tree</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">IntermediateExpr</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="n">Term</span><span class="p">([</span><span class="n">factor</span><span class="p">])])</span>
+
+<span class="k">class</span> <span class="nc">Evaluator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluators</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_any_tilde</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_eval_any_tilde</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_plus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_minus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_prod</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_div</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_interact</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;**&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">_eval_binary_power</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_eval_unary_plus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">_eval_unary_minus</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;ZERO&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_eval_zero</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;ONE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_eval_one</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_eval_number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_op</span><span class="p">(</span><span class="s2">&quot;PYTHON_EXPR&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_eval_python_expr</span><span class="p">)</span>
+
+        <span class="c1"># Not used by Patsy -- provided for the convenience of eventual</span>
+        <span class="c1"># user-defined operators.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stash</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># This should not be considered a public API yet (to use for actually</span>
+    <span class="c1"># adding new operator semantics) because I wrote in some of the relevant</span>
+    <span class="c1"># code sort of speculatively, but it isn&#39;t actually tested.</span>
+    <span class="k">def</span> <span class="nf">add_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">arity</span><span class="p">,</span> <span class="n">evaluator</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_evaluators</span><span class="p">[</span><span class="n">op</span><span class="p">,</span> <span class="n">arity</span><span class="p">]</span> <span class="o">=</span> <span class="n">evaluator</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">require_evalexpr</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluators</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;I don&#39;t know how to evaluate this &quot;</span>
+                                <span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; operator&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">type</span><span class="p">,),</span>
+                                <span class="n">tree</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_evaluators</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">require_evalexpr</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">IntermediateExpr</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">ModelDesc</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;~ can only be used once, and &quot;</span>
+                                    <span class="s2">&quot;only at the top level&quot;</span><span class="p">,</span>
+                                    <span class="n">tree</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;custom operator returned an &quot;</span>
+                                    <span class="s2">&quot;object that I don&#39;t know how to &quot;</span>
+                                    <span class="s2">&quot;handle&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<span class="c1">#############</span>
+
+<span class="n">_eval_tests</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot; &quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot; </span><span class="se">\n</span><span class="s2"> &quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;- 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;- 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;+ 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;+ 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;0 + 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;1 + 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;1 - 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;0 - 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    
+    <span class="s2">&quot;1 + a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;0 + a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a - 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a - 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;1 - a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+
+    <span class="s2">&quot;a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;(a + b)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a + ((((b))))&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a + ((((+b))))&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a + ((((b - a))))&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;a + a + a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;a + (b - a)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;a + np.log(a, base=10)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;np.log(a, base=10)&quot;</span><span class="p">]),</span>
+    <span class="c1"># Note different spacing:</span>
+    <span class="s2">&quot;a + np.log(a, base=10) - np . log(a , base = 10)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    
+    <span class="s2">&quot;a + (I(b) + c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;I(b)&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a + I(b + c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;I(b + c)&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;a:b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a:b:a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a:(b + c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a + b):c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a:(b - c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;c + a:c + a:(b - c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a - b):c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;b + b:c + (a - b):c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+
+    <span class="s2">&quot;a:b - a:b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;a:b - b:a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+
+    <span class="s2">&quot;1 - (a + b)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;a + b - (a + b)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+
+    <span class="s2">&quot;a * b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a * b * a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a * (b + c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a + b) * c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a * (b - c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;c + a:c + a * (b - c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a - b) * c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;b + b:c + (a - b) * c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+
+    <span class="s2">&quot;a/b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a + b)/c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;b + b:c + (a - b)/c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a/(b + c)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+
+    <span class="s2">&quot;a ** 2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;(a + b + c + d) ** 2&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span>
+                                    <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;(a + b + c + d) ** 3&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span>
+                                    <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">)]),</span>
+
+    <span class="s2">&quot;a + +a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+
+    <span class="s2">&quot;~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;~ a*b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;~ a*b + 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;~ -1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+
+    <span class="s2">&quot;0 ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;1 ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;y ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;0 + y ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;0 + y * z ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;-1 ~ 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;1 + y ~ a + b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+
+    <span class="c1"># Check precedence:</span>
+    <span class="s2">&quot;a + b * c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a * b + c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="s2">&quot;c&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a * b - a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a + b / c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a / b + c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="s2">&quot;c&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;a*b:c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+    <span class="s2">&quot;a:b*c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)]),</span>
+
+    <span class="c1"># Intercept handling:</span>
+    <span class="s2">&quot;~ 1 + 1 + 0 + 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;~ 0 + 1 + 0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;~ 0 - 1 - 1 + 0 + 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;~ 1 - 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+    <span class="s2">&quot;~ 0 + a + 1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+    <span class="s2">&quot;~ 1 + (a + 0)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span> <span class="c1"># This is correct, but perhaps surprising!</span>
+    <span class="s2">&quot;~ 0 + (a + 1)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]),</span> <span class="c1"># Also correct!</span>
+    <span class="s2">&quot;~ 1 - (a + 1)&quot;</span><span class="p">:</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[]),</span>
+<span class="p">}</span>
+
+<span class="c1"># &lt;&gt; mark off where the error should be reported:</span>
+<span class="n">_eval_error_tests</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;a &lt;+&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;(&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;b + &lt;(-a)&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a:&lt;1&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;(a + &lt;1&gt;)*b&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + &lt;2&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;1.0&gt;&quot;</span><span class="p">,</span>
+    <span class="c1"># eh, catching this is a hassle, we&#39;ll just leave the user some rope if</span>
+    <span class="c1"># they really want it:</span>
+    <span class="c1">#&quot;a + &lt;0x1&gt;&quot;,</span>
+
+    <span class="s2">&quot;a ** &lt;b&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a ** &lt;(1 + 1)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a ** &lt;1.5&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + b &lt;# asdf&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;&lt;)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;&lt;*&gt; a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;*&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + &lt;foo[bar&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;foo{bar&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;foo(bar&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + &lt;[bar&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;{bar&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + &lt;{bar[]&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + foo&lt;]&gt;bar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + foo[]&lt;]&gt;bar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + foo</span><span class="si">{}</span><span class="s2">&lt;}&gt;bar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + foo&lt;)&gt;bar&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;a + b&lt;)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;(a) &lt;.&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;&lt;(&gt;a + b&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;&lt;y ~ a&gt; ~ b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;y ~ &lt;(a ~ b)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;&lt;~ a&gt; ~ b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;~ &lt;(a ~ b)&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;1 + &lt;-(a + b)&gt;&quot;</span><span class="p">,</span>
+
+    <span class="s2">&quot;&lt;- a&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + &lt;-a**2&gt;&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">_assert_terms_match</span><span class="p">(</span><span class="n">terms</span><span class="p">,</span> <span class="n">expected_intercept</span><span class="p">,</span> <span class="n">expecteds</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+    <span class="k">if</span> <span class="n">expected_intercept</span><span class="p">:</span>
+        <span class="n">expecteds</span> <span class="o">=</span> <span class="p">[()]</span> <span class="o">+</span> <span class="n">expecteds</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">expecteds</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">term</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">terms</span><span class="p">,</span> <span class="n">expecteds</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">Term</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">expected</span><span class="p">,)</span>
+            <span class="k">assert</span> <span class="n">term</span><span class="o">.</span><span class="n">factors</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">EvalFactor</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">expected</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">term</span> <span class="o">==</span> <span class="n">expected</span>
+
+<span class="k">def</span> <span class="nf">_do_eval_formula_tests</span><span class="p">(</span><span class="n">tests</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+    <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">tests</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="n">result</span>
+        <span class="n">model_desc</span> <span class="o">=</span> <span class="n">ModelDesc</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">model_desc</span><span class="p">)</span>
+        <span class="n">lhs_intercept</span><span class="p">,</span> <span class="n">lhs_termlist</span><span class="p">,</span> <span class="n">rhs_intercept</span><span class="p">,</span> <span class="n">rhs_termlist</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="n">_assert_terms_match</span><span class="p">(</span><span class="n">model_desc</span><span class="o">.</span><span class="n">lhs_termlist</span><span class="p">,</span>
+                            <span class="n">lhs_intercept</span><span class="p">,</span> <span class="n">lhs_termlist</span><span class="p">)</span>
+        <span class="n">_assert_terms_match</span><span class="p">(</span><span class="n">model_desc</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">,</span>
+                            <span class="n">rhs_intercept</span><span class="p">,</span> <span class="n">rhs_termlist</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_eval_formula</span><span class="p">():</span>
+    <span class="n">_do_eval_formula_tests</span><span class="p">(</span><span class="n">_eval_tests</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_eval_formula_error_reporting</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">patsy.parse_formula</span> <span class="k">import</span> <span class="n">_parsing_error_test</span>
+    <span class="n">parse_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">formula</span><span class="p">:</span> <span class="n">ModelDesc</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+    <span class="n">_parsing_error_test</span><span class="p">(</span><span class="n">parse_fn</span><span class="p">,</span> <span class="n">_eval_error_tests</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_formula_factor_origin</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="n">ModelDesc</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">origin</span>
+            <span class="o">==</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">desc</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">origin</span>
+            <span class="o">==</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

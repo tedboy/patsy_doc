@@ -1,0 +1,6 @@
+patsy.DesignMatrix.partition
+============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.partition

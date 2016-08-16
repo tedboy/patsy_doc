@@ -1,0 +1,6 @@
+patsy.balanced
+==============
+
+.. currentmodule:: patsy
+
+.. autofunction:: balanced

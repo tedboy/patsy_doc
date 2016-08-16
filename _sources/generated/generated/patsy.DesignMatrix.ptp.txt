@@ -1,0 +1,6 @@
+patsy.DesignMatrix.ptp
+======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.ptp

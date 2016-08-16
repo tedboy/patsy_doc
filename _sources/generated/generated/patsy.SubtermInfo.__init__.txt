@@ -1,0 +1,6 @@
+patsy.SubtermInfo.__init__
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: SubtermInfo.__init__

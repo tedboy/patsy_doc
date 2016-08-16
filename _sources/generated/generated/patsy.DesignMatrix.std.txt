@@ -1,0 +1,6 @@
+patsy.DesignMatrix.std
+======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.std

@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.contrasts &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.contrasts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.contrasts</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2012 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># http://www.ats.ucla.edu/stat/r/library/contrast_coding.htm</span>
+<span class="c1"># http://www.ats.ucla.edu/stat/sas/webbooks/reg/chapter5/sasreg5.htm</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ContrastMatrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span> <span class="s2">&quot;Poly&quot;</span><span class="p">,</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span> <span class="s2">&quot;Helmert&quot;</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">triu_indices</span><span class="p">,</span> <span class="n">tril_indices</span><span class="p">,</span> <span class="n">diag_indices</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
+                        <span class="n">safe_issubdtype</span><span class="p">,</span>
+                        <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ContrastMatrix"><a class="viewcode-back" href="../../generated/generated/patsy.ContrastMatrix.html#patsy.ContrastMatrix">[docs]</a><span class="k">class</span> <span class="nc">ContrastMatrix</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple container for a matrix used for coding categorical factors.</span>
+
+<span class="sd">    Attributes:</span>
+
+<span class="sd">    .. attribute:: matrix</span>
+
+<span class="sd">       A 2d ndarray, where each column corresponds to one column of the</span>
+<span class="sd">       resulting design matrix, and each row contains the entries for a single</span>
+<span class="sd">       categorical variable level. Usually n-by-n for a full rank coding or</span>
+<span class="sd">       n-by-(n-1) for a reduced rank coding, though other options are</span>
+<span class="sd">       possible.</span>
+
+<span class="sd">    .. attribute:: column_suffixes</span>
+
+<span class="sd">       A list of strings to be appended to the factor name, to produce the</span>
+<span class="sd">       final column names. E.g. for treatment coding the entries will look</span>
+<span class="sd">       like ``&quot;[T.level1]&quot;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ContrastMatrix.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.ContrastMatrix.__init__.html#patsy.ContrastMatrix.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">=</span> <span class="n">column_suffixes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_suffixes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;matrix and column_suffixes don&#39;t conform&quot;</span><span class="p">)</span></div>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_suffixes</span><span class="p">])</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_ContrastMatrix</span><span class="p">():</span>
+    <span class="n">cm</span> <span class="o">=</span> <span class="n">ContrastMatrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cm</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">cm</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
+    <span class="c1"># smoke test</span>
+    <span class="nb">repr</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">ContrastMatrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
+
+<span class="c1"># This always produces an object of the type that Python calls &#39;str&#39; (whether</span>
+<span class="c1"># that be a Python 2 string-of-bytes or a Python 3 string-of-unicode). It does</span>
+<span class="c1"># *not* make any particular guarantees about being reversible or having other</span>
+<span class="c1"># such useful programmatic properties -- it just produces something that will</span>
+<span class="c1"># be nice for users to look at.</span>
+<span class="k">def</span> <span class="nf">_obj_to_readable_str</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">unicode</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__obj_to_readable_str</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="n">got</span> <span class="o">=</span> <span class="n">_obj_to_readable_str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">got</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span>
+        <span class="k">assert</span> <span class="n">got</span> <span class="o">==</span> <span class="n">expected</span>
+    <span class="n">t</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">,</span> <span class="s2">&quot;asdf&quot;</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">),</span> <span class="s2">&quot;asdf&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
+        <span class="c1"># we can use &quot;foo&quot;.encode here b/c this is python 3!</span>
+        <span class="c1"># a utf-8 encoded euro-sign comes out as a real euro sign.</span>
+        <span class="n">t</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u20ac</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u20ac</span><span class="s2">&quot;</span><span class="p">))</span>
+        <span class="c1"># but a iso-8859-15 euro sign can&#39;t be decoded, and we fall back on</span>
+        <span class="c1"># repr()</span>
+        <span class="n">t</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u20ac</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;iso-8859-15&quot;</span><span class="p">),</span> <span class="s2">&quot;b&#39;</span><span class="se">\\</span><span class="s2">xa4&#39;&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">t</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">u</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\u20ac</span><span class="s2">&quot;</span><span class="p">),</span> <span class="s2">&quot;u&#39;</span><span class="se">\\</span><span class="s2">u20ac&#39;&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_name_levels</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;[</span><span class="si">%s%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">_obj_to_readable_str</span><span class="p">(</span><span class="n">level</span><span class="p">))</span> <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">test__name_levels</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[ab]&quot;</span><span class="p">,</span> <span class="s2">&quot;[ac]&quot;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">_dummy_code</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">_get_level</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">level_ref</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">level_ref</span> <span class="ow">in</span> <span class="n">levels</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">levels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">level_ref</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level_ref</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">level_ref</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">level_ref</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">level_ref</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;specified level </span><span class="si">%r</span><span class="s2"> is out of range&quot;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">level_ref</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="n">level_ref</span>
+    <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;specified level </span><span class="si">%r</span><span class="s2"> not found&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">level_ref</span><span class="p">,))</span>
+
+<span class="k">def</span> <span class="nf">test__get_level</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># For integer levels, we check identity before treating it as an index</span>
+    <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Treatment"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.html#patsy.Treatment">[docs]</a><span class="k">class</span> <span class="nc">Treatment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Treatment coding (also known as dummy coding).</span>
+
+<span class="sd">    This is the default coding.</span>
+
+<span class="sd">    For reduced-rank coding, one level is chosen as the &quot;reference&quot;, and its</span>
+<span class="sd">    mean behaviour is represented by the intercept. Each column of the</span>
+<span class="sd">    resulting matrix represents the difference between the mean of one level</span>
+<span class="sd">    and this reference level.</span>
+
+<span class="sd">    For full-rank coding, classic &quot;dummy&quot; coding is used, and each column of</span>
+<span class="sd">    the resulting matrix represents the mean of the corresponding level.</span>
+
+<span class="sd">    The reference level defaults to the first level, or can be specified</span>
+<span class="sd">    explicitly.</span>
+
+<span class="sd">    .. ipython:: python</span>
+
+<span class="sd">       # reduced rank</span>
+<span class="sd">       dmatrix(&quot;C(a, Treatment)&quot;, balanced(a=3))</span>
+<span class="sd">       # full rank</span>
+<span class="sd">       dmatrix(&quot;0 + C(a, Treatment)&quot;, balanced(a=3))</span>
+<span class="sd">       # Setting a reference level</span>
+<span class="sd">       dmatrix(&quot;C(a, Treatment(1))&quot;, balanced(a=3))</span>
+<span class="sd">       dmatrix(&quot;C(a, Treatment(&#39;a2&#39;))&quot;, balanced(a=3))</span>
+
+<span class="sd">    Equivalent to R ``contr.treatment``. The R documentation suggests that</span>
+<span class="sd">    using ``Treatment(reference=-1)`` will produce contrasts that are</span>
+<span class="sd">    &quot;equivalent to those produced by many (but not all) SAS procedures&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Treatment.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.__init__.html#patsy.Treatment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">=</span> <span class="n">reference</span></div>
+
+<div class="viewcode-block" id="Treatment.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.code_with_intercept.html#patsy.Treatment.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_dummy_code</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Treatment.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.code_without_intercept.html#patsy.Treatment.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">reference</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reference</span> <span class="o">=</span> <span class="n">_get_level</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">)</span>
+        <span class="n">eye</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">contrasts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">eye</span><span class="p">[:</span><span class="n">reference</span><span class="p">,</span> <span class="p">:],</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span>
+                                <span class="n">eye</span><span class="p">[</span><span class="n">reference</span><span class="p">:,</span> <span class="p">:]))</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;T.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">[:</span><span class="n">reference</span><span class="p">]</span> <span class="o">+</span> <span class="n">levels</span><span class="p">[</span><span class="n">reference</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrasts</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_Treatment</span><span class="p">():</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">Treatment</span><span class="p">()</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Treatment</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Treatment</span><span class="p">(</span><span class="n">reference</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Treatment</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="c1"># Make sure the default is always the first level, even if there is a</span>
+    <span class="c1"># different level called 0.</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Treatment</span><span class="p">()</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.1]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.0]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+<div class="viewcode-block" id="Poly"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.html#patsy.Poly">[docs]</a><span class="k">class</span> <span class="nc">Poly</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Orthogonal polynomial contrast coding.</span>
+
+<span class="sd">    This coding scheme treats the levels as ordered samples from an underlying</span>
+<span class="sd">    continuous scale, whose effect takes an unknown functional form which is</span>
+<span class="sd">    `Taylor-decomposed`__ into the sum of a linear, quadratic, etc. components.</span>
+
+<span class="sd">    .. __: https://en.wikipedia.org/wiki/Taylor_series</span>
+
+<span class="sd">    For reduced-rank coding, you get a linear column, a quadratic column,</span>
+<span class="sd">    etc., up to the number of levels provided.</span>
+
+<span class="sd">    For full-rank coding, the same scheme is used, except that the zero-order</span>
+<span class="sd">    constant polynomial is also included. I.e., you get an intercept column</span>
+<span class="sd">    included as part of your categorical term.</span>
+
+<span class="sd">    By default the levels are treated as equally spaced, but you can override</span>
+<span class="sd">    this by providing a value for the `scores` argument.</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    .. ipython:: python</span>
+
+<span class="sd">       # Reduced rank</span>
+<span class="sd">       dmatrix(&quot;C(a, Poly)&quot;, balanced(a=4))</span>
+<span class="sd">       # Full rank</span>
+<span class="sd">       dmatrix(&quot;0 + C(a, Poly)&quot;, balanced(a=3))</span>
+<span class="sd">       # Explicit scores</span>
+<span class="sd">       dmatrix(&quot;C(a, Poly([1, 2, 10]))&quot;, balanced(a=3))</span>
+
+<span class="sd">    This is equivalent to R&#39;s ``contr.poly``. (But note that in R, reduced</span>
+<span class="sd">    rank encodings are always dummy-coded, regardless of what contrast you</span>
+<span class="sd">    have set.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Poly.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.__init__.html#patsy.Poly.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span></div>
+
+    <span class="k">def</span> <span class="nf">_code_either</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span>
+        <span class="k">if</span> <span class="n">scores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;number of levels (</span><span class="si">%s</span><span class="s2">) does not match&quot;</span>
+                                <span class="s2">&quot; number of scores (</span><span class="si">%s</span><span class="s2">)&quot;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)))</span>
+        <span class="c1"># Strategy: just make a matrix whose columns are naive linear,</span>
+        <span class="c1"># quadratic, etc., functions of the raw scores, and then use &#39;qr&#39; to</span>
+        <span class="c1"># orthogonalize each column against those to its left.</span>
+        <span class="n">scores</span> <span class="o">-=</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">raw_poly</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">raw_poly</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+        <span class="n">q</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># The constant term is always all 1&#39;s -- we don&#39;t normalize it.</span>
+        <span class="n">q</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">,</span> <span class="s2">&quot;.Cubic&quot;</span><span class="p">]</span>
+        <span class="n">names</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;^</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">n</span><span class="p">)]</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">names</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">intercept</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># We always include the constant/intercept column as something to</span>
+            <span class="c1"># orthogonalize against, but we don&#39;t always return it:</span>
+            <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+<div class="viewcode-block" id="Poly.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.code_with_intercept.html#patsy.Poly.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Poly.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.code_without_intercept.html#patsy.Poly.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_Poly</span><span class="p">():</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">()</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
+    <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3)&#39;</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.07106781186548e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.816496580927726</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">7.07106781186547e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">]]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
+    <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3)&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
+                       <span class="p">[[</span><span class="o">-</span><span class="mf">7.07106781186548e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.816496580927726</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mf">7.07106781186547e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">]])</span>
+
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
+    <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3, scores=c(0, 10, 11))&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
+                       <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.813733471206735</span><span class="p">,</span> <span class="mf">0.0671156055214024</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.348742916231458</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7382716607354268</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.464990554975277</span><span class="p">,</span> <span class="mf">0.6711560552140243</span><span class="p">]])</span>
+
+    <span class="c1"># we had an integer/float handling bug for score vectors whose mean was</span>
+    <span class="c1"># non-integer, so check one of those:</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
+    <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3, scores=c(0, 10, 12))&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
+                       <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.806559132617443</span><span class="p">,</span> <span class="mf">0.127000127000191</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.293294230042706</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.762000762001143</span><span class="p">],</span>
+                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.513264902574736</span><span class="p">,</span> <span class="mf">0.635000635000952</span><span class="p">]])</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span>
+                  <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">,</span>
+                  <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)))</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">,</span>
+                                      <span class="s2">&quot;.Cubic&quot;</span><span class="p">,</span> <span class="s2">&quot;^4&quot;</span><span class="p">,</span> <span class="s2">&quot;^5&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Sum"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.html#patsy.Sum">[docs]</a><span class="k">class</span> <span class="nc">Sum</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Deviation coding (also known as sum-to-zero coding).</span>
+
+<span class="sd">    Compares the mean of each level to the mean-of-means. (In a balanced</span>
+<span class="sd">    design, compares the mean of each level to the overall mean.)</span>
+
+<span class="sd">    For full-rank coding, a standard intercept term is added.</span>
+
+<span class="sd">    One level must be omitted to avoid redundancy; by default this is the last</span>
+<span class="sd">    level, but this can be adjusted via the `omit` argument.</span>
+
+<span class="sd">    .. warning:: There are multiple definitions of &#39;deviation coding&#39; in</span>
+<span class="sd">       use. Make sure this is the one you expect before trying to interpret</span>
+<span class="sd">       your results!</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    .. ipython:: python</span>
+
+<span class="sd">       # Reduced rank</span>
+<span class="sd">       dmatrix(&quot;C(a, Sum)&quot;, balanced(a=4))</span>
+<span class="sd">       # Full rank</span>
+<span class="sd">       dmatrix(&quot;0 + C(a, Sum)&quot;, balanced(a=4))</span>
+<span class="sd">       # Omit a different level</span>
+<span class="sd">       dmatrix(&quot;C(a, Sum(1))&quot;, balanced(a=3))</span>
+<span class="sd">       dmatrix(&quot;C(a, Sum(&#39;a1&#39;))&quot;, balanced(a=3))</span>
+
+<span class="sd">    This is equivalent to R&#39;s `contr.sum`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Sum.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.__init__.html#patsy.Sum.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="o">=</span> <span class="n">omit</span></div>
+
+    <span class="k">def</span> <span class="nf">_omit_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># We assume below that this is positive</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_get_level</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_sum_contrast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">omit_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_omit_i</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">eye</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">out</span><span class="p">[:</span><span class="n">omit_i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">eye</span><span class="p">[:</span><span class="n">omit_i</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">omit_i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">omit_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">eye</span><span class="p">[</span><span class="n">omit_i</span><span class="p">:,</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="Sum.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.code_with_intercept.html#patsy.Sum.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
+                                  <span class="n">contrast</span><span class="o">.</span><span class="n">matrix</span><span class="p">))</span>
+        <span class="n">column_suffixes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">contrast</span><span class="o">.</span><span class="n">column_suffixes</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sum.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.code_without_intercept.html#patsy.Sum.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">omit_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_omit_i</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">included_levels</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[:</span><span class="n">omit_i</span><span class="p">]</span> <span class="o">+</span> <span class="n">levels</span><span class="p">[</span><span class="n">omit_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;S.&quot;</span><span class="p">,</span> <span class="n">included_levels</span><span class="p">))</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_Sum</span><span class="p">():</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">Sum</span><span class="p">()</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.b]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.b]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="c1"># Check that it&#39;s not thrown off by negative integer term names</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.-1]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.-2]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t2</span> <span class="o">=</span> <span class="n">Sum</span><span class="p">(</span><span class="n">omit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t2</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.0]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.2]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t3</span> <span class="o">=</span> <span class="n">Sum</span><span class="p">(</span><span class="n">omit</span><span class="o">=-</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t4</span> <span class="o">=</span> <span class="n">Sum</span><span class="p">(</span><span class="n">omit</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t3</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+<div class="viewcode-block" id="Helmert"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.html#patsy.Helmert">[docs]</a><span class="k">class</span> <span class="nc">Helmert</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helmert contrasts.</span>
+
+<span class="sd">    Compares the second level with the first, the third with the average of</span>
+<span class="sd">    the first two, and so on.</span>
+
+<span class="sd">    For full-rank coding, a standard intercept term is added.</span>
+
+<span class="sd">    .. warning:: There are multiple definitions of &#39;Helmert coding&#39; in</span>
+<span class="sd">       use. Make sure this is the one you expect before trying to interpret</span>
+<span class="sd">       your results!</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    .. ipython:: python</span>
+
+<span class="sd">       # Reduced rank</span>
+<span class="sd">       dmatrix(&quot;C(a, Helmert)&quot;, balanced(a=4))</span>
+<span class="sd">       # Full rank</span>
+<span class="sd">       dmatrix(&quot;0 + C(a, Helmert)&quot;, balanced(a=4))</span>
+
+<span class="sd">    This is equivalent to R&#39;s `contr.helmert`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_helmert_contrast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="c1">#http://www.ats.ucla.edu/stat/sas/webbooks/reg/chapter5/sasreg5.htm#HELMERT</span>
+        <span class="c1">#contr = np.eye(n - 1)</span>
+        <span class="c1">#int_range = np.arange(n - 1., 1, -1)</span>
+        <span class="c1">#denom = np.repeat(int_range, np.arange(n - 2, 0, -1))</span>
+        <span class="c1">#contr[np.tril_indices(n - 1, -1)] = -1. / denom</span>
+
+        <span class="c1">#http://www.ats.ucla.edu/stat/r/library/contrast_coding.htm#HELMERT</span>
+        <span class="c1">#contr = np.zeros((n - 1., n - 1))</span>
+        <span class="c1">#int_range = np.arange(n, 1, -1)</span>
+        <span class="c1">#denom = np.repeat(int_range[:-1], np.arange(n - 2, 0, -1))</span>
+        <span class="c1">#contr[np.diag_indices(n - 1)] = (int_range - 1.) / int_range</span>
+        <span class="c1">#contr[np.tril_indices(n - 1, -1)] = -1. / denom</span>
+        <span class="c1">#contr = np.vstack((contr, -1./int_range))</span>
+
+        <span class="c1">#r-like</span>
+        <span class="n">contr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">contr</span><span class="p">[</span><span class="mi">1</span><span class="p">:][</span><span class="n">diag_indices</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="n">contr</span><span class="p">[</span><span class="n">triu_indices</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">return</span> <span class="n">contr</span>
+
+<div class="viewcode-block" id="Helmert.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.code_with_intercept.html#patsy.Helmert.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_helmert_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)))</span>
+        <span class="n">column_suffixes</span> <span class="o">=</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;H.&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Helmert.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.code_without_intercept.html#patsy.Helmert.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helmert_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span>
+                              <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;H.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_Helmert</span><span class="p">():</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">Helmert</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">levels</span> <span class="ow">in</span> <span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">)):</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[H.intercept]&quot;</span><span class="p">,</span>
+                                          <span class="s2">&quot;[H.b]&quot;</span><span class="p">,</span>
+                                          <span class="s2">&quot;[H.c]&quot;</span><span class="p">,</span>
+                                          <span class="s2">&quot;[H.d]&quot;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+        <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[H.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[H.c]&quot;</span><span class="p">,</span> <span class="s2">&quot;[H.d]&quot;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+
+<div class="viewcode-block" id="Diff"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.html#patsy.Diff">[docs]</a><span class="k">class</span> <span class="nc">Diff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Backward difference coding.</span>
+
+<span class="sd">    This coding scheme is useful for ordered factors, and compares the mean of</span>
+<span class="sd">    each level with the preceding level. So you get the second level minus the</span>
+<span class="sd">    first, the third level minus the second, etc.</span>
+
+<span class="sd">    For full-rank coding, a standard intercept term is added (which gives the</span>
+<span class="sd">    mean value for the first level).</span>
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    .. ipython:: python</span>
+
+<span class="sd">       # Reduced rank</span>
+<span class="sd">       dmatrix(&quot;C(a, Diff)&quot;, balanced(a=3))</span>
+<span class="sd">       # Full rank</span>
+<span class="sd">       dmatrix(&quot;0 + C(a, Diff)&quot;, balanced(a=3))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_diff_contrast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">nlevels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="n">contr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nlevels</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">int_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nlevels</span><span class="p">)</span>
+        <span class="n">upper_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">int_range</span><span class="p">,</span> <span class="n">int_range</span><span class="p">)</span>
+        <span class="n">row_i</span><span class="p">,</span> <span class="n">col_i</span> <span class="o">=</span> <span class="n">triu_indices</span><span class="p">(</span><span class="n">nlevels</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># we want to iterate down the columns not across the rows</span>
+        <span class="c1"># it would be nice if the index functions had a row/col order arg</span>
+        <span class="n">col_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">col_i</span><span class="p">)</span>
+        <span class="n">contr</span><span class="p">[</span><span class="n">row_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">],</span>
+              <span class="n">col_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">upper_int</span><span class="o">-</span><span class="n">nlevels</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nlevels</span><span class="p">)</span>
+        <span class="n">lower_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">int_range</span><span class="p">,</span> <span class="n">int_range</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">row_i</span><span class="p">,</span> <span class="n">col_i</span> <span class="o">=</span> <span class="n">tril_indices</span><span class="p">(</span><span class="n">nlevels</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># we want to iterate down the columns not across the rows</span>
+        <span class="n">col_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">col_i</span><span class="p">)</span>
+        <span class="n">contr</span><span class="p">[</span><span class="n">row_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">col_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">]]</span> <span class="o">=</span> <span class="n">lower_int</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nlevels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">contr</span>
+
+<div class="viewcode-block" id="Diff.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.code_with_intercept.html#patsy.Diff.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_diff_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;D.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Diff.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.code_without_intercept.html#patsy.Diff.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;D.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_diff</span><span class="p">():</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">Diff</span><span class="p">()</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[D.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[D.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[D.c]&quot;</span><span class="p">,</span>
+                                      <span class="s2">&quot;[D.d]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="mi">3</span><span class="o">/</span><span class="mf">4.</span><span class="p">]])</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[D.a]&quot;</span><span class="p">,</span> <span class="s2">&quot;[D.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[D.c]&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">3</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="mf">2.</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mf">4.</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="mi">3</span><span class="o">/</span><span class="mf">4.</span><span class="p">]])</span>
+
+<span class="c1"># contrast can be:</span>
+<span class="c1">#   -- a ContrastMatrix</span>
+<span class="c1">#   -- a simple np.ndarray</span>
+<span class="c1">#   -- an object with code_with_intercept and code_without_intercept methods</span>
+<span class="c1">#   -- a function returning one of the above</span>
+<span class="c1">#   -- None, in which case the above rules are applied to &#39;default&#39;</span>
+<span class="c1"># This function always returns a ContrastMatrix.</span>
+<span class="k">def</span> <span class="nf">code_contrast_matrix</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">contrast</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">contrast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">default</span>
+    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">contrast</span><span class="p">):</span>
+        <span class="n">contrast</span> <span class="o">=</span> <span class="n">contrast</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">ContrastMatrix</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">contrast</span>
+    <span class="n">as_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">contrast</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">as_array</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">as_array</span><span class="p">,</span>
+                              <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">as_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+    <span class="k">if</span> <span class="n">intercept</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">contrast</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">contrast</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.cumprod
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.cumprod

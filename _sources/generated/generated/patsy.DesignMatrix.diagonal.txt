@@ -1,0 +1,6 @@
+patsy.DesignMatrix.diagonal
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.diagonal

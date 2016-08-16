@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1.2.2.1.6. patsy.DesignInfo.subset &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="1.2.2. patsy.DesignInfo" href="patsy.DesignInfo.html"/>
+        <link rel="next" title="1.2.2.2.1. patsy.DesignInfo.builder" href="patsy.DesignInfo.builder.html"/>
+        <link rel="prev" title="1.2.2.1.5. patsy.DesignInfo.slice" href="patsy.DesignInfo.slice.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../patsy.html">1. patsy</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#functions">1.1. Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../patsy.html#classes">1.2. Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.ContrastMatrix.html">1.2.1. patsy.ContrastMatrix</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="patsy.DesignInfo.html">1.2.2. patsy.DesignInfo</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="patsy.DesignInfo.html#methods">1.2.2.1. Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="patsy.DesignInfo.html#attributes">1.2.2.2. Attributes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.DesignMatrix.html">1.2.3. patsy.DesignMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Diff.html">1.2.4. patsy.Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalEnvironment.html">1.2.5. patsy.EvalEnvironment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalFactor.html">1.2.6. patsy.EvalFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.FactorInfo.html">1.2.7. patsy.FactorInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Helmert.html">1.2.8. patsy.Helmert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LinearConstraint.html">1.2.9. patsy.LinearConstraint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LookupFactor.html">1.2.10. patsy.LookupFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.ModelDesc.html">1.2.11. patsy.ModelDesc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.NAAction.html">1.2.12. patsy.NAAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Origin.html">1.2.13. patsy.Origin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Poly.html">1.2.14. patsy.Poly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.SubtermInfo.html">1.2.15. patsy.SubtermInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Sum.html">1.2.16. patsy.Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Term.html">1.2.17. patsy.Term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Treatment.html">1.2.18. patsy.Treatment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#exceptions">1.3. Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">1. patsy</a> &raquo;</li>
+        
+          <li><a href="patsy.DesignInfo.html">1.2.2. patsy.DesignInfo</a> &raquo;</li>
+        
+      <li>1.2.2.1.6. patsy.DesignInfo.subset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/generated/generated/patsy.DesignInfo.subset.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-designinfo-subset">
+<h1>1.2.2.1.6. patsy.DesignInfo.subset<a class="headerlink" href="#patsy-designinfo-subset" title="Permalink to this headline">¶</a></h1>
+<dl class="method">
+<dt id="patsy.DesignInfo.subset">
+<code class="descclassname">DesignInfo.</code><code class="descname">subset</code><span class="sig-paren">(</span><em>which_terms</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/patsy/design_info.html#DesignInfo.subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.DesignInfo.subset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <a class="reference internal" href="patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> for design matrices that contain a
+subset of the terms that the current <a class="reference internal" href="patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> does.</p>
+<p>For example, if <code class="docutils literal"><span class="pre">design_info</span></code> has terms <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">z</span></code>,
+then:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">design_info2</span> <span class="o">=</span> <span class="n">design_info</span><span class="o">.</span><span class="n">subset</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>will return a new DesignInfo that can be used to construct design
+matrices with only the columns corresponding to the terms <code class="docutils literal"><span class="pre">x</span></code> and
+<code class="docutils literal"><span class="pre">z</span></code>. After we do this, then in general these two expressions will
+return the same thing (here we assume that <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">z</span></code>
+each generate a single column of the output):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">build_design_matrix</span><span class="p">([</span><span class="n">design_info</span><span class="p">],</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="n">build_design_matrix</span><span class="p">([</span><span class="n">design_info2</span><span class="p">],</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>However, a critical difference is that in the second case, <code class="docutils literal"><span class="pre">data</span></code>
+need not contain any values for <code class="docutils literal"><span class="pre">y</span></code>. This is very useful when doing
+prediction using a subset of a model, in which situation R usually
+forces you to specify dummy values for <code class="docutils literal"><span class="pre">y</span></code>.</p>
+<p>If using a formula to specify the terms to include, remember that like
+any formula, the intercept term will be included by default, so use
+<code class="docutils literal"><span class="pre">0</span></code> or <code class="docutils literal"><span class="pre">-1</span></code> in your formula if you want to avoid this.</p>
+<p>This method can also be used to reorder the terms in your design
+matrix, in case you want to do that for some reason. I can&#8217;t think of
+any.</p>
+<p>Note that this method will generally <em>not</em> produce the same result as
+creating a new model directly. Consider these DesignInfo objects:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">design1</span> <span class="o">=</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;1 + C(a)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">design2</span> <span class="o">=</span> <span class="n">design1</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="s2">&quot;0 + C(a)&quot;</span><span class="p">)</span>
+<span class="n">design3</span> <span class="o">=</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here <code class="docutils literal"><span class="pre">design2</span></code> and <code class="docutils literal"><span class="pre">design3</span></code> will both produce design matrices
+that contain an encoding of <code class="docutils literal"><span class="pre">C(a)</span></code> without any intercept term. But
+<code class="docutils literal"><span class="pre">design3</span></code> uses a full-rank encoding for the categorical term
+<code class="docutils literal"><span class="pre">C(a)</span></code>, while <code class="docutils literal"><span class="pre">design2</span></code> uses the same reduced-rank encoding as
+<code class="docutils literal"><span class="pre">design1</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>which_terms</strong> &#8211; The terms which should be kept in the new
+<code class="xref py py-class docutils literal"><span class="pre">DesignMatrixBuilder</span></code>. If this is a string, then it is parsed
+as a formula, and then the names of the resulting terms are taken as
+the terms to keep. If it is a list, then it can contain a mixture of
+term names (as strings) and <a class="reference internal" href="patsy.Term.html#patsy.Term" title="patsy.Term"><code class="xref py py-class docutils literal"><span class="pre">Term</span></code></a> objects.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.DesignInfo.builder.html" class="btn btn-neutral float-right" title="1.2.2.2.1. patsy.DesignInfo.builder" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.DesignInfo.slice.html" class="btn btn-neutral" title="1.2.2.1.5. patsy.DesignInfo.slice" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

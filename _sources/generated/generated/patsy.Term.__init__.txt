@@ -1,0 +1,6 @@
+patsy.Term.__init__
+===================
+
+.. currentmodule:: patsy
+
+.. automethod:: Term.__init__

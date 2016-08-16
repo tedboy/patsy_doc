@@ -1,0 +1,6 @@
+patsy.cr
+========
+
+.. currentmodule:: patsy
+
+.. autofunction:: cr

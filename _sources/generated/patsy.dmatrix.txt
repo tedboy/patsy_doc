@@ -1,0 +1,6 @@
+patsy.dmatrix
+=============
+
+.. currentmodule:: patsy
+
+.. autofunction:: dmatrix

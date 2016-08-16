@@ -1,0 +1,6 @@
+patsy.DesignMatrix.getfield
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.getfield

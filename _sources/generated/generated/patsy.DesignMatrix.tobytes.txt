@@ -1,0 +1,6 @@
+patsy.DesignMatrix.tobytes
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.tobytes

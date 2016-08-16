@@ -1,0 +1,6 @@
+patsy.DesignMatrix.flatten
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.flatten

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.repeat
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.repeat

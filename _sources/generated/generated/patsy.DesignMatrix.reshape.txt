@@ -1,0 +1,6 @@
+patsy.DesignMatrix.reshape
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.reshape

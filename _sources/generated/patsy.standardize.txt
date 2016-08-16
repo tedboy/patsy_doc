@@ -1,0 +1,6 @@
+patsy.standardize
+=================
+
+.. currentmodule:: patsy
+
+.. autofunction:: standardize

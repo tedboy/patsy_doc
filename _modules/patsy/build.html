@@ -1,0 +1,1173 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.build &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.build</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.build</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2015 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># This file defines the core design matrix building functions.</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;design_matrix_builders&quot;</span><span class="p">,</span> <span class="s2">&quot;build_design_matrices&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="p">(</span><span class="n">guess_categorical</span><span class="p">,</span>
+                               <span class="n">CategoricalSniffer</span><span class="p">,</span>
+                               <span class="n">categorical_to_int</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
+                        <span class="n">have_pandas</span><span class="p">,</span> <span class="n">asarray_or_pandas</span><span class="p">,</span>
+                        <span class="n">safe_issubdtype</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.design_info</span> <span class="k">import</span> <span class="p">(</span><span class="n">DesignMatrix</span><span class="p">,</span> <span class="n">DesignInfo</span><span class="p">,</span>
+                               <span class="n">FactorInfo</span><span class="p">,</span> <span class="n">SubtermInfo</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.redundancy</span> <span class="k">import</span> <span class="n">pick_contrasts_for_term</span>
+<span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="k">import</span> <span class="n">EvalEnvironment</span>
+<span class="kn">from</span> <span class="nn">patsy.contrasts</span> <span class="k">import</span> <span class="n">code_contrast_matrix</span><span class="p">,</span> <span class="n">Treatment</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">patsy.missing</span> <span class="k">import</span> <span class="n">NAAction</span>
+
+<span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="k">class</span> <span class="nc">_MockFactor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MOCKMOCK&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">env</span><span class="p">[</span><span class="s2">&quot;mock&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+
+<span class="k">def</span> <span class="nf">_max_allowed_dim</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">arr</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="n">dim</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;factor &#39;</span><span class="si">%s</span><span class="s2">&#39; evaluates to an </span><span class="si">%s</span><span class="s2">-dimensional array; I only &quot;</span>
+               <span class="s2">&quot;handle arrays with dimension &lt;= </span><span class="si">%s</span><span class="s2">&quot;</span>
+               <span class="o">%</span> <span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">arr</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__max_allowed_dim</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">()</span>
+    <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_max_allowed_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_max_allowed_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="mi">1</span><span class="p">]]]),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_max_allowed_dim</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="mi">1</span><span class="p">]]]),</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_eval_factor</span><span class="p">(</span><span class="n">factor_info</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">NA_action</span><span class="p">):</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">factor_info</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="c1"># Returns either a 2d ndarray, or a DataFrame, plus is_NA mask</span>
+    <span class="k">if</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;numerical&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">num_columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;when evaluating factor </span><span class="si">%s</span><span class="s2">, I got </span><span class="si">%s</span><span class="s2"> columns &quot;</span>
+                                <span class="s2">&quot;instead of the </span><span class="si">%s</span><span class="s2"> I was expecting&quot;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span>
+                                   <span class="n">factor_info</span><span class="o">.</span><span class="n">num_columns</span><span class="p">,</span>
+                                   <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                                <span class="n">factor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;when evaluating numeric factor </span><span class="si">%s</span><span class="s2">, &quot;</span>
+                             <span class="s2">&quot;I got non-numeric data of type &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">result</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                             <span class="n">factor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">NA_action</span><span class="o">.</span><span class="n">is_numerical_NA</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="c1"># returns either a 1d ndarray or a pandas.Series, plus is_NA mask</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">categorical_to_int</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">categories</span><span class="p">,</span> <span class="n">NA_action</span><span class="p">,</span>
+                                    <span class="n">origin</span><span class="o">=</span><span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__eval_factor_numerical</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">naa</span> <span class="o">=</span> <span class="n">NAAction</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">()</span>
+
+    <span class="n">fi1</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="p">{},</span> <span class="n">num_columns</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">fi1</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="n">f</span>
+    <span class="n">eval123</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">eval123</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">eval123</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="k">assert</span> <span class="n">is_NA</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="o">~</span><span class="n">is_NA</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">]]]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">fi2</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">_MockFactor</span><span class="p">(),</span> <span class="s2">&quot;numerical&quot;</span><span class="p">,</span>
+                     <span class="p">{},</span> <span class="n">num_columns</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">eval123321</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi2</span><span class="p">,</span>
+                                     <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]},</span>
+                                     <span class="n">naa</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">eval123321</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">eval123321</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="k">assert</span> <span class="n">is_NA</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="o">~</span><span class="n">is_NA</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]},</span> <span class="n">naa</span><span class="p">)</span>
+
+    <span class="n">ev_nan</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]},</span>
+                                 <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_types</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;NaN&quot;</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">is_NA</span><span class="p">,</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+    <span class="n">ev_nan</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]},</span>
+                                 <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_types</span><span class="o">=</span><span class="p">[]))</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">is_NA</span><span class="p">,</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="n">eval_ser</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span>
+                                   <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span>
+                                    <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                                                  <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])},</span>
+                                   <span class="n">naa</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_ser</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_ser</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_ser</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="n">eval_df1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span>
+                                   <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span>
+                                    <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]],</span>
+                                                     <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">])},</span>
+                                   <span class="n">naa</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_df1</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_df1</span><span class="p">,</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_df1</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="n">eval_df2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi2</span><span class="p">,</span>
+                                   <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span>
+                                    <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+                                                     <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">])},</span>
+                                   <span class="n">naa</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_df2</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_df2</span><span class="p">,</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">eval_df2</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+
+        <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span>
+                      <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi2</span><span class="p">,</span>
+                      <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])},</span>
+                      <span class="n">naa</span><span class="p">)</span>
+        <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span>
+                      <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span>
+                      <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span>
+                       <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+                                        <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">10</span><span class="p">])},</span>
+                      <span class="n">naa</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__eval_factor_categorical</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+    <span class="n">naa</span> <span class="o">=</span> <span class="n">NAAction</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">()</span>
+    <span class="n">fi1</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;categorical&quot;</span><span class="p">,</span>
+                     <span class="p">{},</span> <span class="n">num_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">fi1</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="n">f</span>
+    <span class="n">cat1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">cat1</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">cat1</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">C</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span>
+                  <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">C</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">])},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="n">bad_cat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="n">bad_cat</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">bad_cat</span><span class="p">},</span> <span class="n">naa</span><span class="p">)</span>
+
+    <span class="n">cat1_NA</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]},</span>
+                                  <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_types</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;None&quot;</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">is_NA</span><span class="p">,</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cat1_NA</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_eval_factor</span><span class="p">,</span> <span class="n">fi1</span><span class="p">,</span>
+                  <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]},</span> <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_types</span><span class="o">=</span><span class="p">[]))</span>
+
+    <span class="n">fi2</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">_MockFactor</span><span class="p">(),</span> <span class="s2">&quot;categorical&quot;</span><span class="p">,</span> <span class="p">{},</span>
+                     <span class="n">num_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+    <span class="n">cat2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]},</span> <span class="n">naa</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">cat2</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">4</span><span class="p">,)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">cat2</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+        <span class="n">cat_s</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">s</span><span class="p">},</span> <span class="n">naa</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cat_s</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cat_s</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cat_s</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+        <span class="n">sbool</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>
+        <span class="n">cat_sbool</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">fi2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;mock&quot;</span><span class="p">:</span> <span class="n">sbool</span><span class="p">},</span> <span class="n">naa</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cat_sbool</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cat_sbool</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">cat_sbool</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_column_combinations</span><span class="p">(</span><span class="n">columns_per_factor</span><span class="p">):</span>
+    <span class="c1"># For consistency with R, the left-most item iterates fastest:</span>
+    <span class="n">iterators</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">columns_per_factor</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">reversed_combo</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">iterators</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">reversed_combo</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">test__column_combinations</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">_column_combinations</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span> <span class="o">==</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                                  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                                                  <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                                  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                                  <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                                  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">_column_combinations</span><span class="p">([</span><span class="mi">3</span><span class="p">]))</span> <span class="o">==</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)]</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">_column_combinations</span><span class="p">([]))</span> <span class="o">==</span> <span class="p">[()]</span>
+
+<span class="k">def</span> <span class="nf">_subterm_column_combinations</span><span class="p">(</span><span class="n">factor_infos</span><span class="p">,</span> <span class="n">subterm</span><span class="p">):</span>
+    <span class="n">columns_per_factor</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">subterm</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">subterm</span><span class="o">.</span><span class="n">contrast_matrices</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">subterm</span><span class="o">.</span><span class="n">contrast_matrices</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">num_columns</span>
+        <span class="n">columns_per_factor</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_column_combinations</span><span class="p">(</span><span class="n">columns_per_factor</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_subterm_column_names_iter</span><span class="p">(</span><span class="n">factor_infos</span><span class="p">,</span> <span class="n">subterm</span><span class="p">):</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">column_idxs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">_subterm_column_combinations</span><span class="p">(</span><span class="n">factor_infos</span><span class="p">,</span> <span class="n">subterm</span><span class="p">)):</span>
+        <span class="n">name_pieces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">column_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subterm</span><span class="o">.</span><span class="n">factors</span><span class="p">,</span> <span class="n">column_idxs</span><span class="p">):</span>
+            <span class="n">fi</span> <span class="o">=</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">fi</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;numerical&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fi</span><span class="o">.</span><span class="n">num_columns</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">name_pieces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">[</span><span class="si">%s</span><span class="s2">]&quot;</span>
+                                       <span class="o">%</span> <span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">column_idx</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">column_idx</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="n">name_pieces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">fi</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span>
+                <span class="n">contrast</span> <span class="o">=</span> <span class="n">subterm</span><span class="o">.</span><span class="n">contrast_matrices</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="n">contrast</span><span class="o">.</span><span class="n">column_suffixes</span><span class="p">[</span><span class="n">column_idx</span><span class="p">]</span>
+                <span class="n">name_pieces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">suffix</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name_pieces</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s2">&quot;Intercept&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name_pieces</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">total</span> <span class="o">==</span> <span class="n">subterm</span><span class="o">.</span><span class="n">num_columns</span>
+
+<span class="k">def</span> <span class="nf">_build_subterm</span><span class="p">(</span><span class="n">subterm</span><span class="p">,</span> <span class="n">factor_infos</span><span class="p">,</span> <span class="n">factor_values</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">subterm</span><span class="o">.</span><span class="n">num_columns</span> <span class="o">==</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">column_idxs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">_subterm_column_combinations</span><span class="p">(</span><span class="n">factor_infos</span><span class="p">,</span> <span class="n">subterm</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">column_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subterm</span><span class="o">.</span><span class="n">factors</span><span class="p">,</span> <span class="n">column_idxs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span><span class="p">:</span>
+                <span class="n">contrast</span> <span class="o">=</span> <span class="n">subterm</span><span class="o">.</span><span class="n">contrast_matrices</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">factor_values</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;can&#39;t build a design matrix &quot;</span>
+                                     <span class="s2">&quot;containing missing values&quot;</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+                <span class="n">out</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">contrast</span><span class="o">.</span><span class="n">matrix</span><span class="p">[</span><span class="n">factor_values</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span>
+                                             <span class="n">column_idx</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;numerical&quot;</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">factor_values</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="o">==</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">num_columns</span><span class="p">)</span>
+                <span class="n">out</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">factor_values</span><span class="p">[</span><span class="n">factor</span><span class="p">][:,</span> <span class="n">column_idx</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">test__subterm_column_names_iter_and__build_subterm</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">patsy.contrasts</span> <span class="k">import</span> <span class="n">ContrastMatrix</span>
+    <span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;f1&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;f2&quot;</span><span class="p">)</span>
+    <span class="n">f3</span> <span class="o">=</span> <span class="n">_MockFactor</span><span class="p">(</span><span class="s2">&quot;f3&quot;</span><span class="p">)</span>
+    <span class="n">contrast</span> <span class="o">=</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+                                        <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]),</span>
+                              <span class="p">[</span><span class="s2">&quot;[c1]&quot;</span><span class="p">,</span> <span class="s2">&quot;[c2]&quot;</span><span class="p">])</span>
+
+    <span class="n">factor_infos1</span> <span class="o">=</span> <span class="p">{</span><span class="n">f1</span><span class="p">:</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="p">{},</span>
+                                    <span class="n">num_columns</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+                     <span class="n">f2</span><span class="p">:</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span> <span class="s2">&quot;categorical&quot;</span><span class="p">,</span> <span class="p">{},</span>
+                                    <span class="n">num_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]),</span>
+                     <span class="n">f3</span><span class="p">:</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f3</span><span class="p">,</span> <span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="p">{},</span>
+                                    <span class="n">num_columns</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+                     <span class="p">}</span>
+    <span class="n">contrast_matrices</span> <span class="o">=</span> <span class="p">{</span><span class="n">f2</span><span class="p">:</span> <span class="n">contrast</span><span class="p">}</span>
+    <span class="n">subterm1</span> <span class="o">=</span> <span class="n">SubtermInfo</span><span class="p">([</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">f3</span><span class="p">],</span> <span class="n">contrast_matrices</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_subterm_column_names_iter</span><span class="p">(</span><span class="n">factor_infos1</span><span class="p">,</span> <span class="n">subterm1</span><span class="p">))</span>
+            <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;f1:f2[c1]:f3&quot;</span><span class="p">,</span> <span class="s2">&quot;f1:f2[c2]:f3&quot;</span><span class="p">])</span>
+
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">_build_subterm</span><span class="p">(</span><span class="n">subterm1</span><span class="p">,</span> <span class="n">factor_infos1</span><span class="p">,</span>
+                   <span class="p">{</span><span class="n">f1</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="n">f2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                    <span class="n">f3</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">])},</span>
+                   <span class="n">mat</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">*</span> <span class="mf">7.5</span><span class="p">],</span>
+                             <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
+                             <span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+    <span class="c1"># Check that missing categorical values blow up</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_build_subterm</span><span class="p">,</span> <span class="n">subterm1</span><span class="p">,</span> <span class="n">factor_infos1</span><span class="p">,</span>
+                  <span class="p">{</span><span class="n">f1</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                   <span class="n">f2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                   <span class="n">f3</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">])},</span>
+                  <span class="n">mat</span><span class="p">)</span>
+
+    <span class="n">factor_infos2</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">factor_infos1</span><span class="p">)</span>
+    <span class="n">factor_infos2</span><span class="p">[</span><span class="n">f1</span><span class="p">]</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="s2">&quot;numerical&quot;</span><span class="p">,</span> <span class="p">{},</span>
+                                   <span class="n">num_columns</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">subterm2</span> <span class="o">=</span> <span class="n">SubtermInfo</span><span class="p">([</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">f3</span><span class="p">],</span> <span class="n">contrast_matrices</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_subterm_column_names_iter</span><span class="p">(</span><span class="n">factor_infos2</span><span class="p">,</span> <span class="n">subterm2</span><span class="p">))</span>
+            <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;f1[0]:f2[c1]:f3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;f1[1]:f2[c1]:f3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;f1[0]:f2[c2]:f3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;f1[1]:f2[c2]:f3&quot;</span><span class="p">])</span>
+
+    <span class="n">mat2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">_build_subterm</span><span class="p">(</span><span class="n">subterm2</span><span class="p">,</span> <span class="n">factor_infos2</span><span class="p">,</span>
+                   <span class="p">{</span><span class="n">f1</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]),</span>
+                    <span class="n">f2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                    <span class="n">f3</span><span class="p">:</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mf">7.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">])},</span>
+                   <span class="n">mat2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mat2</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">*</span> <span class="mf">7.5</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mf">7.5</span><span class="p">],</span>
+                              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">2</span><span class="p">],</span>
+                              <span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">6</span> <span class="o">*</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+
+    <span class="n">subterm_int</span> <span class="o">=</span> <span class="n">SubtermInfo</span><span class="p">([],</span> <span class="p">{},</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">_subterm_column_names_iter</span><span class="p">({},</span> <span class="n">subterm_int</span><span class="p">))</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;Intercept&quot;</span><span class="p">]</span>
+
+    <span class="n">mat3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">_build_subterm</span><span class="p">(</span><span class="n">subterm_int</span><span class="p">,</span> <span class="p">{},</span>
+                   <span class="p">{</span><span class="n">f1</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">f2</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">f3</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span>
+                   <span class="n">mat3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mat3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_factors_memorize</span><span class="p">(</span><span class="n">factors</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">):</span>
+    <span class="c1"># First, start off the memorization process by setting up each factor&#39;s</span>
+    <span class="c1"># state and finding out how many passes it will need:</span>
+    <span class="n">factor_states</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">passes_needed</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">which_pass</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">memorize_passes_needed</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">)</span>
+        <span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="n">passes_needed</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">which_pass</span>
+    <span class="c1"># Now, cycle through the data until all the factors have finished</span>
+    <span class="c1"># memorizing everything:</span>
+    <span class="n">memorize_needed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">passes</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">passes_needed</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">passes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">memorize_needed</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+    <span class="n">which_pass</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">memorize_needed</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_iter_maker</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">memorize_needed</span><span class="p">:</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+                <span class="n">factor</span><span class="o">.</span><span class="n">memorize_chunk</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">memorize_needed</span><span class="p">):</span>
+            <span class="n">factor</span><span class="o">.</span><span class="n">memorize_finish</span><span class="p">(</span><span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span> <span class="n">which_pass</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">which_pass</span> <span class="o">==</span> <span class="n">passes_needed</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">memorize_needed</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+        <span class="n">which_pass</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">factor_states</span>
+
+<span class="k">def</span> <span class="nf">test__factors_memorize</span><span class="p">():</span>
+    <span class="k">class</span> <span class="nc">MockFactor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requested_passes</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_requested_passes</span> <span class="o">=</span> <span class="n">requested_passes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">token</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_in_pass</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_seen_passes</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span> <span class="nf">memorize_passes_needed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">):</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;calls&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_requested_passes</span>
+
+        <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;calls&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;memorize_chunk&quot;</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">))</span>
+            <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;chunk&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_in_pass</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_in_pass</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">):</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">&quot;calls&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_chunk_in_pass</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">class</span> <span class="nc">Data</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="n">CHUNKS</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calls</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;chunk&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CHUNKS</span><span class="p">)]</span>
+        <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calls</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">Data</span><span class="p">()</span>
+    <span class="n">f0</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;f0&quot;</span><span class="p">)</span>
+    <span class="n">f1</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;f1&quot;</span><span class="p">)</span>
+    <span class="n">f2a</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;f2a&quot;</span><span class="p">)</span>
+    <span class="n">f2b</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;f2b&quot;</span><span class="p">)</span>
+    <span class="n">factor_states</span> <span class="o">=</span> <span class="n">_factors_memorize</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">f0</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2a</span><span class="p">,</span> <span class="n">f2b</span><span class="p">]),</span> <span class="n">data</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">calls</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">mem_chunks0</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;memorize_chunk&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">CHUNKS</span>
+    <span class="n">mem_chunks1</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;memorize_chunk&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">CHUNKS</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">f0</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;f0&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="n">f1</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="n">mem_chunks0</span> <span class="o">+</span> <span class="p">[(</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span>
+            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;f1&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="n">f2a</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="n">mem_chunks0</span> <span class="o">+</span> <span class="p">[(</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+                     <span class="o">+</span> <span class="n">mem_chunks1</span> <span class="o">+</span> <span class="p">[(</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;f2a&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="n">f2b</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="n">mem_chunks0</span> <span class="o">+</span> <span class="p">[(</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+                     <span class="o">+</span> <span class="n">mem_chunks1</span> <span class="o">+</span> <span class="p">[(</span><span class="s2">&quot;memorize_finish&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+            <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;f2b&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="k">assert</span> <span class="n">factor_states</span> <span class="o">==</span> <span class="n">expected</span>
+
+<span class="k">def</span> <span class="nf">_examine_factor_types</span><span class="p">(</span><span class="n">factors</span><span class="p">,</span> <span class="n">factor_states</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">NA_action</span><span class="p">):</span>
+    <span class="n">num_column_counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">cat_sniffers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">examine_needed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">factors</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_iter_maker</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">examine_needed</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">cat_sniffers</span> <span class="ow">or</span> <span class="n">guess_categorical</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">factor</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cat_sniffers</span><span class="p">:</span>
+                    <span class="n">cat_sniffers</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">CategoricalSniffer</span><span class="p">(</span><span class="n">NA_action</span><span class="p">,</span>
+                                                              <span class="n">factor</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+                <span class="n">done</span> <span class="o">=</span> <span class="n">cat_sniffers</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span><span class="o">.</span><span class="n">sniff</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                    <span class="n">examine_needed</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Numeric</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">_max_allowed_dim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">factor</span><span class="p">)</span>
+                <span class="n">column_count</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">num_column_counts</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_count</span>
+                <span class="n">examine_needed</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">examine_needed</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="c1"># Pull out the levels</span>
+    <span class="n">cat_levels_contrasts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">sniffer</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">cat_sniffers</span><span class="p">):</span>
+        <span class="n">cat_levels_contrasts</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">sniffer</span><span class="o">.</span><span class="n">levels_contrast</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">num_column_counts</span><span class="p">,</span> <span class="n">cat_levels_contrasts</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__examine_factor_types</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+    <span class="k">class</span> <span class="nc">MockFactor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c1"># You should check this using &#39;is&#39;, not &#39;==&#39;</span>
+            <span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;MOCK&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">state</span><span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;MOCK MOCK&quot;</span>
+
+    <span class="c1"># This hacky class can only be iterated over once, but it keeps track of</span>
+    <span class="c1"># how far it got.</span>
+    <span class="k">class</span> <span class="nc">DataIterMaker</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">StopIteration</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i</span>
+        <span class="n">__next__</span> <span class="o">=</span> <span class="nb">next</span>
+
+    <span class="n">num_1dim</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">num_1col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">num_4col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">categ_1col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">bool_1col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">string_1col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">object_1col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">object_levels</span> <span class="o">=</span> <span class="p">(</span><span class="nb">object</span><span class="p">(),</span> <span class="nb">object</span><span class="p">(),</span> <span class="nb">object</span><span class="p">())</span>
+    <span class="n">factor_states</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">num_1dim</span><span class="p">:</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]),</span>
+        <span class="n">num_1col</span><span class="p">:</span> <span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">]]),</span>
+        <span class="n">num_4col</span><span class="p">:</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))),</span>
+        <span class="n">categ_1col</span><span class="p">:</span> <span class="p">(</span><span class="n">C</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span>
+                       <span class="n">contrast</span><span class="o">=</span><span class="s2">&quot;MOCK CONTRAST&quot;</span><span class="p">),</span>
+                     <span class="n">C</span><span class="p">([</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span>
+                       <span class="n">contrast</span><span class="o">=</span><span class="s2">&quot;MOCK CONTRAST&quot;</span><span class="p">)),</span>
+        <span class="n">bool_1col</span><span class="p">:</span> <span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]),</span>
+        <span class="c1"># It has to read through all the data to see all the possible levels:</span>
+        <span class="n">string_1col</span><span class="p">:</span> <span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]),</span>
+        <span class="n">object_1col</span><span class="p">:</span> <span class="p">([</span><span class="n">object_levels</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">object_levels</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="n">it</span> <span class="o">=</span> <span class="n">DataIterMaker</span><span class="p">()</span>
+    <span class="p">(</span><span class="n">num_column_counts</span><span class="p">,</span> <span class="n">cat_levels_contrasts</span><span class="p">,</span>
+     <span class="p">)</span> <span class="o">=</span> <span class="n">_examine_factor_types</span><span class="p">(</span><span class="n">factor_states</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">factor_states</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span>
+                               <span class="n">NAAction</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">i</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">num_column_counts</span> <span class="o">==</span> <span class="p">{</span><span class="n">num_1dim</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_1col</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_4col</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="n">cat_levels_contrasts</span> <span class="o">==</span> <span class="p">{</span>
+        <span class="n">categ_1col</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="s2">&quot;MOCK CONTRAST&quot;</span><span class="p">),</span>
+        <span class="n">bool_1col</span><span class="p">:</span> <span class="p">((</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">string_1col</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">object_1col</span><span class="p">:</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">object_levels</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">id</span><span class="p">)),</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Check that it doesn&#39;t read through all the data if that&#39;s not necessary:</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="n">DataIterMaker</span><span class="p">()</span>
+    <span class="n">no_read_necessary</span> <span class="o">=</span> <span class="p">[</span><span class="n">num_1dim</span><span class="p">,</span> <span class="n">num_1col</span><span class="p">,</span> <span class="n">num_4col</span><span class="p">,</span> <span class="n">categ_1col</span><span class="p">,</span> <span class="n">bool_1col</span><span class="p">]</span>
+    <span class="p">(</span><span class="n">num_column_counts</span><span class="p">,</span> <span class="n">cat_levels_contrasts</span><span class="p">,</span>
+     <span class="p">)</span> <span class="o">=</span> <span class="n">_examine_factor_types</span><span class="p">(</span><span class="n">no_read_necessary</span><span class="p">,</span> <span class="n">factor_states</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span>
+                               <span class="n">NAAction</span><span class="p">())</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">num_column_counts</span> <span class="o">==</span> <span class="p">{</span><span class="n">num_1dim</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_1col</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_4col</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="n">cat_levels_contrasts</span> <span class="o">==</span> <span class="p">{</span>
+        <span class="n">categ_1col</span><span class="p">:</span> <span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="s2">&quot;MOCK CONTRAST&quot;</span><span class="p">),</span>
+        <span class="n">bool_1col</span><span class="p">:</span> <span class="p">((</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="c1"># Illegal inputs:</span>
+    <span class="n">bool_3col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">num_3dim</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="c1"># no such thing as a multi-dimensional Categorical</span>
+    <span class="c1"># categ_3dim = MockFactor()</span>
+    <span class="n">string_3col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">object_3col</span> <span class="o">=</span> <span class="n">MockFactor</span><span class="p">()</span>
+    <span class="n">illegal_factor_states</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">num_3dim</span><span class="p">:</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))),</span>
+        <span class="n">string_3col</span><span class="p">:</span> <span class="p">([[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">]],</span> <span class="p">[[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]]),</span>
+        <span class="n">object_3col</span><span class="p">:</span> <span class="p">([[[</span><span class="nb">object</span><span class="p">()]]],</span> <span class="p">[[[</span><span class="nb">object</span><span class="p">()]]]),</span>
+        <span class="p">}</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="k">for</span> <span class="n">illegal_factor</span> <span class="ow">in</span> <span class="n">illegal_factor_states</span><span class="p">:</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="n">DataIterMaker</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_examine_factor_types</span><span class="p">([</span><span class="n">illegal_factor</span><span class="p">],</span> <span class="n">illegal_factor_states</span><span class="p">,</span> <span class="n">it</span><span class="p">,</span>
+                                  <span class="n">NAAction</span><span class="p">())</span>
+        <span class="k">except</span> <span class="n">PatsyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="n">illegal_factor</span><span class="o">.</span><span class="n">origin</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span>
+
+<span class="k">def</span> <span class="nf">_make_subterm_infos</span><span class="p">(</span><span class="n">terms</span><span class="p">,</span>
+                        <span class="n">num_column_counts</span><span class="p">,</span>
+                        <span class="n">cat_levels_contrasts</span><span class="p">):</span>
+    <span class="c1"># Sort each term into a bucket based on the set of numeric factors it</span>
+    <span class="c1"># contains:</span>
+    <span class="n">term_buckets</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">bucket_ordering</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">terms</span><span class="p">:</span>
+        <span class="n">num_factors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">num_column_counts</span><span class="p">:</span>
+                <span class="n">num_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">num_factors</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bucket</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">term_buckets</span><span class="p">:</span>
+            <span class="n">bucket_ordering</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="n">term_buckets</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+    <span class="c1"># Special rule: if there is a no-numerics bucket, then it always comes</span>
+    <span class="c1"># first:</span>
+    <span class="k">if</span> <span class="nb">frozenset</span><span class="p">()</span> <span class="ow">in</span> <span class="n">term_buckets</span><span class="p">:</span>
+        <span class="n">bucket_ordering</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">())</span>
+        <span class="n">bucket_ordering</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">())</span>
+    <span class="n">term_to_subterm_infos</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="n">new_term_order</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Then within each bucket, work out which sort of contrasts we want to use</span>
+    <span class="c1"># for each term to avoid redundancy</span>
+    <span class="k">for</span> <span class="n">bucket</span> <span class="ow">in</span> <span class="n">bucket_ordering</span><span class="p">:</span>
+        <span class="n">bucket_terms</span> <span class="o">=</span> <span class="n">term_buckets</span><span class="p">[</span><span class="n">bucket</span><span class="p">]</span>
+        <span class="c1"># Sort by degree of interaction</span>
+        <span class="n">bucket_terms</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">factors</span><span class="p">))</span>
+        <span class="n">new_term_order</span> <span class="o">+=</span> <span class="n">bucket_terms</span>
+        <span class="n">used_subterms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">bucket_terms</span><span class="p">:</span>
+            <span class="n">subterm_infos</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">factor_codings</span> <span class="o">=</span> <span class="n">pick_contrasts_for_term</span><span class="p">(</span><span class="n">term</span><span class="p">,</span>
+                                                     <span class="n">num_column_counts</span><span class="p">,</span>
+                                                     <span class="n">used_subterms</span><span class="p">)</span>
+            <span class="c1"># Construct one SubtermInfo for each subterm</span>
+            <span class="k">for</span> <span class="n">factor_coding</span> <span class="ow">in</span> <span class="n">factor_codings</span><span class="p">:</span>
+                <span class="n">subterm_factors</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">contrast_matrices</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">subterm_columns</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="c1"># In order to preserve factor ordering information, the</span>
+                <span class="c1"># coding_for_term just returns dicts, and we refer to</span>
+                <span class="c1"># the original factors to figure out which are included in</span>
+                <span class="c1"># each subterm, and in what order</span>
+                <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+                    <span class="c1"># Numeric factors are included in every subterm</span>
+                    <span class="k">if</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">num_column_counts</span><span class="p">:</span>
+                        <span class="n">subterm_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+                        <span class="n">subterm_columns</span> <span class="o">*=</span> <span class="n">num_column_counts</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factor_coding</span><span class="p">:</span>
+                        <span class="n">subterm_factors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+                        <span class="n">levels</span><span class="p">,</span> <span class="n">contrast</span> <span class="o">=</span> <span class="n">cat_levels_contrasts</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+                        <span class="c1"># This is where the default coding is set to</span>
+                        <span class="c1"># Treatment:</span>
+                        <span class="n">coded</span> <span class="o">=</span> <span class="n">code_contrast_matrix</span><span class="p">(</span><span class="n">factor_coding</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span>
+                                                     <span class="n">levels</span><span class="p">,</span> <span class="n">contrast</span><span class="p">,</span>
+                                                     <span class="n">default</span><span class="o">=</span><span class="n">Treatment</span><span class="p">)</span>
+                        <span class="n">contrast_matrices</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">coded</span>
+                        <span class="n">subterm_columns</span> <span class="o">*=</span> <span class="n">coded</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">subterm_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SubtermInfo</span><span class="p">(</span><span class="n">subterm_factors</span><span class="p">,</span>
+                                                       <span class="n">contrast_matrices</span><span class="p">,</span>
+                                                       <span class="n">subterm_columns</span><span class="p">))</span>
+            <span class="n">term_to_subterm_infos</span><span class="p">[</span><span class="n">term</span><span class="p">]</span> <span class="o">=</span> <span class="n">subterm_infos</span>
+    <span class="k">assert</span> <span class="n">new_term_order</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">term_to_subterm_infos</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">term_to_subterm_infos</span>
+
+<div class="viewcode-block" id="design_matrix_builders"><a class="viewcode-back" href="../../generated/patsy.design_matrix_builders.html#patsy.design_matrix_builders">[docs]</a><span class="k">def</span> <span class="nf">design_matrix_builders</span><span class="p">(</span><span class="n">termlists</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                           <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct several :class:`DesignInfo` objects from termlists.</span>
+
+<span class="sd">    This is one of Patsy&#39;s fundamental functions. This function and</span>
+<span class="sd">    :func:`build_design_matrices` together form the API to the core formula</span>
+<span class="sd">    interpretation machinery.</span>
+
+<span class="sd">    :arg termlists: A list of termlists, where each termlist is a list of</span>
+<span class="sd">      :class:`Term` objects which together specify a design matrix.</span>
+<span class="sd">    :arg data_iter_maker: A zero-argument callable which returns an iterator</span>
+<span class="sd">      over dict-like data objects. This must be a callable rather than a</span>
+<span class="sd">      simple iterator because sufficiently complex formulas may require</span>
+<span class="sd">      multiple passes over the data (e.g. if there are nested stateful</span>
+<span class="sd">      transforms).</span>
+<span class="sd">    :arg eval_env: Either a :class:`EvalEnvironment` which will be used to</span>
+<span class="sd">      look up any variables referenced in `termlists` that cannot be</span>
+<span class="sd">      found in `data_iter_maker`, or else a depth represented as an</span>
+<span class="sd">      integer which will be passed to :meth:`EvalEnvironment.capture`.</span>
+<span class="sd">      ``eval_env=0`` means to use the context of the function calling</span>
+<span class="sd">      :func:`design_matrix_builders` for lookups. If calling this function</span>
+<span class="sd">      from a library, you probably want ``eval_env=1``, which means that</span>
+<span class="sd">      variables should be resolved in *your* caller&#39;s namespace.</span>
+<span class="sd">    :arg NA_action: An :class:`NAAction` object or string, used to determine</span>
+<span class="sd">      what values count as &#39;missing&#39; for purposes of determining the levels of</span>
+<span class="sd">      categorical factors.</span>
+<span class="sd">    :returns: A list of :class:`DesignInfo` objects, one for each</span>
+<span class="sd">      termlist passed in.</span>
+
+<span class="sd">    This function performs zero or more iterations over the data in order to</span>
+<span class="sd">    sniff out any necessary information about factor types, set up stateful</span>
+<span class="sd">    transforms, pick column names, etc.</span>
+
+<span class="sd">    See :ref:`formulas` for details.</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">       The ``NA_action`` argument.</span>
+<span class="sd">    .. versionadded:: 0.4.0</span>
+<span class="sd">       The ``eval_env`` argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># People upgrading from versions prior to 0.4.0 could potentially have</span>
+    <span class="c1"># passed NA_action as the 3rd positional argument. Fortunately</span>
+    <span class="c1"># EvalEnvironment.capture only accepts int and EvalEnvironment objects,</span>
+    <span class="c1"># and we improved its error messages to make this clear.</span>
+    <span class="n">eval_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">NA_action</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">NA_action</span> <span class="o">=</span> <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_action</span><span class="p">)</span>
+    <span class="n">all_factors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">termlist</span> <span class="ow">in</span> <span class="n">termlists</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">termlist</span><span class="p">:</span>
+            <span class="n">all_factors</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">term</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+    <span class="n">factor_states</span> <span class="o">=</span> <span class="n">_factors_memorize</span><span class="p">(</span><span class="n">all_factors</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">)</span>
+    <span class="c1"># Now all the factors have working eval methods, so we can evaluate them</span>
+    <span class="c1"># on some data to find out what type of data they return.</span>
+    <span class="p">(</span><span class="n">num_column_counts</span><span class="p">,</span>
+     <span class="n">cat_levels_contrasts</span><span class="p">)</span> <span class="o">=</span> <span class="n">_examine_factor_types</span><span class="p">(</span><span class="n">all_factors</span><span class="p">,</span>
+                                                   <span class="n">factor_states</span><span class="p">,</span>
+                                                   <span class="n">data_iter_maker</span><span class="p">,</span>
+                                                   <span class="n">NA_action</span><span class="p">)</span>
+    <span class="c1"># Now we need the factor infos, which encapsulate the knowledge of</span>
+    <span class="c1"># how to turn any given factor into a chunk of data:</span>
+    <span class="n">factor_infos</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">all_factors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">num_column_counts</span><span class="p">:</span>
+            <span class="n">fi</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span>
+                            <span class="s2">&quot;numerical&quot;</span><span class="p">,</span>
+                            <span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span>
+                            <span class="n">num_columns</span><span class="o">=</span><span class="n">num_column_counts</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span>
+                            <span class="n">categories</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">cat_levels_contrasts</span>
+            <span class="n">categories</span> <span class="o">=</span> <span class="n">cat_levels_contrasts</span><span class="p">[</span><span class="n">factor</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">fi</span> <span class="o">=</span> <span class="n">FactorInfo</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span>
+                            <span class="s2">&quot;categorical&quot;</span><span class="p">,</span>
+                            <span class="n">factor_states</span><span class="p">[</span><span class="n">factor</span><span class="p">],</span>
+                            <span class="n">num_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">categories</span><span class="o">=</span><span class="n">categories</span><span class="p">)</span>
+        <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">fi</span>
+    <span class="c1"># And now we can construct the DesignInfo for each termlist:</span>
+    <span class="n">design_infos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">termlist</span> <span class="ow">in</span> <span class="n">termlists</span><span class="p">:</span>
+        <span class="n">term_to_subterm_infos</span> <span class="o">=</span> <span class="n">_make_subterm_infos</span><span class="p">(</span><span class="n">termlist</span><span class="p">,</span>
+                                                    <span class="n">num_column_counts</span><span class="p">,</span>
+                                                    <span class="n">cat_levels_contrasts</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">term_to_subterm_infos</span><span class="p">,</span> <span class="n">OrderedDict</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">term_to_subterm_infos</span><span class="p">)</span> <span class="o">==</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">termlist</span><span class="p">)</span>
+        <span class="n">this_design_factor_infos</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">termlist</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">factors</span><span class="p">:</span>
+                <span class="n">this_design_factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">factor_infos</span><span class="p">[</span><span class="n">factor</span><span class="p">]</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">subterms</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span><span class="n">term_to_subterm_infos</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">subterm</span> <span class="ow">in</span> <span class="n">subterms</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">column_name</span> <span class="ow">in</span> <span class="n">_subterm_column_names_iter</span><span class="p">(</span>
+                        <span class="n">factor_infos</span><span class="p">,</span> <span class="n">subterm</span><span class="p">):</span>
+                    <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_name</span><span class="p">)</span>
+        <span class="n">design_infos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DesignInfo</span><span class="p">(</span><span class="n">column_names</span><span class="p">,</span>
+                                       <span class="n">factor_infos</span><span class="o">=</span><span class="n">this_design_factor_infos</span><span class="p">,</span>
+                                       <span class="n">term_codings</span><span class="o">=</span><span class="n">term_to_subterm_infos</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">design_infos</span></div>
+
+<span class="k">def</span> <span class="nf">_build_design_matrix</span><span class="p">(</span><span class="n">design_info</span><span class="p">,</span> <span class="n">factor_info_to_values</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+    <span class="n">factor_to_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">need_reshape</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">num_rows</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">factor_info</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">factor_info_to_values</span><span class="p">):</span>
+        <span class="c1"># It&#39;s possible that the same factor appears in multiple different</span>
+        <span class="c1"># FactorInfo objects (e.g. if someone is simultaneously building two</span>
+        <span class="c1"># DesignInfo objects that started out as part of different</span>
+        <span class="c1"># formulas). Skip any factor_info that is not our expected</span>
+        <span class="c1"># factor_info.</span>
+        <span class="k">if</span> <span class="n">design_info</span><span class="o">.</span><span class="n">factor_infos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">factor_info</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">factor_to_values</span><span class="p">[</span><span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">num_rows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">num_rows</span> <span class="o">==</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_rows</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">num_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># We have no dependence on the data -- e.g. an empty termlist, or</span>
+        <span class="c1"># only an intercept term.</span>
+        <span class="n">num_rows</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">need_reshape</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">design_info</span><span class="o">.</span><span class="n">column_names</span><span class="p">))</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">DesignMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">design_info</span><span class="p">)</span>
+    <span class="n">start_column</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">term</span><span class="p">,</span> <span class="n">subterms</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">design_info</span><span class="o">.</span><span class="n">term_codings</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">subterm</span> <span class="ow">in</span> <span class="n">subterms</span><span class="p">:</span>
+            <span class="n">end_column</span> <span class="o">=</span> <span class="n">start_column</span> <span class="o">+</span> <span class="n">subterm</span><span class="o">.</span><span class="n">num_columns</span>
+            <span class="n">m_slice</span> <span class="o">=</span> <span class="n">m</span><span class="p">[:,</span> <span class="n">start_column</span><span class="p">:</span><span class="n">end_column</span><span class="p">]</span>
+            <span class="n">_build_subterm</span><span class="p">(</span><span class="n">subterm</span><span class="p">,</span> <span class="n">design_info</span><span class="o">.</span><span class="n">factor_infos</span><span class="p">,</span>
+                           <span class="n">factor_to_values</span><span class="p">,</span> <span class="n">m_slice</span><span class="p">)</span>
+            <span class="n">start_column</span> <span class="o">=</span> <span class="n">end_column</span>
+    <span class="k">assert</span> <span class="n">start_column</span> <span class="o">==</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">need_reshape</span><span class="p">,</span> <span class="n">m</span>
+
+<span class="k">class</span> <span class="nc">_CheckMatch</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">eq_fn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eq_fn</span> <span class="o">=</span> <span class="n">eq_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_desc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value_origin</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seen_value</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">seen_value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_value_desc</span> <span class="o">=</span> <span class="n">desc</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_value_origin</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eq_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">seen_value</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> mismatch between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span>
+                       <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value_desc</span><span class="p">,</span> <span class="n">desc</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot; (</span><span class="si">%r</span><span class="s2"> versus </span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">seen_value</span><span class="p">)</span>
+                <span class="c1"># XX FIXME: this is a case where having discontiguous Origins</span>
+                <span class="c1"># would be useful...</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+
+<div class="viewcode-block" id="build_design_matrices"><a class="viewcode-back" href="../../generated/patsy.build_design_matrices.html#patsy.build_design_matrices">[docs]</a><span class="k">def</span> <span class="nf">build_design_matrices</span><span class="p">(</span><span class="n">design_infos</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+                          <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span>
+                          <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;matrix&quot;</span><span class="p">,</span>
+                          <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Construct several design matrices from :class:`DesignMatrixBuilder`</span>
+<span class="sd">    objects.</span>
+
+<span class="sd">    This is one of Patsy&#39;s fundamental functions. This function and</span>
+<span class="sd">    :func:`design_matrix_builders` together form the API to the core formula</span>
+<span class="sd">    interpretation machinery.</span>
+
+<span class="sd">    :arg design_infos: A list of :class:`DesignInfo` objects describing the</span>
+<span class="sd">      design matrices to be built.</span>
+<span class="sd">    :arg data: A dict-like object which will be used to look up data.</span>
+<span class="sd">    :arg NA_action: What to do with rows that contain missing values. You can</span>
+<span class="sd">      ``&quot;drop&quot;`` them, ``&quot;raise&quot;`` an error, or for customization, pass an</span>
+<span class="sd">      :class:`NAAction` object. See :class:`NAAction` for details on what</span>
+<span class="sd">      values count as &#39;missing&#39; (and how to alter this).</span>
+<span class="sd">    :arg return_type: Either ``&quot;matrix&quot;`` or ``&quot;dataframe&quot;``. See below.</span>
+<span class="sd">    :arg dtype: The dtype of the returned matrix. Useful if you want to use</span>
+<span class="sd">      single-precision or extended-precision.</span>
+
+<span class="sd">    This function returns either a list of :class:`DesignMatrix` objects (for</span>
+<span class="sd">    ``return_type=&quot;matrix&quot;``) or a list of :class:`pandas.DataFrame` objects</span>
+<span class="sd">    (for ``return_type=&quot;dataframe&quot;``). In both cases, all returned design</span>
+<span class="sd">    matrices will have ``.design_info`` attributes containing the appropriate</span>
+<span class="sd">    :class:`DesignInfo` objects.</span>
+
+<span class="sd">    Note that unlike :func:`design_matrix_builders`, this function takes only</span>
+<span class="sd">    a simple data argument, not any kind of iterator. That&#39;s because this</span>
+<span class="sd">    function doesn&#39;t need a global view of the data -- everything that depends</span>
+<span class="sd">    on the whole data set is already encapsulated in the ``design_infos``. If</span>
+<span class="sd">    you are incrementally processing a large data set, simply call this</span>
+<span class="sd">    function for each chunk.</span>
+
+<span class="sd">    Index handling: This function always checks for indexes in the following</span>
+<span class="sd">    places:</span>
+
+<span class="sd">    * If ``data`` is a :class:`pandas.DataFrame`, its ``.index`` attribute.</span>
+<span class="sd">    * If any factors evaluate to a :class:`pandas.Series` or</span>
+<span class="sd">      :class:`pandas.DataFrame`, then their ``.index`` attributes.</span>
+
+<span class="sd">    If multiple indexes are found, they must be identical (same values in the</span>
+<span class="sd">    same order). If no indexes are found, then a default index is generated</span>
+<span class="sd">    using ``np.arange(num_rows)``. One way or another, we end up with a single</span>
+<span class="sd">    index for all the data. If ``return_type=&quot;dataframe&quot;``, then this index is</span>
+<span class="sd">    used as the index of the returned DataFrame objects. Examining this index</span>
+<span class="sd">    makes it possible to determine which rows were removed due to NAs.</span>
+
+<span class="sd">    Determining the number of rows in design matrices: This is not as obvious</span>
+<span class="sd">    as it might seem, because it&#39;s possible to have a formula like &quot;~ 1&quot; that</span>
+<span class="sd">    doesn&#39;t depend on the data (it has no factors). For this formula, it&#39;s</span>
+<span class="sd">    obvious what every row in the design matrix should look like (just the</span>
+<span class="sd">    value ``1``); but, how many rows like this should there be? To determine</span>
+<span class="sd">    the number of rows in a design matrix, this function always checks in the</span>
+<span class="sd">    following places:</span>
+
+<span class="sd">    * If ``data`` is a :class:`pandas.DataFrame`, then its number of rows.</span>
+<span class="sd">    * The number of entries in any factors present in any of the design</span>
+<span class="sd">    * matrices being built.</span>
+
+<span class="sd">    All these values much match. In particular, if this function is called to</span>
+<span class="sd">    generate multiple design matrices at once, then they must all have the</span>
+<span class="sd">    same number of rows.</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">       The ``NA_action`` argument.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">NA_action</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">NA_action</span> <span class="o">=</span> <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;pandas.DataFrame was requested, but pandas &quot;</span>
+                            <span class="s2">&quot;is not installed&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;matrix&quot;</span><span class="p">,</span> <span class="s2">&quot;dataframe&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;unrecognized output type </span><span class="si">%r</span><span class="s2">, should be &quot;</span>
+                            <span class="s2">&quot;&#39;matrix&#39; or &#39;dataframe&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">return_type</span><span class="p">,))</span>
+    <span class="c1"># Evaluate factors</span>
+    <span class="n">factor_info_to_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">factor_info_to_isNAs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">rows_checker</span> <span class="o">=</span> <span class="n">_CheckMatch</span><span class="p">(</span><span class="s2">&quot;Number of rows&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">index_checker</span> <span class="o">=</span> <span class="n">_CheckMatch</span><span class="p">(</span><span class="s2">&quot;Index&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">have_pandas</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">index_checker</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s2">&quot;data.index&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">rows_checker</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;data argument&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">design_info</span> <span class="ow">in</span> <span class="n">design_infos</span><span class="p">:</span>
+        <span class="c1"># We look at evaluators rather than factors here, because it might</span>
+        <span class="c1"># happen that we have the same factor twice, but with different</span>
+        <span class="c1"># memorized state.</span>
+        <span class="k">for</span> <span class="n">factor_info</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span><span class="n">design_info</span><span class="o">.</span><span class="n">factor_infos</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">factor_info</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">factor_info_to_values</span><span class="p">:</span>
+                <span class="n">value</span><span class="p">,</span> <span class="n">is_NA</span> <span class="o">=</span> <span class="n">_eval_factor</span><span class="p">(</span><span class="n">factor_info</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">NA_action</span><span class="p">)</span>
+                <span class="n">factor_info_to_isNAs</span><span class="p">[</span><span class="n">factor_info</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_NA</span>
+                <span class="c1"># value may now be a Series, DataFrame, or ndarray</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+                <span class="n">origin</span> <span class="o">=</span> <span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">origin</span>
+                <span class="n">rows_checker</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">have_pandas</span>
+                    <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">))):</span>
+                    <span class="n">index_checker</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+                <span class="c1"># Strategy: we work with raw ndarrays for doing the actual</span>
+                <span class="c1"># combining; DesignMatrixBuilder objects never sees pandas</span>
+                <span class="c1"># objects. Then at the end, if a DataFrame was requested, we</span>
+                <span class="c1"># convert. So every entry in this dict is either a 2-d array</span>
+                <span class="c1"># of floats, or a 1-d array of integers (representing</span>
+                <span class="c1"># categories).</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">factor_info_to_values</span><span class="p">[</span><span class="n">factor_info</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="c1"># Handle NAs</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">factor_info_to_values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">is_NAs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">factor_info_to_isNAs</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">origins</span> <span class="o">=</span> <span class="p">[</span><span class="n">factor_info</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">origin</span>
+               <span class="k">for</span> <span class="n">factor_info</span> <span class="ow">in</span> <span class="n">factor_info_to_values</span><span class="p">]</span>
+    <span class="n">pandas_index</span> <span class="o">=</span> <span class="n">index_checker</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">num_rows</span> <span class="o">=</span> <span class="n">rows_checker</span><span class="o">.</span><span class="n">value</span>
+    <span class="c1"># num_rows is None iff evaluator_to_values (and associated sets like</span>
+    <span class="c1"># &#39;values&#39;) are empty, i.e., we have no actual evaluators involved</span>
+    <span class="c1"># (formulas like &quot;~ 1&quot;).</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span> <span class="ow">and</span> <span class="n">num_rows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pandas_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pandas_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_rows</span><span class="p">)</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pandas_index</span><span class="p">)</span>
+        <span class="n">is_NAs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pandas_index</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))</span>
+        <span class="n">origins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="n">NA_action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="n">origins</span><span class="p">)</span>
+    <span class="c1"># NA_action may have changed the number of rows.</span>
+    <span class="k">if</span> <span class="n">new_values</span><span class="p">:</span>
+        <span class="n">num_rows</span> <span class="o">=</span> <span class="n">new_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span> <span class="ow">and</span> <span class="n">num_rows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pandas_index</span> <span class="o">=</span> <span class="n">new_values</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="n">factor_info_to_values</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">factor_info_to_values</span><span class="p">,</span> <span class="n">new_values</span><span class="p">))</span>
+    <span class="c1"># Build factor values into matrices</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">design_info</span> <span class="ow">in</span> <span class="n">design_infos</span><span class="p">:</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_build_design_matrix</span><span class="p">(</span><span class="n">design_info</span><span class="p">,</span>
+                                            <span class="n">factor_info_to_values</span><span class="p">,</span>
+                                            <span class="n">dtype</span><span class="p">))</span>
+    <span class="n">matrices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">need_reshape</span><span class="p">,</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">need_reshape</span><span class="p">:</span>
+            <span class="c1"># There is no data-dependence, at all -- a formula like &quot;1 ~ 1&quot;.</span>
+            <span class="c1"># In this case the builder just returns a single-row matrix, and</span>
+            <span class="c1"># we have to broadcast it vertically to the appropriate size. If</span>
+            <span class="c1"># we can figure out what that is...</span>
+            <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">num_rows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">matrix</span> <span class="o">=</span> <span class="n">DesignMatrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">num_rows</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                                      <span class="n">matrix</span><span class="o">.</span><span class="n">design_info</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span>
+                    <span class="s2">&quot;No design matrix has any non-trivial factors, &quot;</span>
+                    <span class="s2">&quot;the data object is not a DataFrame. &quot;</span>
+                    <span class="s2">&quot;I can&#39;t tell how many rows the design matrix should &quot;</span>
+                    <span class="s2">&quot;have!&quot;</span>
+                    <span class="p">)</span>
+        <span class="n">matrices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">have_pandas</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">matrix</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">matrices</span><span class="p">):</span>
+            <span class="n">di</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">design_info</span>
+            <span class="n">matrices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span>
+                                           <span class="n">columns</span><span class="o">=</span><span class="n">di</span><span class="o">.</span><span class="n">column_names</span><span class="p">,</span>
+                                           <span class="n">index</span><span class="o">=</span><span class="n">pandas_index</span><span class="p">)</span>
+            <span class="n">matrices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">design_info</span> <span class="o">=</span> <span class="n">di</span>
+    <span class="k">return</span> <span class="n">matrices</span></div>
+
+<span class="c1"># It should be possible to do just the factors -&gt; factor_infos stuff</span>
+<span class="c1"># alone, since that, well, makes logical sense to do.</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

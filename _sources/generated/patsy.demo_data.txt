@@ -1,0 +1,6 @@
+patsy.demo_data
+===============
+
+.. currentmodule:: patsy
+
+.. autofunction:: demo_data

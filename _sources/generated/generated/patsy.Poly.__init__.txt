@@ -1,0 +1,6 @@
+patsy.Poly.__init__
+===================
+
+.. currentmodule:: patsy
+
+.. automethod:: Poly.__init__

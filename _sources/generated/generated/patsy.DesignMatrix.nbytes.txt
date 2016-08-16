@@ -1,0 +1,6 @@
+patsy.DesignMatrix.nbytes
+=========================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.nbytes

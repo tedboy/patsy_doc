@@ -1,0 +1,23 @@
+patsy.Treatment
+===============
+
+.. currentmodule:: patsy
+.. autoclass:: Treatment
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Treatment.__init__
+   ~Treatment.code_with_intercept
+   ~Treatment.code_without_intercept
+
+
+
+
+

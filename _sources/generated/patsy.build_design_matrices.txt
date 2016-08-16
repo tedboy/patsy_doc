@@ -1,0 +1,6 @@
+patsy.build_design_matrices
+===========================
+
+.. currentmodule:: patsy
+
+.. autofunction:: build_design_matrices

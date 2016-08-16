@@ -1,0 +1,339 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1.2.3.2.3. patsy.DesignMatrix.ctypes &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="1.2.3. patsy.DesignMatrix" href="patsy.DesignMatrix.html"/>
+        <link rel="next" title="1.2.3.2.4. patsy.DesignMatrix.data" href="patsy.DesignMatrix.data.html"/>
+        <link rel="prev" title="1.2.3.2.2. patsy.DesignMatrix.base" href="patsy.DesignMatrix.base.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../patsy.html">1. patsy</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#functions">1.1. Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../patsy.html#classes">1.2. Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.ContrastMatrix.html">1.2.1. patsy.ContrastMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.DesignInfo.html">1.2.2. patsy.DesignInfo</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="patsy.DesignMatrix.html">1.2.3. patsy.DesignMatrix</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="patsy.DesignMatrix.html#methods">1.2.3.1. Methods</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="patsy.DesignMatrix.html#attributes">1.2.3.2. Attributes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Diff.html">1.2.4. patsy.Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalEnvironment.html">1.2.5. patsy.EvalEnvironment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.EvalFactor.html">1.2.6. patsy.EvalFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.FactorInfo.html">1.2.7. patsy.FactorInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Helmert.html">1.2.8. patsy.Helmert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LinearConstraint.html">1.2.9. patsy.LinearConstraint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.LookupFactor.html">1.2.10. patsy.LookupFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.ModelDesc.html">1.2.11. patsy.ModelDesc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.NAAction.html">1.2.12. patsy.NAAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Origin.html">1.2.13. patsy.Origin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Poly.html">1.2.14. patsy.Poly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.SubtermInfo.html">1.2.15. patsy.SubtermInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Sum.html">1.2.16. patsy.Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Term.html">1.2.17. patsy.Term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.Treatment.html">1.2.18. patsy.Treatment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../patsy.html#exceptions">1.3. Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">1. patsy</a> &raquo;</li>
+        
+          <li><a href="patsy.DesignMatrix.html">1.2.3. patsy.DesignMatrix</a> &raquo;</li>
+        
+      <li>1.2.3.2.3. patsy.DesignMatrix.ctypes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/generated/generated/patsy.DesignMatrix.ctypes.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-designmatrix-ctypes">
+<h1>1.2.3.2.3. patsy.DesignMatrix.ctypes<a class="headerlink" href="#patsy-designmatrix-ctypes" title="Permalink to this headline">¶</a></h1>
+<dl class="attribute">
+<dt id="patsy.DesignMatrix.ctypes">
+<code class="descclassname">DesignMatrix.</code><code class="descname">ctypes</code><a class="headerlink" href="#patsy.DesignMatrix.ctypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>An object to simplify the interaction of the array with the ctypes
+module.</p>
+<p>This attribute creates an object that makes it easier to use arrays
+when calling shared libraries with the ctypes module. The returned
+object has, among others, data, shape, and strides attributes (see
+Notes below) which themselves return ctypes objects that can be used
+as arguments to a shared library.</p>
+<p>None</p>
+<dl class="docutils">
+<dt>c</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">Python object</span><dd>Possessing attributes data, shape, strides, etc.</dd>
+</dl>
+<p>numpy.ctypeslib</p>
+<p>Below are the public attributes of this object which were documented
+in &#8220;Guide to NumPy&#8221; (we have omitted undocumented public attributes,
+as well as documented private attributes):</p>
+<ul class="simple">
+<li>data: A pointer to the memory area of the array as a Python integer.
+This memory area may contain data that is not aligned, or not in correct
+byte-order. The memory area may not even be writeable. The array
+flags and data-type of this array should be respected when passing this
+attribute to arbitrary C-code to avoid trouble that can include Python
+crashing. User Beware! The value of this attribute is exactly the same
+as self._array_interface_[&#8216;data&#8217;][0].</li>
+<li>shape (c_intp*self.ndim): A ctypes array of length self.ndim where
+the basetype is the C-integer corresponding to dtype(&#8216;p&#8217;) on this
+platform. This base-type could be c_int, c_long, or c_longlong
+depending on the platform. The c_intp type is defined accordingly in
+numpy.ctypeslib. The ctypes array contains the shape of the underlying
+array.</li>
+<li>strides (c_intp*self.ndim): A ctypes array of length self.ndim where
+the basetype is the same as for the shape attribute. This ctypes array
+contains the strides information from the underlying array. This strides
+information is important for showing how many bytes must be jumped to
+get to the next element in the array.</li>
+<li>data_as(obj): Return the data pointer cast to a particular c-types object.
+For example, calling self._as_parameter_ is equivalent to
+self.data_as(ctypes.c_void_p). Perhaps you want to use the data as a
+pointer to a ctypes array of floating-point data:
+self.data_as(ctypes.POINTER(ctypes.c_double)).</li>
+<li>shape_as(obj): Return the shape tuple as an array of some other c-types
+type. For example: self.shape_as(ctypes.c_short).</li>
+<li>strides_as(obj): Return the strides tuple as an array of some other
+c-types type. For example: self.strides_as(ctypes.c_longlong).</li>
+</ul>
+<p>Be careful using the ctypes attribute - especially on temporary
+arrays or arrays constructed on the fly. For example, calling
+<code class="docutils literal"><span class="pre">(a+b).ctypes.data_as(ctypes.c_void_p)</span></code> returns a pointer to memory
+that is invalid because the array created as (a+b) is deallocated
+before the next Python statement. You can avoid this problem using
+either <code class="docutils literal"><span class="pre">c=a+b</span></code> or <code class="docutils literal"><span class="pre">ct=(a+b).ctypes</span></code>. In the latter case, ct will
+hold a reference to the array until ct is deleted or re-assigned.</p>
+<p>If the ctypes module is not available, then the ctypes attribute
+of array objects still returns something useful, but ctypes objects
+are not returned and errors may be raised instead. In particular,
+the object will still have the as parameter attribute which will
+return an integer equal to the data attribute.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">array([[0, 1],</span>
+<span class="go">       [2, 3]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data</span>
+<span class="go">30439712</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_long</span><span class="p">))</span>
+<span class="go">&lt;ctypes.LP_c_long object at 0x01F01300&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_long</span><span class="p">))</span><span class="o">.</span><span class="n">contents</span>
+<span class="go">c_long(0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">data_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">POINTER</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_longlong</span><span class="p">))</span><span class="o">.</span><span class="n">contents</span>
+<span class="go">c_longlong(4294967296L)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">&lt;numpy.core._internal.c_long_Array_2 object at 0x01FFD580&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">shape_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_long</span><span class="p">)</span>
+<span class="go">&lt;numpy.core._internal.c_long_Array_2 object at 0x01FCE620&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">strides</span>
+<span class="go">&lt;numpy.core._internal.c_long_Array_2 object at 0x01FCE620&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">ctypes</span><span class="o">.</span><span class="n">strides_as</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_longlong</span><span class="p">)</span>
+<span class="go">&lt;numpy.core._internal.c_longlong_Array_2 object at 0x01F01300&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.DesignMatrix.data.html" class="btn btn-neutral float-right" title="1.2.3.2.4. patsy.DesignMatrix.data" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.DesignMatrix.base.html" class="btn btn-neutral" title="1.2.3.2.2. patsy.DesignMatrix.base" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

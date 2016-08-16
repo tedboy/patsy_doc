@@ -1,0 +1,6 @@
+patsy.Helmert.code_without_intercept
+====================================
+
+.. currentmodule:: patsy
+
+.. automethod:: Helmert.code_without_intercept

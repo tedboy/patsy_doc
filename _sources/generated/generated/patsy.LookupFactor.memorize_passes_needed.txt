@@ -1,0 +1,6 @@
+patsy.LookupFactor.memorize_passes_needed
+=========================================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.memorize_passes_needed

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.resize
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.resize

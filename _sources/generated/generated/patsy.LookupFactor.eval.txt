@@ -1,0 +1,6 @@
+patsy.LookupFactor.eval
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.eval

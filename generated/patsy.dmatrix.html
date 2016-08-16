@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1.1.10. patsy.dmatrix &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="1. patsy" href="patsy.html"/>
+        <link rel="next" title="1.1.11. patsy.incr_dbuilder" href="patsy.incr_dbuilder.html"/>
+        <link rel="prev" title="1.1.9. patsy.dmatrices" href="patsy.dmatrices.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="patsy.html">1. patsy</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="patsy.html#functions">1.1. Functions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.balanced.html">1.1.1. patsy.balanced</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.bs.html">1.1.2. patsy.bs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.build_design_matrices.html">1.1.3. patsy.build_design_matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.cc.html">1.1.4. patsy.cc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.center.html">1.1.5. patsy.center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.cr.html">1.1.6. patsy.cr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.demo_data.html">1.1.7. patsy.demo_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.design_matrix_builders.html">1.1.8. patsy.design_matrix_builders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.dmatrices.html">1.1.9. patsy.dmatrices</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">1.1.10. patsy.dmatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.incr_dbuilder.html">1.1.11. patsy.incr_dbuilder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.incr_dbuilders.html">1.1.12. patsy.incr_dbuilders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.scale.html">1.1.13. patsy.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.standardize.html">1.1.14. patsy.standardize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.stateful_transform.html">1.1.15. patsy.stateful_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.te.html">1.1.16. patsy.te</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="patsy.html#classes">1.2. Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="patsy.html#exceptions">1.3. Exceptions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="patsy.html">1. patsy</a> &raquo;</li>
+        
+      <li>1.1.10. patsy.dmatrix</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/patsy.dmatrix.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-dmatrix">
+<h1>1.1.10. patsy.dmatrix<a class="headerlink" href="#patsy-dmatrix" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="patsy.dmatrix">
+<code class="descclassname">patsy.</code><code class="descname">dmatrix</code><span class="sig-paren">(</span><em>formula_like</em>, <em>data={}</em>, <em>eval_env=0</em>, <em>NA_action='drop'</em>, <em>return_type='matrix'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/patsy/highlevel.html#dmatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.dmatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a single design matrix given a formula_like and data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>formula_like</strong> &#8211; An object that can be used to construct a design
+matrix. See below.</li>
+<li><strong>data</strong> &#8211; A dict-like object that can be used to look up variables
+referenced in <cite>formula_like</cite>.</li>
+<li><strong>eval_env</strong> &#8211; Either a <a class="reference internal" href="generated/patsy.EvalEnvironment.html#patsy.EvalEnvironment" title="patsy.EvalEnvironment"><code class="xref py py-class docutils literal"><span class="pre">EvalEnvironment</span></code></a> which will be used to
+look up any variables referenced in <cite>formula_like</cite> that cannot be
+found in <cite>data</cite>, or else a depth represented as an
+integer which will be passed to <a class="reference internal" href="generated/patsy.EvalEnvironment.capture.html#patsy.EvalEnvironment.capture" title="patsy.EvalEnvironment.capture"><code class="xref py py-meth docutils literal"><span class="pre">EvalEnvironment.capture()</span></code></a>.
+<code class="docutils literal"><span class="pre">eval_env=0</span></code> means to use the context of the function calling
+<a class="reference internal" href="#patsy.dmatrix" title="patsy.dmatrix"><code class="xref py py-func docutils literal"><span class="pre">dmatrix()</span></code></a> for lookups. If calling this function from a library,
+you probably want <code class="docutils literal"><span class="pre">eval_env=1</span></code>, which means that variables should be
+resolved in <em>your</em> caller&#8217;s namespace.</li>
+<li><strong>NA_action</strong> &#8211; What to do with rows that contain missing values. You can
+<code class="docutils literal"><span class="pre">&quot;drop&quot;</span></code> them, <code class="docutils literal"><span class="pre">&quot;raise&quot;</span></code> an error, or for customization, pass an
+<a class="reference internal" href="generated/patsy.NAAction.html#patsy.NAAction" title="patsy.NAAction"><code class="xref py py-class docutils literal"><span class="pre">NAAction</span></code></a> object. See <a class="reference internal" href="generated/patsy.NAAction.html#patsy.NAAction" title="patsy.NAAction"><code class="xref py py-class docutils literal"><span class="pre">NAAction</span></code></a> for details on what
+values count as &#8216;missing&#8217; (and how to alter this).</li>
+<li><strong>return_type</strong> &#8211; Either <code class="docutils literal"><span class="pre">&quot;matrix&quot;</span></code> or <code class="docutils literal"><span class="pre">&quot;dataframe&quot;</span></code>. See below.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <cite>formula_like</cite> can take a variety of forms. You can use any of the
+following:</p>
+<ul class="simple">
+<li>(The most common option) A formula string like <code class="docutils literal"><span class="pre">&quot;x1</span> <span class="pre">+</span> <span class="pre">x2&quot;</span></code> (for
+<a class="reference internal" href="#patsy.dmatrix" title="patsy.dmatrix"><code class="xref py py-func docutils literal"><span class="pre">dmatrix()</span></code></a>) or <code class="docutils literal"><span class="pre">&quot;y</span> <span class="pre">~</span> <span class="pre">x1</span> <span class="pre">+</span> <span class="pre">x2&quot;</span></code> (for <a class="reference internal" href="patsy.dmatrices.html#patsy.dmatrices" title="patsy.dmatrices"><code class="xref py py-func docutils literal"><span class="pre">dmatrices()</span></code></a>). For
+details see <span class="xref std std-ref">formulas</span>.</li>
+<li>A <a class="reference internal" href="generated/patsy.ModelDesc.html#patsy.ModelDesc" title="patsy.ModelDesc"><code class="xref py py-class docutils literal"><span class="pre">ModelDesc</span></code></a>, which is a Python object representation of a
+formula. See <span class="xref std std-ref">formulas</span> and <span class="xref std std-ref">expert-model-specification</span> for
+details.</li>
+<li>A <a class="reference internal" href="generated/patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a>.</li>
+<li>An object that has a method called <code class="xref py py-meth docutils literal"><span class="pre">__patsy_get_model_desc__()</span></code>.
+For details see <span class="xref std std-ref">expert-model-specification</span>.</li>
+<li>A numpy array_like (for <a class="reference internal" href="#patsy.dmatrix" title="patsy.dmatrix"><code class="xref py py-func docutils literal"><span class="pre">dmatrix()</span></code></a>) or a tuple
+(array_like, array_like) (for <a class="reference internal" href="patsy.dmatrices.html#patsy.dmatrices" title="patsy.dmatrices"><code class="xref py py-func docutils literal"><span class="pre">dmatrices()</span></code></a>). These will have
+metadata added, representation normalized, and then be returned
+directly. In this case <cite>data</cite> and <cite>eval_env</cite> are
+ignored. There is special handling for two cases:<ul>
+<li><a class="reference internal" href="generated/patsy.DesignMatrix.html#patsy.DesignMatrix" title="patsy.DesignMatrix"><code class="xref py py-class docutils literal"><span class="pre">DesignMatrix</span></code></a> objects will have their <a class="reference internal" href="generated/patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a>
+preserved. This allows you to set up custom column names and term
+information even if you aren&#8217;t using the rest of the patsy
+machinery.</li>
+<li><code class="xref py py-class docutils literal"><span class="pre">pandas.DataFrame</span></code> or <code class="xref py py-class docutils literal"><span class="pre">pandas.Series</span></code> objects will have
+their (row) indexes checked. If two are passed in, their indexes must
+be aligned. If <code class="docutils literal"><span class="pre">return_type=&quot;dataframe&quot;</span></code>, then their indexes will be
+preserved on the output.</li>
+</ul>
+</li>
+</ul>
+<p>Regardless of the input, the return type is always either:</p>
+<ul class="simple">
+<li>A <a class="reference internal" href="generated/patsy.DesignMatrix.html#patsy.DesignMatrix" title="patsy.DesignMatrix"><code class="xref py py-class docutils literal"><span class="pre">DesignMatrix</span></code></a>, if <code class="docutils literal"><span class="pre">return_type=&quot;matrix&quot;</span></code> (the default)</li>
+<li>A <code class="xref py py-class docutils literal"><span class="pre">pandas.DataFrame</span></code>, if <code class="docutils literal"><span class="pre">return_type=&quot;dataframe&quot;</span></code>.</li>
+</ul>
+<p>The actual contents of the design matrix is identical in both cases, and
+in both cases a <a class="reference internal" href="generated/patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> object will be available in a
+<code class="docutils literal"><span class="pre">.design_info</span></code> attribute on the return value. However, for
+<code class="docutils literal"><span class="pre">return_type=&quot;dataframe&quot;</span></code>, any pandas indexes on the input (either in
+<cite>data</cite> or directly passed through <cite>formula_like</cite>) will be preserved, which
+may be useful for e.g. time-series models.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.2.0: </span>The <code class="docutils literal"><span class="pre">NA_action</span></code> argument.</p>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.incr_dbuilder.html" class="btn btn-neutral float-right" title="1.1.11. patsy.incr_dbuilder" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.dmatrices.html" class="btn btn-neutral" title="1.1.9. patsy.dmatrices" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.argmin
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.argmin

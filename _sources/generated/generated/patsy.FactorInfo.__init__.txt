@@ -1,0 +1,6 @@
+patsy.FactorInfo.__init__
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: FactorInfo.__init__

@@ -1,0 +1,6 @@
+patsy.EvalFactor.memorize_finish
+================================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalFactor.memorize_finish

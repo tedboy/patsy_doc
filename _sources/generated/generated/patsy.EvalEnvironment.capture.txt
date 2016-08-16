@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.capture
+=============================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalEnvironment.capture

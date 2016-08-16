@@ -1,0 +1,6 @@
+patsy.EvalFactor.memorize_chunk
+===============================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalFactor.memorize_chunk

@@ -1,0 +1,616 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.splines &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.splines</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.splines</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2012-2013 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># R-compatible spline basis functions</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bs&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">have_pandas</span><span class="p">,</span> <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span>
+<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="k">import</span> <span class="n">stateful_transform</span>
+
+<span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="k">def</span> <span class="nf">_eval_bspline_basis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="k">import</span> <span class="n">splev</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;spline functionality requires scipy&quot;</span><span class="p">)</span>
+    <span class="c1"># &#39;knots&#39; are assumed to be already pre-processed. E.g. usually you</span>
+    <span class="c1"># want to include duplicate copies of boundary knots; you should do</span>
+    <span class="c1"># that *before* calling this constructor.</span>
+    <span class="n">knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">knots</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">knots</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">knots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">degree</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">degree</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># XX FIXME: when points fall outside of the boundaries, splev and R seem</span>
+    <span class="c1"># to handle them differently. I don&#39;t know why yet. So until we understand</span>
+    <span class="c1"># this and decide what to do with it, I&#39;m going to play it safe and</span>
+    <span class="c1"># disallow such points.</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">knots</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">knots</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;some data points fall outside the &quot;</span>
+                                  <span class="s2">&quot;outermost knots, and I&#39;m not sure how &quot;</span>
+                                  <span class="s2">&quot;to handle them. (Patches accepted!)&quot;</span><span class="p">)</span>
+    <span class="c1"># Thanks to Charles Harris for explaining splev. It&#39;s not well</span>
+    <span class="c1"># documented, but basically it computes an arbitrary b-spline basis</span>
+    <span class="c1"># given knots and degree on some specificed points (or derivatives</span>
+    <span class="c1"># thereof, but we don&#39;t use that functionality), and then returns some</span>
+    <span class="c1"># linear combination of these basis functions. To get out the basis</span>
+    <span class="c1"># functions themselves, we use linear combinations like [1, 0, 0], [0,</span>
+    <span class="c1"># 1, 0], [0, 0, 1].</span>
+    <span class="c1"># NB: This probably makes it rather inefficient (though I haven&#39;t checked</span>
+    <span class="c1"># to be sure -- maybe the fortran code actually skips computing the basis</span>
+    <span class="c1"># function for coefficients that are zero).</span>
+    <span class="c1"># Note: the order of a spline is the same as its degree + 1.</span>
+    <span class="c1"># Note: there are (len(knots) - order) basis functions.</span>
+    <span class="n">n_bases</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">knots</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">degree</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">basis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_bases</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bases</span><span class="p">):</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bases</span><span class="p">,))</span>
+        <span class="n">coefs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">basis</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">splev</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">knots</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">degree</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">basis</span>
+
+<span class="k">def</span> <span class="nf">_R_compat_quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">probs</span><span class="p">):</span>
+    <span class="c1">#return np.percentile(x, 100 * np.asarray(probs))</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+    <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">prob</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">probs</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;C&quot;</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">quantiles</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">probs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test__R_compat_quantile</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">expected</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">_R_compat_quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">prob</span><span class="p">),</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">17</span><span class="p">])</span>
+    <span class="n">t</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.7</span><span class="p">,</span> <span class="mf">6.3</span><span class="p">])</span>
+
+<span class="k">class</span> <span class="nc">BS</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;bs(x, df=None, knots=None, degree=3, include_intercept=False, lower_bound=None, upper_bound=None)</span>
+
+<span class="sd">    Generates a B-spline basis for ``x``, allowing non-linear fits. The usual</span>
+<span class="sd">    usage is something like::</span>
+
+<span class="sd">      y ~ 1 + bs(x, 4)</span>
+
+<span class="sd">    to fit ``y`` as a smooth function of ``x``, with 4 degrees of freedom</span>
+<span class="sd">    given to the smooth.</span>
+
+<span class="sd">    :arg df: The number of degrees of freedom to use for this spline. The</span>
+<span class="sd">      return value will have this many columns. You must specify at least one</span>
+<span class="sd">      of ``df`` and ``knots``.</span>
+<span class="sd">    :arg knots: The interior knots to use for the spline. If unspecified, then</span>
+<span class="sd">      equally spaced quantiles of the input data are used. You must specify at</span>
+<span class="sd">      least one of ``df`` and ``knots``.</span>
+<span class="sd">    :arg degree: The degree of the spline to use.</span>
+<span class="sd">    :arg include_intercept: If ``True``, then the resulting</span>
+<span class="sd">      spline basis will span the intercept term (i.e., the constant</span>
+<span class="sd">      function). If ``False`` (the default) then this will not be the case,</span>
+<span class="sd">      which is useful for avoiding overspecification in models that include</span>
+<span class="sd">      multiple spline terms and/or an intercept term.</span>
+<span class="sd">    :arg lower_bound: The lower exterior knot location.</span>
+<span class="sd">    :arg upper_bound: The upper exterior knot location.</span>
+
+<span class="sd">    A spline with ``degree=0`` is piecewise constant with breakpoints at each</span>
+<span class="sd">    knot, and the default knot positions are quantiles of the input. So if you</span>
+<span class="sd">    find yourself in the situation of wanting to quantize a continuous</span>
+<span class="sd">    variable into ``num_bins`` equal-sized bins with a constant effect across</span>
+<span class="sd">    each bin, you can use ``bs(x, num_bins - 1, degree=0)``. (The ``- 1`` is</span>
+<span class="sd">    because one degree of freedom will be taken by the intercept;</span>
+<span class="sd">    alternatively, you could leave the intercept term out of your model and</span>
+<span class="sd">    use ``bs(x, num_bins, degree=0, include_intercept=True)``.</span>
+
+<span class="sd">    A spline with ``degree=1`` is piecewise linear with breakpoints at each</span>
+<span class="sd">    knot.</span>
+
+<span class="sd">    The default is ``degree=3``, which gives a cubic b-spline.</span>
+
+<span class="sd">    This is a stateful transform (for details see</span>
+<span class="sd">    :ref:`stateful-transforms`). If ``knots``, ``lower_bound``, or</span>
+<span class="sd">    ``upper_bound`` are not specified, they will be calculated from the data</span>
+<span class="sd">    and then the chosen values will be remembered and re-used for prediction</span>
+<span class="sd">    from the fitted model.</span>
+
+<span class="sd">    Using this function requires scipy be installed.</span>
+
+<span class="sd">    .. note:: This function is very similar to the R function of the same</span>
+<span class="sd">      name. In cases where both return output at all (e.g., R&#39;s ``bs`` will</span>
+<span class="sd">      raise an error if ``degree=0``, while patsy&#39;s will not), they should</span>
+<span class="sd">      produce identical output given identical input and parameter settings.</span>
+
+<span class="sd">    .. warning:: I&#39;m not sure on what the proper handling of points outside</span>
+<span class="sd">      the lower/upper bounds is, so for now attempting to evaluate a spline</span>
+<span class="sd">      basis at such points produces an error. Patches gratefully accepted.</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_degree</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_knots</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                       <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">lower_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
+                <span class="s2">&quot;knots&quot;</span><span class="p">:</span> <span class="n">knots</span><span class="p">,</span>
+                <span class="s2">&quot;degree&quot;</span><span class="p">:</span> <span class="n">degree</span><span class="p">,</span>
+                <span class="s2">&quot;include_intercept&quot;</span><span class="p">:</span> <span class="n">include_intercept</span><span class="p">,</span>
+                <span class="s2">&quot;lower_bound&quot;</span><span class="p">:</span> <span class="n">lower_bound</span><span class="p">,</span>
+                <span class="s2">&quot;upper_bound&quot;</span><span class="p">:</span> <span class="n">upper_bound</span><span class="p">,</span>
+                <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="c1"># XX: check whether we need x values before saving them</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input to &#39;bs&#39; must be 1-d, &quot;</span>
+                             <span class="s2">&quot;or a 2-d column vector&quot;</span><span class="p">)</span>
+        <span class="c1"># There&#39;s no better way to compute exact quantiles than memorizing</span>
+        <span class="c1"># all data.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;xs&quot;</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;degree must be greater than 0 (not </span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">],))</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;degree must be an integer (not </span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_degree</span><span class="p">,))</span>
+
+        <span class="c1"># These are guaranteed to all be 1d vectors by the code above</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;xs&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;must specify either df or knots&quot;</span><span class="p">)</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_inner_knots</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">order</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;include_intercept&quot;</span><span class="p">]:</span>
+                <span class="n">n_inner_knots</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">n_inner_knots</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df=</span><span class="si">%r</span><span class="s2"> is too small for degree=</span><span class="si">%r</span><span class="s2"> and &quot;</span>
+                                 <span class="s2">&quot;include_intercept=</span><span class="si">%r</span><span class="s2">; must be &gt;= </span><span class="si">%s</span><span class="s2">&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">],</span>
+                                    <span class="n">args</span><span class="p">[</span><span class="s2">&quot;include_intercept&quot;</span><span class="p">],</span>
+                                    <span class="c1"># We know that n_inner_knots is negative;</span>
+                                    <span class="c1"># if df were that much larger, it would</span>
+                                    <span class="c1"># have been zero, and things would work.</span>
+                                    <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">n_inner_knots</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="n">n_inner_knots</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df=</span><span class="si">%s</span><span class="s2"> with degree=</span><span class="si">%r</span><span class="s2"> implies </span><span class="si">%s</span><span class="s2"> knots, &quot;</span>
+                                     <span class="s2">&quot;but </span><span class="si">%s</span><span class="s2"> knots were provided&quot;</span>
+                                     <span class="o">%</span> <span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">],</span>
+                                        <span class="n">n_inner_knots</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">])))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Need to compute inner knots</span>
+                <span class="n">knot_quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_inner_knots</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">inner_knots</span> <span class="o">=</span> <span class="n">_R_compat_quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knot_quantiles</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inner_knots</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;lower_bound&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;lower_bound&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;upper_bound&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;upper_bound&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lower_bound</span> <span class="o">&gt;</span> <span class="n">upper_bound</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lower_bound &gt; upper_bound (</span><span class="si">%r</span><span class="s2"> &gt; </span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">))</span>
+        <span class="n">inner_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">inner_knots</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">inner_knots</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;knots must be 1 dimensional&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inner_knots</span> <span class="o">&lt;</span> <span class="n">lower_bound</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;some knot values (</span><span class="si">%s</span><span class="s2">) fall below lower bound &quot;</span>
+                             <span class="s2">&quot;(</span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">inner_knots</span><span class="p">[</span><span class="n">inner_knots</span> <span class="o">&lt;</span> <span class="n">lower_bound</span><span class="p">],</span>
+                                <span class="n">lower_bound</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">inner_knots</span> <span class="o">&gt;</span> <span class="n">upper_bound</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;some knot values (</span><span class="si">%s</span><span class="s2">) fall above upper bound &quot;</span>
+                             <span class="s2">&quot;(</span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">inner_knots</span><span class="p">[</span><span class="n">inner_knots</span> <span class="o">&gt;</span> <span class="n">upper_bound</span><span class="p">],</span>
+                                <span class="n">upper_bound</span><span class="p">))</span>
+        <span class="n">all_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">]</span> <span class="o">*</span> <span class="n">order</span><span class="p">,</span>
+                                    <span class="n">inner_knots</span><span class="p">))</span>
+        <span class="n">all_knots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_degree</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_knots</span> <span class="o">=</span> <span class="n">all_knots</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                  <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">lower_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">_eval_bspline_basis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_degree</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">include_intercept</span><span class="p">:</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="n">basis</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+                <span class="n">basis</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+                <span class="n">basis</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">return</span> <span class="n">basis</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="n">bs</span> <span class="o">=</span> <span class="n">stateful_transform</span><span class="p">(</span><span class="n">BS</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_bs_compat</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">patsy.test_state</span> <span class="k">import</span> <span class="n">check_stateful</span>
+    <span class="kn">from</span> <span class="nn">patsy.test_splines_bs_data</span> <span class="k">import</span> <span class="p">(</span><span class="n">R_bs_test_x</span><span class="p">,</span>
+                                            <span class="n">R_bs_test_data</span><span class="p">,</span>
+                                            <span class="n">R_bs_num_tests</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">R_bs_test_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tests_ran</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">start_idx</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--BEGIN TEST CASE--&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lines</span><span class="p">[</span><span class="n">start_idx</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;--BEGIN TEST CASE--&quot;</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">start_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">stop_idx</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--END TEST CASE--&quot;</span><span class="p">,</span> <span class="n">start_idx</span><span class="p">)</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">stop_idx</span><span class="p">]</span>
+        <span class="n">test_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">test_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c1"># Translate the R output into Python calling conventions</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;degree&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">]),</span>
+            <span class="c1"># integer, or None</span>
+            <span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]),</span>
+            <span class="c1"># np.array() call, or None</span>
+            <span class="s2">&quot;knots&quot;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]),</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Boundary.knots&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Boundary.knots&quot;</span><span class="p">])</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;lower_bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;upper_bound&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;include_intercept&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;TRUE&quot;</span><span class="p">)</span>
+        <span class="c1"># Special case: in R, setting intercept=TRUE increases the effective</span>
+        <span class="c1"># dof by 1. Adjust our arguments to match.</span>
+        <span class="c1"># if kwargs[&quot;df&quot;] is not None and kwargs[&quot;include_intercept&quot;]:</span>
+        <span class="c1">#     kwargs[&quot;df&quot;] += 1</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span>
+        <span class="c1"># Do the actual test</span>
+        <span class="n">check_stateful</span><span class="p">(</span><span class="n">BS</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">R_bs_test_x</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">tests_ran</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># Set up for the next one</span>
+        <span class="n">start_idx</span> <span class="o">=</span> <span class="n">stop_idx</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">tests_ran</span> <span class="o">==</span> <span class="n">R_bs_num_tests</span>
+
+<span class="n">test_bs_compat</span><span class="o">.</span><span class="n">slow</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># This isn&#39;t checked by the above, because R doesn&#39;t have zero degree</span>
+<span class="c1"># b-splines.</span>
+<span class="k">def</span> <span class="nf">test_bs_0degree</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">degree</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">expected_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">expected_0</span><span class="p">[</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">result</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">expected_0</span><span class="p">)</span>
+    <span class="n">expected_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">expected_1</span><span class="p">[(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">expected_1</span><span class="p">)</span>
+    <span class="n">expected_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">expected_2</span><span class="p">[</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">result</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">expected_2</span><span class="p">)</span>
+    <span class="c1"># Check handling of points that exactly fall on knots. They arbitrarily</span>
+    <span class="c1"># get included into the larger region, not the smaller. This is consistent</span>
+    <span class="c1"># with Python&#39;s half-open interval convention -- each basis function is</span>
+    <span class="c1"># constant on [knot[i], knot[i + 1]).</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">bs</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">degree</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                          <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+    <span class="n">result_int</span> <span class="o">=</span> <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">degree</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">result_no_int</span> <span class="o">=</span> <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">degree</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">result_int</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">result_no_int</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_bs_errors</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="c1"># error checks:</span>
+    <span class="c1"># out of bounds</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># must specify df or knots</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="c1"># df/knots match/mismatch (with and without intercept)</span>
+    <span class="c1">#   match:</span>
+    <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">9</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#   too many knots:</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">10</span><span class="p">,</span>
+                  <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">9</span><span class="p">,</span>
+                  <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#   too few knots:</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
+                  <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">include_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">,</span>
+                  <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># df too small</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="c1"># bad degree</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">degree</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+    <span class="c1"># upper_bound &lt; lower_bound</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># multidimensional input</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)),</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># unsorted knots are okay, and get sorted</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">bs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+    <span class="c1"># 2d knots</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]])</span>
+    <span class="c1"># knots &gt; upper_bound</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># knots &lt; lower_bound</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">bs</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">lower_bound</span><span class="o">=-</span><span class="mi">3</span><span class="p">)</span>
+
+
+
+<span class="c1"># differences between bs and ns (since the R code is a pile of copy-paste):</span>
+<span class="c1"># - degree is always 3</span>
+<span class="c1"># - different number of interior knots given df (b/c fewer dof used at edges I</span>
+<span class="c1">#   guess)</span>
+<span class="c1"># - boundary knots always repeated exactly 4 times (same as bs with degree=3)</span>
+<span class="c1"># - complications at the end to handle boundary conditions</span>
+<span class="c1"># the &#39;rcs&#39; function uses slightly different conventions -- in particular it</span>
+<span class="c1"># picks boundary knots that are not quite at the edges of the data, which</span>
+<span class="c1"># makes sense for a natural spline.</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,411 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>1. patsy &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="&lt;no title&gt;" href="../api.html"/>
+        <link rel="next" title="1.1.1. patsy.balanced" href="patsy.balanced.html"/>
+        <link rel="prev" title="&lt;no title&gt;" href="../api.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. patsy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functions">1.1. Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="patsy.balanced.html">1.1.1. patsy.balanced</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.bs.html">1.1.2. patsy.bs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.build_design_matrices.html">1.1.3. patsy.build_design_matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.cc.html">1.1.4. patsy.cc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.center.html">1.1.5. patsy.center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.cr.html">1.1.6. patsy.cr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.demo_data.html">1.1.7. patsy.demo_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.design_matrix_builders.html">1.1.8. patsy.design_matrix_builders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.dmatrices.html">1.1.9. patsy.dmatrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.dmatrix.html">1.1.10. patsy.dmatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.incr_dbuilder.html">1.1.11. patsy.incr_dbuilder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.incr_dbuilders.html">1.1.12. patsy.incr_dbuilders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.scale.html">1.1.13. patsy.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.standardize.html">1.1.14. patsy.standardize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.stateful_transform.html">1.1.15. patsy.stateful_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.te.html">1.1.16. patsy.te</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">1.2. Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.ContrastMatrix.html">1.2.1. patsy.ContrastMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.DesignInfo.html">1.2.2. patsy.DesignInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.DesignMatrix.html">1.2.3. patsy.DesignMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Diff.html">1.2.4. patsy.Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.EvalEnvironment.html">1.2.5. patsy.EvalEnvironment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.EvalFactor.html">1.2.6. patsy.EvalFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.FactorInfo.html">1.2.7. patsy.FactorInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Helmert.html">1.2.8. patsy.Helmert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.LinearConstraint.html">1.2.9. patsy.LinearConstraint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.LookupFactor.html">1.2.10. patsy.LookupFactor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.ModelDesc.html">1.2.11. patsy.ModelDesc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.NAAction.html">1.2.12. patsy.NAAction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Origin.html">1.2.13. patsy.Origin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Poly.html">1.2.14. patsy.Poly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.SubtermInfo.html">1.2.15. patsy.SubtermInfo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Sum.html">1.2.16. patsy.Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Term.html">1.2.17. patsy.Term</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.Treatment.html">1.2.18. patsy.Treatment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#exceptions">1.3. Exceptions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="patsy.PatsyError.html">1.3.1. patsy.PatsyError</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+      <li>1. patsy</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/patsy.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-patsy">
+<span id="patsy"></span><h1>1. patsy<a class="headerlink" href="#module-patsy" title="Permalink to this headline">¶</a></h1>
+<p>patsy is a Python package for describing statistical models and building
+design matrices. It is closely inspired by the &#8216;formula&#8217; mini-language used in
+R and S.</p>
+<div class="section" id="functions">
+<h2>1.1. Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.balanced.html#patsy.balanced" title="patsy.balanced"><code class="xref py py-obj docutils literal"><span class="pre">balanced</span></code></a>([factor_name,&nbsp;repeat])</td>
+<td>Create simple balanced factorial designs for testing.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.bs.html#patsy.bs" title="patsy.bs"><code class="xref py py-obj docutils literal"><span class="pre">bs</span></code></a>(x[,&nbsp;df,&nbsp;knots,&nbsp;degree,&nbsp;...])</td>
+<td>Generates a B-spline basis for <code class="docutils literal"><span class="pre">x</span></code>, allowing non-linear fits.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.build_design_matrices.html#patsy.build_design_matrices" title="patsy.build_design_matrices"><code class="xref py py-obj docutils literal"><span class="pre">build_design_matrices</span></code></a>(design_infos,&nbsp;data[,&nbsp;...])</td>
+<td>Construct several design matrices from <code class="xref py py-class docutils literal"><span class="pre">DesignMatrixBuilder</span></code> objects.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.cc.html#patsy.cc" title="patsy.cc"><code class="xref py py-obj docutils literal"><span class="pre">cc</span></code></a>(x[,&nbsp;df,&nbsp;knots,&nbsp;lower_bound,&nbsp;upper_bound,&nbsp;...])</td>
+<td>Generates a cyclic cubic spline basis for <code class="docutils literal"><span class="pre">x</span></code> (with the option of absorbing centering or more general parameters constraints), allowing non-linear fits.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.center.html#patsy.center" title="patsy.center"><code class="xref py py-obj docutils literal"><span class="pre">center</span></code></a>(x)</td>
+<td>A stateful transform that centers input data, i.e., subtracts the mean.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.cr.html#patsy.cr" title="patsy.cr"><code class="xref py py-obj docutils literal"><span class="pre">cr</span></code></a>(x[,&nbsp;df,&nbsp;knots,&nbsp;lower_bound,&nbsp;upper_bound,&nbsp;...])</td>
+<td>Generates a natural cubic spline basis for <code class="docutils literal"><span class="pre">x</span></code> (with the option of absorbing centering or more general parameters constraints), allowing non-linear fits.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.demo_data.html#patsy.demo_data" title="patsy.demo_data"><code class="xref py py-obj docutils literal"><span class="pre">demo_data</span></code></a>(*names[,&nbsp;nlevels,&nbsp;min_rows])</td>
+<td>Create simple categorical/numerical demo data.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.design_matrix_builders.html#patsy.design_matrix_builders" title="patsy.design_matrix_builders"><code class="xref py py-obj docutils literal"><span class="pre">design_matrix_builders</span></code></a>(termlists,&nbsp;...[,&nbsp;...])</td>
+<td>Construct several <a class="reference internal" href="generated/patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> objects from termlists.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.dmatrices.html#patsy.dmatrices" title="patsy.dmatrices"><code class="xref py py-obj docutils literal"><span class="pre">dmatrices</span></code></a>(formula_like[,&nbsp;data,&nbsp;eval_env,&nbsp;...])</td>
+<td>Construct two design matrices given a formula_like and data.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.dmatrix.html#patsy.dmatrix" title="patsy.dmatrix"><code class="xref py py-obj docutils literal"><span class="pre">dmatrix</span></code></a>(formula_like[,&nbsp;data,&nbsp;eval_env,&nbsp;...])</td>
+<td>Construct a single design matrix given a formula_like and data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.incr_dbuilder.html#patsy.incr_dbuilder" title="patsy.incr_dbuilder"><code class="xref py py-obj docutils literal"><span class="pre">incr_dbuilder</span></code></a>(formula_like,&nbsp;data_iter_maker)</td>
+<td>Construct a design matrix builder incrementally from a large data set.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.incr_dbuilders.html#patsy.incr_dbuilders" title="patsy.incr_dbuilders"><code class="xref py py-obj docutils literal"><span class="pre">incr_dbuilders</span></code></a>(formula_like,&nbsp;data_iter_maker)</td>
+<td>Construct two design matrix builders incrementally from a large data set.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.scale.html#patsy.scale" title="patsy.scale"><code class="xref py py-obj docutils literal"><span class="pre">scale</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>standardize(x, center=True, rescale=True, ddof=0)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.standardize.html#patsy.standardize" title="patsy.standardize"><code class="xref py py-obj docutils literal"><span class="pre">standardize</span></code></a>(x[,&nbsp;center,&nbsp;rescale,&nbsp;ddof])</td>
+<td>A stateful transform that standardizes input data, i.e.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.stateful_transform.html#patsy.stateful_transform" title="patsy.stateful_transform"><code class="xref py py-obj docutils literal"><span class="pre">stateful_transform</span></code></a>(<a href="#id1"><span class="problematic" id="id2">class_</span></a>)</td>
+<td>Create a stateful transform callable object from a class that fulfills the <span class="xref std std-ref">stateful transform protocol</span>.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.te.html#patsy.te" title="patsy.te"><code class="xref py py-obj docutils literal"><span class="pre">te</span></code></a>(s1,&nbsp;..,&nbsp;sn[,&nbsp;constraints])</td>
+<td>Generates smooth of several covariates as a tensor product of the bases of marginal univariate smooths <code class="docutils literal"><span class="pre">s1,</span> <span class="pre">..,</span> <span class="pre">sn</span></code>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="classes">
+<h2>1.2. Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.ContrastMatrix.html#patsy.ContrastMatrix" title="patsy.ContrastMatrix"><code class="xref py py-obj docutils literal"><span class="pre">ContrastMatrix</span></code></a>(matrix,&nbsp;column_suffixes)</td>
+<td>A simple container for a matrix used for coding categorical factors.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-obj docutils literal"><span class="pre">DesignInfo</span></code></a>(column_names[,&nbsp;factor_infos,&nbsp;...])</td>
+<td>A DesignInfo object holds metadata about a design matrix.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.DesignMatrix.html#patsy.DesignMatrix" title="patsy.DesignMatrix"><code class="xref py py-obj docutils literal"><span class="pre">DesignMatrix</span></code></a></td>
+<td>A simple numpy array subclass that carries design matrix metadata.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.Diff.html#patsy.Diff" title="patsy.Diff"><code class="xref py py-obj docutils literal"><span class="pre">Diff</span></code></a></td>
+<td>Backward difference coding.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.EvalEnvironment.html#patsy.EvalEnvironment" title="patsy.EvalEnvironment"><code class="xref py py-obj docutils literal"><span class="pre">EvalEnvironment</span></code></a>(namespaces[,&nbsp;flags])</td>
+<td>Represents a Python execution environment.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.EvalFactor.html#patsy.EvalFactor" title="patsy.EvalFactor"><code class="xref py py-obj docutils literal"><span class="pre">EvalFactor</span></code></a>(code[,&nbsp;origin])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.FactorInfo.html#patsy.FactorInfo" title="patsy.FactorInfo"><code class="xref py py-obj docutils literal"><span class="pre">FactorInfo</span></code></a>(factor,&nbsp;type,&nbsp;state[,&nbsp;...])</td>
+<td>A FactorInfo object is a simple class that provides some metadata about the role of a factor within a model.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.Helmert.html#patsy.Helmert" title="patsy.Helmert"><code class="xref py py-obj docutils literal"><span class="pre">Helmert</span></code></a></td>
+<td>Helmert contrasts.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.LinearConstraint.html#patsy.LinearConstraint" title="patsy.LinearConstraint"><code class="xref py py-obj docutils literal"><span class="pre">LinearConstraint</span></code></a>(variable_names,&nbsp;coefs[,&nbsp;...])</td>
+<td>A linear constraint in matrix form.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.LookupFactor.html#patsy.LookupFactor" title="patsy.LookupFactor"><code class="xref py py-obj docutils literal"><span class="pre">LookupFactor</span></code></a>(varname[,&nbsp;force_categorical,&nbsp;...])</td>
+<td>A simple factor class that simply looks up a named entry in the given data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.ModelDesc.html#patsy.ModelDesc" title="patsy.ModelDesc"><code class="xref py py-obj docutils literal"><span class="pre">ModelDesc</span></code></a>(lhs_termlist,&nbsp;rhs_termlist)</td>
+<td>A simple container representing the termlists parsed from a formula.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.NAAction.html#patsy.NAAction" title="patsy.NAAction"><code class="xref py py-obj docutils literal"><span class="pre">NAAction</span></code></a>([on_NA,&nbsp;NA_types])</td>
+<td>An <a class="reference internal" href="generated/patsy.NAAction.html#patsy.NAAction" title="patsy.NAAction"><code class="xref py py-class docutils literal"><span class="pre">NAAction</span></code></a> object defines a strategy for handling missing data.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.Origin.html#patsy.Origin" title="patsy.Origin"><code class="xref py py-obj docutils literal"><span class="pre">Origin</span></code></a>(code,&nbsp;start,&nbsp;end)</td>
+<td>This represents the origin of some object in some string.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.Poly.html#patsy.Poly" title="patsy.Poly"><code class="xref py py-obj docutils literal"><span class="pre">Poly</span></code></a>([scores])</td>
+<td>Orthogonal polynomial contrast coding.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.SubtermInfo.html#patsy.SubtermInfo" title="patsy.SubtermInfo"><code class="xref py py-obj docutils literal"><span class="pre">SubtermInfo</span></code></a>(factors,&nbsp;contrast_matrices,&nbsp;...)</td>
+<td>A SubtermInfo object is a simple metadata container describing a single primitive interaction and how it is coded in our design matrix.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.Sum.html#patsy.Sum" title="patsy.Sum"><code class="xref py py-obj docutils literal"><span class="pre">Sum</span></code></a>([omit])</td>
+<td>Deviation coding (also known as sum-to-zero coding).</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.Term.html#patsy.Term" title="patsy.Term"><code class="xref py py-obj docutils literal"><span class="pre">Term</span></code></a>(factors)</td>
+<td>The interaction between a collection of factor objects.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.Treatment.html#patsy.Treatment" title="patsy.Treatment"><code class="xref py py-obj docutils literal"><span class="pre">Treatment</span></code></a>([reference])</td>
+<td>Treatment coding (also known as dummy coding).</td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="exceptions">
+<h2>1.3. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.PatsyError.html#patsy.PatsyError" title="patsy.PatsyError"><code class="xref py py-obj docutils literal"><span class="pre">PatsyError</span></code></a>(message[,&nbsp;origin])</td>
+<td>This is the main error type raised by Patsy functions.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.balanced.html" class="btn btn-neutral float-right" title="1.1.1. patsy.balanced" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../api.html" class="btn btn-neutral" title="&lt;no title&gt;" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

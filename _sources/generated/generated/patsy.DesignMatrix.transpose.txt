@@ -1,0 +1,6 @@
+patsy.DesignMatrix.transpose
+============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.transpose

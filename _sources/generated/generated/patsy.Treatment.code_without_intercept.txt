@@ -1,0 +1,6 @@
+patsy.Treatment.code_without_intercept
+======================================
+
+.. currentmodule:: patsy
+
+.. automethod:: Treatment.code_without_intercept

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.flat
+=======================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.flat

@@ -1,0 +1,21 @@
+patsy.ContrastMatrix
+====================
+
+.. currentmodule:: patsy
+.. autoclass:: ContrastMatrix
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~ContrastMatrix.__init__
+
+
+
+
+

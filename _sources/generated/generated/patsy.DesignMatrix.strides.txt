@@ -1,0 +1,6 @@
+patsy.DesignMatrix.strides
+==========================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.strides

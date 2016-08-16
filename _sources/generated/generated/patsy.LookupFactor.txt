@@ -1,0 +1,26 @@
+patsy.LookupFactor
+==================
+
+.. currentmodule:: patsy
+.. autoclass:: LookupFactor
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~LookupFactor.__init__
+   ~LookupFactor.eval
+   ~LookupFactor.memorize_chunk
+   ~LookupFactor.memorize_finish
+   ~LookupFactor.memorize_passes_needed
+   ~LookupFactor.name
+
+
+
+
+

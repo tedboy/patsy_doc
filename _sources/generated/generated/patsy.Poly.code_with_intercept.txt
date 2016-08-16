@@ -1,0 +1,6 @@
+patsy.Poly.code_with_intercept
+==============================
+
+.. currentmodule:: patsy
+
+.. automethod:: Poly.code_with_intercept

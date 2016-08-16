@@ -1,0 +1,98 @@
+patsy.DesignMatrix
+==================
+
+.. currentmodule:: patsy
+.. autoclass:: DesignMatrix
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~DesignMatrix.all
+   ~DesignMatrix.any
+   ~DesignMatrix.argmax
+   ~DesignMatrix.argmin
+   ~DesignMatrix.argpartition
+   ~DesignMatrix.argsort
+   ~DesignMatrix.astype
+   ~DesignMatrix.byteswap
+   ~DesignMatrix.choose
+   ~DesignMatrix.clip
+   ~DesignMatrix.compress
+   ~DesignMatrix.conj
+   ~DesignMatrix.conjugate
+   ~DesignMatrix.copy
+   ~DesignMatrix.cumprod
+   ~DesignMatrix.cumsum
+   ~DesignMatrix.diagonal
+   ~DesignMatrix.dot
+   ~DesignMatrix.dump
+   ~DesignMatrix.dumps
+   ~DesignMatrix.fill
+   ~DesignMatrix.flatten
+   ~DesignMatrix.getfield
+   ~DesignMatrix.item
+   ~DesignMatrix.itemset
+   ~DesignMatrix.max
+   ~DesignMatrix.mean
+   ~DesignMatrix.min
+   ~DesignMatrix.newbyteorder
+   ~DesignMatrix.nonzero
+   ~DesignMatrix.partition
+   ~DesignMatrix.prod
+   ~DesignMatrix.ptp
+   ~DesignMatrix.put
+   ~DesignMatrix.ravel
+   ~DesignMatrix.repeat
+   ~DesignMatrix.reshape
+   ~DesignMatrix.resize
+   ~DesignMatrix.round
+   ~DesignMatrix.searchsorted
+   ~DesignMatrix.setfield
+   ~DesignMatrix.setflags
+   ~DesignMatrix.sort
+   ~DesignMatrix.squeeze
+   ~DesignMatrix.std
+   ~DesignMatrix.sum
+   ~DesignMatrix.swapaxes
+   ~DesignMatrix.take
+   ~DesignMatrix.tobytes
+   ~DesignMatrix.tofile
+   ~DesignMatrix.tolist
+   ~DesignMatrix.tostring
+   ~DesignMatrix.trace
+   ~DesignMatrix.transpose
+   ~DesignMatrix.var
+   ~DesignMatrix.view
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~DesignMatrix.T
+   ~DesignMatrix.base
+   ~DesignMatrix.ctypes
+   ~DesignMatrix.data
+   ~DesignMatrix.dtype
+   ~DesignMatrix.flags
+   ~DesignMatrix.flat
+   ~DesignMatrix.imag
+   ~DesignMatrix.itemsize
+   ~DesignMatrix.nbytes
+   ~DesignMatrix.ndim
+   ~DesignMatrix.real
+   ~DesignMatrix.shape
+   ~DesignMatrix.size
+   ~DesignMatrix.strides
+

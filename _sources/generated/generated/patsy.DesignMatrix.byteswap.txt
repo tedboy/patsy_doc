@@ -1,0 +1,6 @@
+patsy.DesignMatrix.byteswap
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.byteswap

@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.origin &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.origin</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.origin</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2012 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># The core &#39;origin&#39; tracking system. This point of this is to have machinery</span>
+<span class="c1"># so if some object is ultimately derived from some portion of a string (e.g.,</span>
+<span class="c1"># a formula), then we can keep track of that, and use it to give proper error</span>
+<span class="c1"># messages.</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Origin&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Origin"><a class="viewcode-back" href="../../generated/generated/patsy.Origin.html#patsy.Origin">[docs]</a><span class="k">class</span> <span class="nc">Origin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This represents the origin of some object in some string.</span>
+
+<span class="sd">    For example, if we have an object ``x1_obj`` that was produced by parsing</span>
+<span class="sd">    the ``x1`` in the formula ``&quot;y ~ x1:x2&quot;``, then we conventionally keep</span>
+<span class="sd">    track of that relationship by doing::</span>
+
+<span class="sd">      x1_obj.origin = Origin(&quot;y ~ x1:x2&quot;, 4, 6)</span>
+
+<span class="sd">    Then later if we run into a problem, we can do::</span>
+
+<span class="sd">      raise PatsyError(&quot;invalid factor&quot;, x1_obj)</span>
+
+<span class="sd">    and we&#39;ll produce a nice error message like::</span>
+
+<span class="sd">      PatsyError: invalid factor</span>
+<span class="sd">          y ~ x1:x2</span>
+<span class="sd">              ^^</span>
+
+<span class="sd">    Origins are compared by value, and hashable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Origin.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Origin.__init__.html#patsy.Origin.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Origin.combine"><a class="viewcode-back" href="../../generated/generated/patsy.Origin.combine.html#patsy.Origin.combine">[docs]</a>    <span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">origin_objs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Class method for combining a set of Origins into one large Origin</span>
+<span class="sd">        that spans them.</span>
+
+<span class="sd">        Example usage: if we wanted to represent the origin of the &quot;x1:x2&quot;</span>
+<span class="sd">        term, we could do ``Origin.combine([x1_obj, x2_obj])``.</span>
+
+<span class="sd">        Single argument is an iterable, and each element in the iterable</span>
+<span class="sd">        should be either:</span>
+
+<span class="sd">        * An Origin object</span>
+<span class="sd">        * ``None``</span>
+<span class="sd">        * An object that has a ``.origin`` attribute which fulfills the above</span>
+<span class="sd">          criteria.</span>
+<span class="sd">          </span>
+<span class="sd">        Returns either an Origin object, or None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">origin_objs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Origin</span><span class="p">):</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">origin</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">origins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">origins</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">codes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">code</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">])</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">end</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">codes</span><span class="o">.</span><span class="n">pop</span><span class="p">(),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Origin.relevant_code"><a class="viewcode-back" href="../../generated/generated/patsy.Origin.relevant_code.html#patsy.Origin.relevant_code">[docs]</a>    <span class="k">def</span> <span class="nf">relevant_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extracts and returns the span of the original code represented by</span>
+<span class="sd">        this Origin. Example: ``x1``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Origin</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">code</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">start</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="n">Origin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Origin.caretize"><a class="viewcode-back" href="../../generated/generated/patsy.Origin.caretize.html#patsy.Origin.caretize">[docs]</a>    <span class="k">def</span> <span class="nf">caretize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Produces a user-readable two line string indicating the origin of</span>
+<span class="sd">        some code. Example::</span>
+
+<span class="sd">          y ~ x1:x2</span>
+<span class="sd">              ^^</span>
+
+<span class="sd">        If optional argument &#39;indent&#39; is given, then both lines will be</span>
+<span class="sd">        indented by this much. The returned string does not have a trailing</span>
+<span class="sd">        newline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="se">\n</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> 
+                <span class="o">%</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">indent</span><span class="p">,</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+                   <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">indent</span><span class="p">,</span>
+                   <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                   <span class="s2">&quot;^&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)))</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Origin </span><span class="si">%s</span><span class="s2">-&gt;</span><span class="si">%s</span><span class="s2">&lt;-</span><span class="si">%s</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">)&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">:],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+    <span class="c1"># We reimplement patsy.util.no_pickling, to avoid circular import issues</span>
+    <span class="k">def</span> <span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<span class="k">def</span> <span class="nf">test_Origin</span><span class="p">():</span>
+    <span class="n">o1</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;012345&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">o2</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;012345&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">o1</span><span class="o">.</span><span class="n">caretize</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;012345</span><span class="se">\n</span><span class="s2">  ^^&quot;</span>
+    <span class="k">assert</span> <span class="n">o2</span><span class="o">.</span><span class="n">caretize</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;012345</span><span class="se">\n</span><span class="s2">    ^&quot;</span>
+    <span class="n">o3</span> <span class="o">=</span> <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">o1</span><span class="p">,</span> <span class="n">o2</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">o3</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="s2">&quot;012345&quot;</span>
+    <span class="k">assert</span> <span class="n">o3</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">o3</span><span class="o">.</span><span class="n">end</span> <span class="o">==</span> <span class="mi">5</span>
+    <span class="k">assert</span> <span class="n">o3</span><span class="o">.</span><span class="n">caretize</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;  012345</span><span class="se">\n</span><span class="s2">    ^^^&quot;</span>
+    <span class="k">assert</span> <span class="n">o3</span> <span class="o">==</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;012345&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">ObjWithOrigin</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span>
+    <span class="n">o4</span> <span class="o">=</span> <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">ObjWithOrigin</span><span class="p">(</span><span class="n">o1</span><span class="p">),</span> <span class="n">ObjWithOrigin</span><span class="p">(),</span> <span class="kc">None</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">o4</span> <span class="o">==</span> <span class="n">o1</span>
+    <span class="n">o5</span> <span class="o">=</span> <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">ObjWithOrigin</span><span class="p">(</span><span class="n">o1</span><span class="p">),</span> <span class="n">o2</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">o5</span> <span class="o">==</span> <span class="n">o3</span>
+
+    <span class="k">assert</span> <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">ObjWithOrigin</span><span class="p">(),</span> <span class="n">ObjWithOrigin</span><span class="p">()])</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">assert_no_pickling</span>
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

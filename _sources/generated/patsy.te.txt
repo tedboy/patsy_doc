@@ -1,0 +1,6 @@
+patsy.te
+========
+
+.. currentmodule:: patsy
+
+.. autofunction:: te

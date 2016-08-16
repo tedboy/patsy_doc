@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.highlevel &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.highlevel</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.highlevel</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2013 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># These are made available in the patsy.* namespace:</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dmatrix&quot;</span><span class="p">,</span> <span class="s2">&quot;dmatrices&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;incr_dbuilder&quot;</span><span class="p">,</span> <span class="s2">&quot;incr_dbuilders&quot;</span><span class="p">]</span>
+
+<span class="c1"># problems:</span>
+<span class="c1">#   statsmodels reluctant to pass around separate eval environment, suggesting</span>
+<span class="c1">#     that design_and_matrices-equivalent should return a formula_like</span>
+<span class="c1">#   is ModelDesc really the high-level thing?</span>
+<span class="c1">#   ModelDesign doesn&#39;t work -- need to work with the builder set</span>
+<span class="c1">#   want to be able to return either a matrix or a pandas dataframe</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.design_info</span> <span class="k">import</span> <span class="n">DesignMatrix</span><span class="p">,</span> <span class="n">DesignInfo</span>
+<span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="k">import</span> <span class="n">EvalEnvironment</span>
+<span class="kn">from</span> <span class="nn">patsy.desc</span> <span class="k">import</span> <span class="n">ModelDesc</span>
+<span class="kn">from</span> <span class="nn">patsy.build</span> <span class="k">import</span> <span class="p">(</span><span class="n">design_matrix_builders</span><span class="p">,</span>
+                         <span class="n">build_design_matrices</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">have_pandas</span><span class="p">,</span> <span class="n">asarray_or_pandas</span><span class="p">,</span>
+                        <span class="n">atleast_2d_column_default</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="c1"># Tries to build a (lhs, rhs) design given a formula_like and an incremental</span>
+<span class="c1"># data source. If formula_like is not capable of doing this, then returns</span>
+<span class="c1"># None.</span>
+<span class="k">def</span> <span class="nf">_try_incr_builders</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                       <span class="n">NA_action</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">DesignInfo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">design_matrix_builders</span><span class="p">([[]],</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span> <span class="n">NA_action</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">formula_like</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">formula_like</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">DesignInfo</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">DesignInfo</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">formula_like</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="s2">&quot;__patsy_get_model_desc__&quot;</span><span class="p">):</span>
+        <span class="n">formula_like</span> <span class="o">=</span> <span class="n">formula_like</span><span class="o">.</span><span class="n">__patsy_get_model_desc__</span><span class="p">(</span><span class="n">eval_env</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">ModelDesc</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;bad value from </span><span class="si">%r</span><span class="s2">.__patsy_get_model_desc__&quot;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">formula_like</span><span class="p">,))</span>
+        <span class="c1"># fallthrough</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">formula_like</span> <span class="o">=</span> <span class="n">ModelDesc</span><span class="o">.</span><span class="n">from_formula</span><span class="p">(</span><span class="n">formula_like</span><span class="p">)</span>
+        <span class="c1"># fallthrough</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">ModelDesc</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">EvalEnvironment</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">design_matrix_builders</span><span class="p">([</span><span class="n">formula_like</span><span class="o">.</span><span class="n">lhs_termlist</span><span class="p">,</span>
+                                       <span class="n">formula_like</span><span class="o">.</span><span class="n">rhs_termlist</span><span class="p">],</span>
+                                      <span class="n">data_iter_maker</span><span class="p">,</span>
+                                      <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="incr_dbuilder"><a class="viewcode-back" href="../../generated/patsy.incr_dbuilder.html#patsy.incr_dbuilder">[docs]</a><span class="k">def</span> <span class="nf">incr_dbuilder</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct a design matrix builder incrementally from a large data set.</span>
+
+<span class="sd">    :arg formula_like: Similar to :func:`dmatrix`, except that explicit</span>
+<span class="sd">      matrices are not allowed. Must be a formula string, a</span>
+<span class="sd">      :class:`ModelDesc`, a :class:`DesignInfo`, or an object with a</span>
+<span class="sd">      ``__patsy_get_model_desc__`` method.</span>
+<span class="sd">    :arg data_iter_maker: A zero-argument callable which returns an iterator</span>
+<span class="sd">      over dict-like data objects. This must be a callable rather than a</span>
+<span class="sd">      simple iterator because sufficiently complex formulas may require</span>
+<span class="sd">      multiple passes over the data (e.g. if there are nested stateful</span>
+<span class="sd">      transforms).</span>
+<span class="sd">    :arg eval_env: Either a :class:`EvalEnvironment` which will be used to</span>
+<span class="sd">      look up any variables referenced in `formula_like` that cannot be</span>
+<span class="sd">      found in `data`, or else a depth represented as an</span>
+<span class="sd">      integer which will be passed to :meth:`EvalEnvironment.capture`.</span>
+<span class="sd">      ``eval_env=0`` means to use the context of the function calling</span>
+<span class="sd">      :func:`incr_dbuilder` for lookups. If calling this function from a</span>
+<span class="sd">      library, you probably want ``eval_env=1``, which means that variables</span>
+<span class="sd">      should be resolved in *your* caller&#39;s namespace.</span>
+<span class="sd">    :arg NA_action: An :class:`NAAction` object or string, used to determine</span>
+<span class="sd">      what values count as &#39;missing&#39; for purposes of determining the levels of</span>
+<span class="sd">      categorical factors.</span>
+<span class="sd">    :returns: A :class:`DesignInfo`</span>
+
+<span class="sd">    Tip: for `data_iter_maker`, write a generator like::</span>
+
+<span class="sd">      def iter_maker():</span>
+<span class="sd">          for data_chunk in my_data_store:</span>
+<span class="sd">              yield data_chunk</span>
+
+<span class="sd">    and pass `iter_maker` (*not* `iter_maker()`).</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">       The ``NA_action`` argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eval_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">design_infos</span> <span class="o">=</span> <span class="n">_try_incr_builders</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">design_infos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;bad formula-like object&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">design_infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;encountered outcome variables for a model &quot;</span>
+                         <span class="s2">&quot;that does not expect them&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">design_infos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="incr_dbuilders"><a class="viewcode-back" href="../../generated/patsy.incr_dbuilders.html#patsy.incr_dbuilders">[docs]</a><span class="k">def</span> <span class="nf">incr_dbuilders</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct two design matrix builders incrementally from a large data</span>
+<span class="sd">    set.</span>
+
+<span class="sd">    :func:`incr_dbuilders` is to :func:`incr_dbuilder` as :func:`dmatrices` is</span>
+<span class="sd">    to :func:`dmatrix`. See :func:`incr_dbuilder` for details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eval_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">design_infos</span> <span class="o">=</span> <span class="n">_try_incr_builders</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">design_infos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;bad formula-like object&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">design_infos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;model is missing required outcome variables&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">design_infos</span></div>
+
+<span class="c1"># This always returns a length-two tuple,</span>
+<span class="c1">#   response, predictors</span>
+<span class="c1"># where</span>
+<span class="c1">#   response is a DesignMatrix (possibly with 0 columns)</span>
+<span class="c1">#   predictors is a DesignMatrix</span>
+<span class="c1"># The input &#39;formula_like&#39; could be like:</span>
+<span class="c1">#   (np.ndarray, np.ndarray)</span>
+<span class="c1">#   (DesignMatrix, DesignMatrix)</span>
+<span class="c1">#   (None, DesignMatrix)</span>
+<span class="c1">#   np.ndarray  # for predictor-only models</span>
+<span class="c1">#   DesignMatrix</span>
+<span class="c1">#   (None, np.ndarray)</span>
+<span class="c1">#   &quot;y ~ x&quot;</span>
+<span class="c1">#   ModelDesc(...)</span>
+<span class="c1">#   DesignInfo</span>
+<span class="c1">#   (DesignInfo, DesignInfo)</span>
+<span class="c1">#   any object with a special method __patsy_get_model_desc__</span>
+<span class="k">def</span> <span class="nf">_do_highlevel_design</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                         <span class="n">NA_action</span><span class="p">,</span> <span class="n">return_type</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;pandas.DataFrame was requested, but pandas &quot;</span>
+                            <span class="s2">&quot;is not installed&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;matrix&quot;</span><span class="p">,</span> <span class="s2">&quot;dataframe&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;unrecognized output type </span><span class="si">%r</span><span class="s2">, should be &quot;</span>
+                            <span class="s2">&quot;&#39;matrix&#39; or &#39;dataframe&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">return_type</span><span class="p">,))</span>
+    <span class="k">def</span> <span class="nf">data_iter_maker</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">([</span><span class="n">data</span><span class="p">])</span>
+    <span class="n">design_infos</span> <span class="o">=</span> <span class="n">_try_incr_builders</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data_iter_maker</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">design_infos</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">build_design_matrices</span><span class="p">(</span><span class="n">design_infos</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+                                     <span class="n">NA_action</span><span class="o">=</span><span class="n">NA_action</span><span class="p">,</span>
+                                     <span class="n">return_type</span><span class="o">=</span><span class="n">return_type</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># No builders, but maybe we can still get matrices</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">formula_like</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;don&#39;t know what to do with a length </span><span class="si">%s</span><span class="s2"> &quot;</span>
+                                    <span class="s2">&quot;matrices tuple&quot;</span>
+                                    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">formula_like</span><span class="p">),))</span>
+            <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="o">=</span> <span class="n">formula_like</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># subok=True is necessary here to allow DesignMatrixes to pass</span>
+            <span class="c1"># through</span>
+            <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">subok</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="c1"># some sort of explicit matrix or matrices were given. Currently we</span>
+        <span class="c1"># have them in one of these forms:</span>
+        <span class="c1">#   -- an ndarray or subclass</span>
+        <span class="c1">#   -- a DesignMatrix</span>
+        <span class="c1">#   -- a pandas.Series</span>
+        <span class="c1">#   -- a pandas.DataFrame</span>
+        <span class="c1"># and we have to produce a standard output format.</span>
+        <span class="k">def</span> <span class="nf">_regularize_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">default_column_prefix</span><span class="p">):</span>
+            <span class="n">di</span> <span class="o">=</span> <span class="n">DesignInfo</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">default_column_prefix</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">have_pandas</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+                <span class="n">orig_index</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">index</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">orig_index</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span><span class="p">:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">di</span><span class="o">.</span><span class="n">column_names</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">design_info</span> <span class="o">=</span> <span class="n">di</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">orig_index</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">DesignMatrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">di</span><span class="p">),</span> <span class="n">orig_index</span><span class="p">)</span>
+        <span class="n">rhs</span><span class="p">,</span> <span class="n">rhs_orig_index</span> <span class="o">=</span> <span class="n">_regularize_matrix</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lhs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">lhs</span><span class="p">,</span> <span class="n">lhs_orig_index</span> <span class="o">=</span> <span class="n">_regularize_matrix</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="s2">&quot;design_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">DesignInfo</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="s2">&quot;design_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">DesignInfo</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;shape mismatch: outcome matrix has </span><span class="si">%s</span><span class="s2"> rows, &quot;</span>
+                                <span class="s2">&quot;predictor matrix has </span><span class="si">%s</span><span class="s2"> rows&quot;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">lhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">rhs_orig_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lhs_orig_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rhs_orig_index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">lhs_orig_index</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;index mismatch: outcome and &quot;</span>
+                                    <span class="s2">&quot;predictor have incompatible indexes&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s2">&quot;dataframe&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rhs_orig_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lhs_orig_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">lhs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">rhs</span><span class="o">.</span><span class="n">index</span>
+            <span class="k">if</span> <span class="n">rhs_orig_index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lhs_orig_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rhs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">index</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="dmatrix"><a class="viewcode-back" href="../../generated/patsy.dmatrix.html#patsy.dmatrix">[docs]</a><span class="k">def</span> <span class="nf">dmatrix</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{},</span> <span class="n">eval_env</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;matrix&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct a single design matrix given a formula_like and data.</span>
+
+<span class="sd">    :arg formula_like: An object that can be used to construct a design</span>
+<span class="sd">      matrix. See below.</span>
+<span class="sd">    :arg data: A dict-like object that can be used to look up variables</span>
+<span class="sd">      referenced in `formula_like`.</span>
+<span class="sd">    :arg eval_env: Either a :class:`EvalEnvironment` which will be used to</span>
+<span class="sd">      look up any variables referenced in `formula_like` that cannot be</span>
+<span class="sd">      found in `data`, or else a depth represented as an</span>
+<span class="sd">      integer which will be passed to :meth:`EvalEnvironment.capture`.</span>
+<span class="sd">      ``eval_env=0`` means to use the context of the function calling</span>
+<span class="sd">      :func:`dmatrix` for lookups. If calling this function from a library,</span>
+<span class="sd">      you probably want ``eval_env=1``, which means that variables should be</span>
+<span class="sd">      resolved in *your* caller&#39;s namespace.</span>
+<span class="sd">    :arg NA_action: What to do with rows that contain missing values. You can</span>
+<span class="sd">      ``&quot;drop&quot;`` them, ``&quot;raise&quot;`` an error, or for customization, pass an</span>
+<span class="sd">      :class:`NAAction` object. See :class:`NAAction` for details on what</span>
+<span class="sd">      values count as &#39;missing&#39; (and how to alter this).</span>
+<span class="sd">    :arg return_type: Either ``&quot;matrix&quot;`` or ``&quot;dataframe&quot;``. See below.</span>
+
+<span class="sd">    The `formula_like` can take a variety of forms. You can use any of the</span>
+<span class="sd">    following:</span>
+
+<span class="sd">    * (The most common option) A formula string like ``&quot;x1 + x2&quot;`` (for</span>
+<span class="sd">      :func:`dmatrix`) or ``&quot;y ~ x1 + x2&quot;`` (for :func:`dmatrices`). For</span>
+<span class="sd">      details see :ref:`formulas`.</span>
+<span class="sd">    * A :class:`ModelDesc`, which is a Python object representation of a</span>
+<span class="sd">      formula. See :ref:`formulas` and :ref:`expert-model-specification` for</span>
+<span class="sd">      details.</span>
+<span class="sd">    * A :class:`DesignInfo`.</span>
+<span class="sd">    * An object that has a method called :meth:`__patsy_get_model_desc__`.</span>
+<span class="sd">      For details see :ref:`expert-model-specification`.</span>
+<span class="sd">    * A numpy array_like (for :func:`dmatrix`) or a tuple</span>
+<span class="sd">      (array_like, array_like) (for :func:`dmatrices`). These will have</span>
+<span class="sd">      metadata added, representation normalized, and then be returned</span>
+<span class="sd">      directly. In this case `data` and `eval_env` are</span>
+<span class="sd">      ignored. There is special handling for two cases:</span>
+
+<span class="sd">      * :class:`DesignMatrix` objects will have their :class:`DesignInfo`</span>
+<span class="sd">        preserved. This allows you to set up custom column names and term</span>
+<span class="sd">        information even if you aren&#39;t using the rest of the patsy</span>
+<span class="sd">        machinery.</span>
+<span class="sd">      * :class:`pandas.DataFrame` or :class:`pandas.Series` objects will have</span>
+<span class="sd">        their (row) indexes checked. If two are passed in, their indexes must</span>
+<span class="sd">        be aligned. If ``return_type=&quot;dataframe&quot;``, then their indexes will be</span>
+<span class="sd">        preserved on the output.</span>
+
+<span class="sd">    Regardless of the input, the return type is always either:</span>
+
+<span class="sd">    * A :class:`DesignMatrix`, if ``return_type=&quot;matrix&quot;`` (the default)</span>
+<span class="sd">    * A :class:`pandas.DataFrame`, if ``return_type=&quot;dataframe&quot;``.</span>
+
+<span class="sd">    The actual contents of the design matrix is identical in both cases, and</span>
+<span class="sd">    in both cases a :class:`DesignInfo` object will be available in a</span>
+<span class="sd">    ``.design_info`` attribute on the return value. However, for</span>
+<span class="sd">    ``return_type=&quot;dataframe&quot;``, any pandas indexes on the input (either in</span>
+<span class="sd">    `data` or directly passed through `formula_like`) will be preserved, which</span>
+<span class="sd">    may be useful for e.g. time-series models.</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">       The ``NA_action`` argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eval_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="o">=</span> <span class="n">_do_highlevel_design</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">,</span> <span class="n">return_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;encountered outcome variables for a model &quot;</span>
+                            <span class="s2">&quot;that does not expect them&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rhs</span></div>
+
+<div class="viewcode-block" id="dmatrices"><a class="viewcode-back" href="../../generated/patsy.dmatrices.html#patsy.dmatrices">[docs]</a><span class="k">def</span> <span class="nf">dmatrices</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{},</span> <span class="n">eval_env</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+              <span class="n">NA_action</span><span class="o">=</span><span class="s2">&quot;drop&quot;</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;matrix&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Construct two design matrices given a formula_like and data.</span>
+
+<span class="sd">    This function is identical to :func:`dmatrix`, except that it requires</span>
+<span class="sd">    (and returns) two matrices instead of one. By convention, the first matrix</span>
+<span class="sd">    is the &quot;outcome&quot; or &quot;y&quot; data, and the second is the &quot;predictor&quot; or &quot;x&quot;</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    See :func:`dmatrix` for details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">eval_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">eval_env</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span> <span class="o">=</span> <span class="n">_do_highlevel_design</span><span class="p">(</span><span class="n">formula_like</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">,</span>
+                                      <span class="n">NA_action</span><span class="p">,</span> <span class="n">return_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">lhs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;model is missing required outcome variables&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

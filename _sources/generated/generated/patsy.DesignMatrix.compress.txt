@@ -1,0 +1,6 @@
+patsy.DesignMatrix.compress
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.compress

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.imag
+=======================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.imag

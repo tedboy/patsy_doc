@@ -1,0 +1,6 @@
+patsy.DesignMatrix.conjugate
+============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.conjugate

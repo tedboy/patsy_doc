@@ -1,0 +1,6 @@
+patsy.DesignInfo.__init__
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignInfo.__init__

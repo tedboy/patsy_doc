@@ -1,0 +1,6 @@
+patsy.stateful_transform
+========================
+
+.. currentmodule:: patsy
+
+.. autofunction:: stateful_transform

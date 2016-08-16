@@ -1,0 +1,6 @@
+patsy.EvalFactor.eval
+=====================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalFactor.eval

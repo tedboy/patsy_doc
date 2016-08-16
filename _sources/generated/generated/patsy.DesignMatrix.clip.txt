@@ -1,0 +1,6 @@
+patsy.DesignMatrix.clip
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.clip

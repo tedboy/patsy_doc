@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>patsy</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2013 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="sd">&quot;&quot;&quot;patsy is a Python package for describing statistical models and building</span>
+<span class="sd">design matrices. It is closely inspired by the &#39;formula&#39; mini-language used in</span>
+<span class="sd">R and S.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">patsy.version</span> <span class="k">import</span> <span class="n">__version__</span>
+
+<span class="c1"># Do this first, to make it easy to check for warnings while testing:</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PATSY_FORCE_NO_WARNINGS&quot;</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;^patsy&quot;</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">warnings</span>
+<span class="k">del</span> <span class="n">os</span>
+
+<span class="kn">import</span> <span class="nn">patsy.origin</span>
+
+<div class="viewcode-block" id="PatsyError"><a class="viewcode-back" href="../generated/patsy.PatsyError.html#patsy.PatsyError">[docs]</a><span class="k">class</span> <span class="nc">PatsyError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is the main error type raised by Patsy functions.</span>
+
+<span class="sd">    In addition to the usual Python exception features, you can pass a second</span>
+<span class="sd">    argument to this function specifying the origin of the error; this is</span>
+<span class="sd">    included in any error message, and used to help the user locate errors</span>
+<span class="sd">    arising from malformed formulas. This second argument should be an</span>
+<span class="sd">    :class:`Origin` object, or else an arbitrary object with a ``.origin``</span>
+<span class="sd">    attribute. (If it is neither of these things, then it will simply be</span>
+<span class="sd">    ignored.)</span>
+
+<span class="sd">    For ordinary display to the user with default formatting, use</span>
+<span class="sd">    ``str(exc)``. If you want to do something cleverer, you can use the</span>
+<span class="sd">    ``.message`` and ``.origin`` attributes directly. (The latter may be</span>
+<span class="sd">    None.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_origin</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">message</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">caretize</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">set_origin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="c1"># This is useful to modify an exception to add origin information as</span>
+        <span class="c1"># it &quot;passes by&quot;, without losing traceback information. (In Python 3</span>
+        <span class="c1"># we can use the built-in exception wrapping stuff, but it will be</span>
+        <span class="c1"># some time before we can count on that...)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="s2">&quot;origin&quot;</span><span class="p">):</span>
+                <span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">origin</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">patsy</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">Origin</span><span class="p">):</span>
+                <span class="n">origin</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span></div>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PatsyError&quot;</span><span class="p">]</span>
+
+<span class="c1"># We make a rich API available for explicit use. To see what exactly is</span>
+<span class="c1"># exported, check each module&#39;s __all__, or import this module and look at its</span>
+<span class="c1"># __all__.</span>
+
+<span class="k">def</span> <span class="nf">_reexport</span><span class="p">(</span><span class="n">mod</span><span class="p">):</span>
+    <span class="n">__all__</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">mod</span><span class="o">.</span><span class="n">__all__</span><span class="p">:</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+<span class="c1"># This used to have less copy-paste, but explicit import statements make</span>
+<span class="c1"># packaging tools like py2exe and py2app happier. Sigh.</span>
+<span class="kn">import</span> <span class="nn">patsy.highlevel</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">highlevel</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.build</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">build</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.constraint</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">constraint</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.contrasts</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">contrasts</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.desc</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.design_info</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">design_info</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.eval</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">eval</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.origin</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.state</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.user_util</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">user_util</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.missing</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">missing</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.splines</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">splines</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">patsy.mgcv_cubic_splines</span>
+<span class="n">_reexport</span><span class="p">(</span><span class="n">patsy</span><span class="o">.</span><span class="n">mgcv_cubic_splines</span><span class="p">)</span>
+
+<span class="c1"># XX FIXME: we aren&#39;t exporting any of the explicit parsing interface</span>
+<span class="c1"># yet. Need to figure out how to do that.</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

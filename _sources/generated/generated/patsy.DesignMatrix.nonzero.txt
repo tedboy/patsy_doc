@@ -1,0 +1,6 @@
+patsy.DesignMatrix.nonzero
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.nonzero

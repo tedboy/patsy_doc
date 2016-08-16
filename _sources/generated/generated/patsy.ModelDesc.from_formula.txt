@@ -1,0 +1,6 @@
+patsy.ModelDesc.from_formula
+============================
+
+.. currentmodule:: patsy
+
+.. automethod:: ModelDesc.from_formula

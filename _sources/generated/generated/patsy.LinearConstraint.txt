@@ -1,0 +1,22 @@
+patsy.LinearConstraint
+======================
+
+.. currentmodule:: patsy
+.. autoclass:: LinearConstraint
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~LinearConstraint.__init__
+   ~LinearConstraint.combine
+
+
+
+
+

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.conj
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.conj

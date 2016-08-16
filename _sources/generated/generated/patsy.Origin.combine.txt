@@ -1,0 +1,6 @@
+patsy.Origin.combine
+====================
+
+.. currentmodule:: patsy
+
+.. automethod:: Origin.combine

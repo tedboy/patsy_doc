@@ -1,0 +1,6 @@
+patsy.DesignMatrix.cumsum
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.cumsum

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.astype
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.astype

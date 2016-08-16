@@ -1,0 +1,6 @@
+patsy.LookupFactor.__init__
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.__init__

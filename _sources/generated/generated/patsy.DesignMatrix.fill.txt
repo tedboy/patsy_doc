@@ -1,0 +1,6 @@
+patsy.DesignMatrix.fill
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.fill

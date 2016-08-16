@@ -1,0 +1,6 @@
+patsy.DesignMatrix.argmax
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.argmax

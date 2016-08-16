@@ -1,0 +1,6 @@
+patsy.LinearConstraint.combine
+==============================
+
+.. currentmodule:: patsy
+
+.. automethod:: LinearConstraint.combine

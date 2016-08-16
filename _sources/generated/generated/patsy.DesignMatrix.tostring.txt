@@ -1,0 +1,6 @@
+patsy.DesignMatrix.tostring
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.tostring

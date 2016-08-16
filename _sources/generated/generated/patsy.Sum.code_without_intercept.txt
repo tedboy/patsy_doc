@@ -1,0 +1,6 @@
+patsy.Sum.code_without_intercept
+================================
+
+.. currentmodule:: patsy
+
+.. automethod:: Sum.code_without_intercept

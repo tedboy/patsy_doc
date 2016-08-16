@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.user_util &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.user_util</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.user_util</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2012 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># Miscellaneous utilities that are useful to users (as compared to</span>
+<span class="c1"># patsy.util, which is misc. utilities useful for implementing patsy).</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;balanced&quot;</span><span class="p">,</span> <span class="s2">&quot;demo_data&quot;</span><span class="p">,</span> <span class="s2">&quot;LookupFactor&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span>
+
+<div class="viewcode-block" id="balanced"><a class="viewcode-back" href="../../generated/patsy.balanced.html#patsy.balanced">[docs]</a><span class="k">def</span> <span class="nf">balanced</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;balanced(factor_name=num_levels, [factor_name=num_levels, ..., repeat=1])</span>
+
+<span class="sd">    Create simple balanced factorial designs for testing.</span>
+
+<span class="sd">    Given some factor names and the number of desired levels for each,</span>
+<span class="sd">    generates a balanced factorial design in the form of a data</span>
+<span class="sd">    dictionary. For example:</span>
+
+<span class="sd">    .. ipython::</span>
+
+<span class="sd">       In [1]: balanced(a=2, b=3)</span>
+<span class="sd">       Out[1]:</span>
+<span class="sd">       {&#39;a&#39;: [&#39;a1&#39;, &#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;, &#39;a2&#39;, &#39;a2&#39;],</span>
+<span class="sd">        &#39;b&#39;: [&#39;b1&#39;, &#39;b2&#39;, &#39;b3&#39;, &#39;b1&#39;, &#39;b2&#39;, &#39;b3&#39;]}</span>
+
+<span class="sd">    By default it produces exactly one instance of each combination of levels,</span>
+<span class="sd">    but if you want multiple replicates this can be accomplished via the</span>
+<span class="sd">    `repeat` argument:</span>
+
+<span class="sd">    .. ipython::</span>
+
+<span class="sd">       In [2]: balanced(a=2, b=2, repeat=2)</span>
+<span class="sd">       Out[2]:</span>
+<span class="sd">       {&#39;a&#39;: [&#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;, &#39;a2&#39;, &#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;, &#39;a2&#39;],</span>
+<span class="sd">        &#39;b&#39;: [&#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;]}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">repeat</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;repeat&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">levels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+        <span class="n">level_count</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">level_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="c1"># zip(*...) does an &quot;unzip&quot;</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">levels</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">*</span> <span class="n">repeat</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+<span class="k">def</span> <span class="nf">test_balanced</span><span class="p">():</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="demo_data"><a class="viewcode-back" href="../../generated/patsy.demo_data.html#patsy.demo_data">[docs]</a><span class="k">def</span> <span class="nf">demo_data</span><span class="p">(</span><span class="o">*</span><span class="n">names</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;demo_data(*names, nlevels=2, min_rows=5)</span>
+
+<span class="sd">    Create simple categorical/numerical demo data.</span>
+
+<span class="sd">    Pass in a set of variable names, and this function will return a simple</span>
+<span class="sd">    data set using those variable names.</span>
+
+<span class="sd">    Names whose first letter falls in the range &quot;a&quot; through &quot;m&quot; will be made</span>
+<span class="sd">    categorical (with `nlevels` levels). Those that start with a &quot;p&quot; through</span>
+<span class="sd">    &quot;z&quot; are numerical.</span>
+
+<span class="sd">    We attempt to produce a balanced design on the categorical variables,</span>
+<span class="sd">    repeating as necessary to generate at least `min_rows` data</span>
+<span class="sd">    points. Categorical variables are returned as a list of strings.</span>
+
+<span class="sd">    Numerical data is generated by sampling from a normal distribution. A</span>
+<span class="sd">    fixed random seed is used, so that identical calls to demo_data() will</span>
+<span class="sd">    produce identical results. Numerical data is returned in a numpy array.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    .. ipython:</span>
+
+<span class="sd">       In [1]: patsy.demo_data(&quot;a&quot;, &quot;b&quot;, &quot;x&quot;, &quot;y&quot;)</span>
+<span class="sd">       Out[1]: </span>
+<span class="sd">       {&#39;a&#39;: [&#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;, &#39;a2&#39;, &#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;, &#39;a2&#39;],</span>
+<span class="sd">        &#39;b&#39;: [&#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;, &#39;b2&#39;],</span>
+<span class="sd">        &#39;x&#39;: array([ 1.76405235,  0.40015721,  0.97873798,  2.2408932 ,</span>
+<span class="sd">                     1.86755799, -0.97727788,  0.95008842, -0.15135721]),</span>
+<span class="sd">        &#39;y&#39;: array([-0.10321885,  0.4105985 ,  0.14404357,  1.45427351,</span>
+<span class="sd">                     0.76103773,  0.12167502,  0.44386323,  0.33367433])}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nlevels</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;nlevels&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">min_rows</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;min_rows&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;unexpected keyword arguments </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">,))</span>
+    <span class="n">numerical</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">categorical</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;abcdefghijklmn&quot;</span><span class="p">:</span>
+            <span class="n">categorical</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">nlevels</span>
+        <span class="k">elif</span> <span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;pqrstuvwxyz&quot;</span><span class="p">:</span>
+            <span class="n">numerical</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;bad name </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span>
+    <span class="n">balanced_design_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">categorical</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">repeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">min_rows</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">balanced_design_size</span><span class="p">))</span>
+    <span class="n">num_rows</span> <span class="o">=</span> <span class="n">repeat</span> <span class="o">*</span> <span class="n">balanced_design_size</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">balanced</span><span class="p">(</span><span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">,</span> <span class="o">**</span><span class="n">categorical</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">numerical</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">num_rows</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+    
+<span class="k">def</span> <span class="nf">test_demo_data</span><span class="p">():</span>
+    <span class="n">d1</span> <span class="o">=</span> <span class="n">demo_data</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">d1</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">,</span> <span class="s2">&quot;a2&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">d1</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">,</span> <span class="s2">&quot;b1&quot;</span><span class="p">,</span> <span class="s2">&quot;b2&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">d1</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">d1</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">8</span><span class="p">,)</span>
+
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">demo_data</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">5</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">demo_data</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">10</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">demo_data</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">12</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">demo_data</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">min_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nlevels</span><span class="o">=</span><span class="mi">3</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">18</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">demo_data</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;__123&quot;</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="n">demo_data</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">asdfasdf</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LookupFactor"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.html#patsy.LookupFactor">[docs]</a><span class="k">class</span> <span class="nc">LookupFactor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple factor class that simply looks up a named entry in the given</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    Useful for programatically constructing formulas, and as a simple example</span>
+<span class="sd">    of the factor protocol.  For details see</span>
+<span class="sd">    :ref:`expert-model-specification`.</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">      dmatrix(ModelDesc([], [Term([LookupFactor(&quot;x&quot;)])]), {&quot;x&quot;: [1, 2, 3]})</span>
+
+<span class="sd">    :arg varname: The name of this variable; used as a lookup key in the</span>
+<span class="sd">      passed in data dictionary/DataFrame/whatever.</span>
+<span class="sd">    :arg force_categorical: If True, then treat this factor as</span>
+<span class="sd">      categorical. (Equivalent to using :func:`C` in a regular formula, but</span>
+<span class="sd">      of course you can&#39;t do that with a :class:`LookupFactor`.</span>
+<span class="sd">    :arg contrast: If given, the contrast to use; see :func:`C`. (Requires</span>
+<span class="sd">      ``force_categorical=True``.)</span>
+<span class="sd">    :arg levels: If given, the categorical levels; see :func:`C`. (Requires</span>
+<span class="sd">      ``force_categorical=True``.)</span>
+<span class="sd">    :arg origin: Either ``None``, or the :class:`Origin` of this factor for use</span>
+<span class="sd">      in error reporting.</span>
+
+<span class="sd">    .. versionadded:: 0.2.0</span>
+<span class="sd">       The ``force_categorical`` and related arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LookupFactor.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.__init__.html#patsy.LookupFactor.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">,</span>
+                 <span class="n">force_categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_varname</span> <span class="o">=</span> <span class="n">varname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_force_categorical</span> <span class="o">=</span> <span class="n">force_categorical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contrast</span> <span class="o">=</span> <span class="n">contrast</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span> <span class="o">=</span> <span class="n">levels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_categorical</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">contrast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;contrast= requires force_categorical=True&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">levels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;levels= requires force_categorical=True&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LookupFactor.name"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.name.html#patsy.LookupFactor.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_varname</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_varname</span><span class="p">)</span>
+       
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">LookupFactor</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_varname</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_varname</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_categorical</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_force_categorical</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contrast</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_contrast</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_levels</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="nf">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="n">LookupFactor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_varname</span><span class="p">,</span>
+                     <span class="bp">self</span><span class="o">.</span><span class="n">_force_categorical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contrast</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">))</span>
+
+<div class="viewcode-block" id="LookupFactor.memorize_passes_needed"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.memorize_passes_needed.html#patsy.LookupFactor.memorize_passes_needed">[docs]</a>    <span class="k">def</span> <span class="nf">memorize_passes_needed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">eval_env</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="LookupFactor.memorize_chunk"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.memorize_chunk.html#patsy.LookupFactor.memorize_chunk">[docs]</a>    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+        <span class="k">assert</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="LookupFactor.memorize_finish"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.memorize_finish.html#patsy.LookupFactor.memorize_finish">[docs]</a>    <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">which_pass</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
+        <span class="k">assert</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="LookupFactor.eval"><a class="viewcode-back" href="../../generated/generated/patsy.LookupFactor.eval.html#patsy.LookupFactor.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memorize_state</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_varname</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_categorical</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">C</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_contrast</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_levels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">def</span> <span class="nf">test_LookupFactor</span><span class="p">():</span>
+    <span class="n">l_a</span> <span class="o">=</span> <span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">l_a</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span>
+    <span class="k">assert</span> <span class="n">l_a</span> <span class="o">==</span> <span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">l_a</span> <span class="o">!=</span> <span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">hash</span><span class="p">(</span><span class="n">l_a</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">hash</span><span class="p">(</span><span class="n">l_a</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">l_a</span><span class="o">.</span><span class="n">eval</span><span class="p">({},</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">l_a</span><span class="o">.</span><span class="n">eval</span><span class="p">({},</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="nb">repr</span><span class="p">(</span><span class="n">l_a</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;LookupFactor(&#39;a&#39;)&quot;</span>
+    <span class="k">assert</span> <span class="n">l_a</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="n">l_with_origin</span> <span class="o">=</span> <span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;asdf&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">l_with_origin</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="s2">&quot;asdf&quot;</span>
+
+    <span class="n">l_c</span> <span class="o">=</span> <span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="n">force_categorical</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">contrast</span><span class="o">=</span><span class="s2">&quot;CONTRAST&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">box</span> <span class="o">=</span> <span class="n">l_c</span><span class="o">.</span><span class="n">eval</span><span class="p">({},</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]})</span>
+    <span class="k">assert</span> <span class="n">box</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">box</span><span class="o">.</span><span class="n">contrast</span> <span class="o">==</span> <span class="s2">&quot;CONTRAST&quot;</span>
+    <span class="k">assert</span> <span class="n">box</span><span class="o">.</span><span class="n">levels</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LookupFactor</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="s2">&quot;CONTRAST&quot;</span><span class="p">)</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LookupFactor</span><span class="p">,</span> <span class="s2">&quot;nc&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">LookupFactor</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.dump
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.dump

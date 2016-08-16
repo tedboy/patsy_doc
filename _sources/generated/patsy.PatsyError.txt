@@ -1,0 +1,6 @@
+patsy.PatsyError
+================
+
+.. currentmodule:: patsy
+
+.. autoexception:: PatsyError

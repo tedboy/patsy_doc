@@ -1,0 +1,22 @@
+patsy.Term
+==========
+
+.. currentmodule:: patsy
+.. autoclass:: Term
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Term.__init__
+   ~Term.name
+
+
+
+
+

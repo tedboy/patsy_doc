@@ -1,0 +1,6 @@
+patsy.Sum.__init__
+==================
+
+.. currentmodule:: patsy
+
+.. automethod:: Sum.__init__

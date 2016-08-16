@@ -1,0 +1,6 @@
+patsy.EvalFactor.memorize_passes_needed
+=======================================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalFactor.memorize_passes_needed

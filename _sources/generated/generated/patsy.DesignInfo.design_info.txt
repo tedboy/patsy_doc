@@ -1,0 +1,6 @@
+patsy.DesignInfo.design_info
+============================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignInfo.design_info

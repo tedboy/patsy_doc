@@ -1,0 +1,6 @@
+patsy.Treatment.__init__
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: Treatment.__init__

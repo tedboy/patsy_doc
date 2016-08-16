@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.with_outer_namespace
+==========================================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalEnvironment.with_outer_namespace

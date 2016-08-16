@@ -1,0 +1,6 @@
+patsy.DesignMatrix.tofile
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.tofile

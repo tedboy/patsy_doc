@@ -1,0 +1,6 @@
+patsy.NAAction.is_categorical_NA
+================================
+
+.. currentmodule:: patsy
+
+.. automethod:: NAAction.is_categorical_NA

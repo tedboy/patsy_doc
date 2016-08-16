@@ -1,0 +1,6 @@
+patsy.DesignMatrix.choose
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.choose

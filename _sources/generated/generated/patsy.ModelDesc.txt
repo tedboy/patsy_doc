@@ -1,0 +1,23 @@
+patsy.ModelDesc
+===============
+
+.. currentmodule:: patsy
+.. autoclass:: ModelDesc
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~ModelDesc.__init__
+   ~ModelDesc.describe
+   ~ModelDesc.from_formula
+
+
+
+
+

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.tolist
+=========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.tolist

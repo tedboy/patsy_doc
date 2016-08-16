@@ -1,0 +1,6 @@
+patsy.center
+============
+
+.. currentmodule:: patsy
+
+.. autofunction:: center

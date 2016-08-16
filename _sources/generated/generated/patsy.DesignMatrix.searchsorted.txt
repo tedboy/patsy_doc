@@ -1,0 +1,6 @@
+patsy.DesignMatrix.searchsorted
+===============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.searchsorted

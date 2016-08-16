@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.subset
+============================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalEnvironment.subset

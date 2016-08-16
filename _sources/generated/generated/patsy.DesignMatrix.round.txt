@@ -1,0 +1,6 @@
+patsy.DesignMatrix.round
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.round

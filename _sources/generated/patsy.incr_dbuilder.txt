@@ -1,0 +1,6 @@
+patsy.incr_dbuilder
+===================
+
+.. currentmodule:: patsy
+
+.. autofunction:: incr_dbuilder

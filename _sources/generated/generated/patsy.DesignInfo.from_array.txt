@@ -1,0 +1,6 @@
+patsy.DesignInfo.from_array
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignInfo.from_array

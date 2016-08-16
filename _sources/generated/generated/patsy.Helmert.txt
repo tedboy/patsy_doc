@@ -1,0 +1,22 @@
+patsy.Helmert
+=============
+
+.. currentmodule:: patsy
+.. autoclass:: Helmert
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Helmert.code_with_intercept
+   ~Helmert.code_without_intercept
+
+
+
+
+

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.ndim
+=======================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.ndim

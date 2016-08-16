@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.state &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.state</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.state</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># Stateful transform protocol:</span>
+<span class="c1">#   def __init__(self):</span>
+<span class="c1">#       pass</span>
+<span class="c1">#   def memorize_chunk(self, input_data):</span>
+<span class="c1">#       return None</span>
+<span class="c1">#   def memorize_finish(self):</span>
+<span class="c1">#       return None</span>
+<span class="c1">#   def transform(self, input_data):</span>
+<span class="c1">#       return output_data</span>
+
+<span class="c1"># BETTER WAY: always run the first row of data through the builder alone, and</span>
+<span class="c1"># check that it gives the same output row as when running the whole block of</span>
+<span class="c1"># data through at once. This gives us the same information, but it&#39;s robust</span>
+<span class="c1"># against people writing their own centering functions.</span>
+
+<span class="c1"># QUESTION: right now we refuse to even fit a model that contains a</span>
+<span class="c1"># my_transform(x)-style function. Maybe we should allow it to be fit (with a</span>
+<span class="c1"># warning), and only disallow making predictions with it? Need to revisit this</span>
+<span class="c1"># question once it&#39;s clearer what exactly our public API will look like,</span>
+<span class="c1"># because right now I&#39;m not sure how to tell whether we are being called for</span>
+<span class="c1"># fitting versus being called for prediction.</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
+                        <span class="n">asarray_or_pandas</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span>
+                        <span class="n">wide_dtype_for</span><span class="p">,</span> <span class="n">safe_issubdtype</span><span class="p">,</span>
+                        <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">wraps</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;stateful_transform&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;standardize&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">,</span>
+           <span class="p">]</span>
+
+<div class="viewcode-block" id="stateful_transform"><a class="viewcode-back" href="../../generated/patsy.stateful_transform.html#patsy.stateful_transform">[docs]</a><span class="k">def</span> <span class="nf">stateful_transform</span><span class="p">(</span><span class="n">class_</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a stateful transform callable object from a class that fulfills</span>
+<span class="sd">    the :ref:`stateful transform protocol &lt;stateful-transform-protocol&gt;`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">stateful_transform_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">class_</span><span class="p">()</span>
+        <span class="n">transform</span><span class="o">.</span><span class="n">memorize_chunk</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">transform</span><span class="o">.</span><span class="n">memorize_finish</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">transform</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">stateful_transform_wrapper</span><span class="o">.</span><span class="n">__patsy_stateful_transform__</span> <span class="o">=</span> <span class="n">class_</span>
+    <span class="k">return</span> <span class="n">stateful_transform_wrapper</span></div>
+
+<span class="c1"># class NonIncrementalStatefulTransform(object):</span>
+<span class="c1">#     def __init__(self):</span>
+<span class="c1">#         self._data = []</span>
+<span class="c1">#</span>
+<span class="c1">#     def memorize_chunk(self, input_data, *args, **kwargs):</span>
+<span class="c1">#         self._data.append(input_data)</span>
+<span class="c1">#         self._args = _args</span>
+<span class="c1">#         self._kwargs = kwargs</span>
+<span class="c1">#</span>
+<span class="c1">#     def memorize_finish(self):</span>
+<span class="c1">#         all_data = np.row_stack(self._data)</span>
+<span class="c1">#         args = self._args</span>
+<span class="c1">#         kwargs = self._kwargs</span>
+<span class="c1">#         del self._data</span>
+<span class="c1">#         del self._args</span>
+<span class="c1">#         del self._kwargs</span>
+<span class="c1">#         self.memorize_all(all_data, *args, **kwargs)</span>
+<span class="c1">#</span>
+<span class="c1">#     def memorize_all(self, input_data, *args, **kwargs):</span>
+<span class="c1">#         raise NotImplementedError</span>
+<span class="c1">#</span>
+<span class="c1">#     def transform(self, input_data, *args, **kwargs):</span>
+<span class="c1">#         raise NotImplementedError</span>
+<span class="c1">#</span>
+<span class="c1"># class QuantileEstimatingTransform(NonIncrementalStatefulTransform):</span>
+<span class="c1">#     def memorize_all(self, input_data, *args, **kwargs):</span>
+
+<span class="k">class</span> <span class="nc">Center</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;center(x)</span>
+
+<span class="sd">    A stateful transform that centers input data, i.e., subtracts the mean.</span>
+
+<span class="sd">    If input has multiple columns, centers each column separately.</span>
+
+<span class="sd">    Equivalent to ``standardize(x, rescale=False)``</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">this_total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># This is to handle potentially multi-column x&#39;s:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">this_total</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+=</span> <span class="n">this_total</span>
+
+    <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># This doesn&#39;t copy data unless our input is a DataFrame that has</span>
+        <span class="c1"># heterogenous types. And in that case we&#39;re going to be munging the</span>
+        <span class="c1"># types anyway, so copying isn&#39;t a big deal.</span>
+        <span class="n">x_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">x_arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="nb">float</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">x_arr</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">centered</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">mean_val</span>
+        <span class="k">return</span> <span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">centered</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="n">center</span> <span class="o">=</span> <span class="n">stateful_transform</span><span class="p">(</span><span class="n">Center</span><span class="p">)</span>
+
+<span class="c1"># See:</span>
+<span class="c1">#   http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm</span>
+<span class="c1"># or page 232 of Knuth vol. 3 (3rd ed.).</span>
+<span class="k">class</span> <span class="nc">Standardize</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;standardize(x, center=True, rescale=True, ddof=0)</span>
+
+<span class="sd">    A stateful transform that standardizes input data, i.e. it subtracts the</span>
+<span class="sd">    mean and divides by the sample standard deviation.</span>
+
+<span class="sd">    Either centering or rescaling or both can be disabled by use of keyword</span>
+<span class="sd">    arguments. The `ddof` argument controls the delta degrees of freedom when</span>
+<span class="sd">    computing the standard deviation (cf. :func:`numpy.std`). The default of</span>
+<span class="sd">    ``ddof=0`` produces the maximum likelihood estimate; use ``ddof=1`` if you</span>
+<span class="sd">    prefer the square root of the unbiased estimate of the variance.</span>
+
+<span class="sd">    If input has multiple columns, standardizes each column separately.</span>
+
+<span class="sd">    .. note:: This function computes the mean and standard deviation using a</span>
+<span class="sd">       memory-efficient online algorithm, making it suitable for use with</span>
+<span class="sd">       large incrementally processed data-sets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># XX this can surely be vectorized but I am feeling lazy:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_n</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">+=</span> <span class="n">delta</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_n</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">+=</span> <span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># XX: this forces all inputs to double-precision real, even if the</span>
+        <span class="c1"># input is single- or extended-precision or complex. But I got all</span>
+        <span class="c1"># tangled up in knots trying to do that without breaking something</span>
+        <span class="c1"># else (e.g. by requiring an extra copy).</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">x_2d</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">center</span><span class="p">:</span>
+            <span class="n">x_2d</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span>
+        <span class="k">if</span> <span class="n">rescale</span><span class="p">:</span>
+            <span class="n">x_2d</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_n</span> <span class="o">-</span> <span class="n">ddof</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">x_2d</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="n">standardize</span> <span class="o">=</span> <span class="n">stateful_transform</span><span class="p">(</span><span class="n">Standardize</span><span class="p">)</span>
+<span class="c1"># R compatibility:</span>
+<span class="n">scale</span> <span class="o">=</span> <span class="n">standardize</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+patsy.DesignMatrix.any
+======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.any

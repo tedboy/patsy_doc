@@ -1,0 +1,6 @@
+patsy.NAAction.__init__
+=======================
+
+.. currentmodule:: patsy
+
+.. automethod:: NAAction.__init__

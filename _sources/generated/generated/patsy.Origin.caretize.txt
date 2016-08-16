@@ -1,0 +1,6 @@
+patsy.Origin.caretize
+=====================
+
+.. currentmodule:: patsy
+
+.. automethod:: Origin.caretize

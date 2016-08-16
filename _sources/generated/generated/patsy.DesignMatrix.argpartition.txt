@@ -1,0 +1,6 @@
+patsy.DesignMatrix.argpartition
+===============================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.argpartition

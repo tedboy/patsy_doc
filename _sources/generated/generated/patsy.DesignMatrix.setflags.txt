@@ -1,0 +1,6 @@
+patsy.DesignMatrix.setflags
+===========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.setflags

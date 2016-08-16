@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.constraint &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.constraint</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.constraint</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2012 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># Interpreting linear constraints like &quot;2*x1 + x2 = 0&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="c1"># These are made available in the patsy.* namespace</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LinearConstraint&quot;</span><span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
+                        <span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
+                        <span class="n">SortAnythingKey</span><span class="p">,</span>
+                        <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">patsy.infix_parser</span> <span class="k">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">,</span> <span class="n">infix_parse</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">Mapping</span>
+
+<div class="viewcode-block" id="LinearConstraint"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.html#patsy.LinearConstraint">[docs]</a><span class="k">class</span> <span class="nc">LinearConstraint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A linear constraint in matrix form.</span>
+
+<span class="sd">    This object represents a linear constraint of the form `Ax = b`.</span>
+
+<span class="sd">    Usually you won&#39;t be constructing these by hand, but instead get them as</span>
+<span class="sd">    the return value from :meth:`DesignInfo.linear_constraint`.</span>
+
+<span class="sd">    .. attribute:: coefs</span>
+
+<span class="sd">       A 2-dimensional ndarray with float dtype, representing `A`.</span>
+
+<span class="sd">    .. attribute:: constants</span>
+
+<span class="sd">       A 2-dimensional single-column ndarray with float dtype, representing</span>
+<span class="sd">       `b`.</span>
+
+<span class="sd">    .. attribute:: variable_names</span>
+
+<span class="sd">       A list of strings giving the names of the variables being</span>
+<span class="sd">       constrained. (Used only for consistency checking.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="LinearConstraint.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.__init__.html#patsy.LinearConstraint.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">constants</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">constants</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constants</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constants is not (convertible to) a column matrix&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variable_names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;wrong shape for coefs&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;must have at least one row in constraint matrix&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shape mismatch between coefs and constants&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;can&#39;t test a constant constraint&quot;</span><span class="p">)</span></div>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
+        <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
+                                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="p">])</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="LinearConstraint.combine"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.combine.html#patsy.LinearConstraint.combine">[docs]</a>    <span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new LinearConstraint by ANDing together several existing</span>
+<span class="sd">        LinearConstraints.</span>
+
+<span class="sd">        :arg constraints: An iterable of LinearConstraint objects. Their</span>
+<span class="sd">          :attr:`variable_names` attributes must all match.</span>
+<span class="sd">        :returns: A new LinearConstraint object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">constraints</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no constraints specified&quot;</span><span class="p">)</span>
+        <span class="n">variable_names</span> <span class="o">=</span> <span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">variable_names</span>
+        <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">constraint</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">!=</span> <span class="n">variable_names</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;variable names don&#39;t match&quot;</span><span class="p">)</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">row_stack</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">coefs</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">])</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">row_stack</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">constants</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">constraints</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span></div></div>
+
+<span class="k">def</span> <span class="nf">test_LinearConstraint</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="n">lc</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">lc</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="p">[[</span><span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]])</span>
+    
+    <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">]]])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[]])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+                  <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+
+    <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">lc</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">test_LinearConstraint_combine</span><span class="p">():</span>
+    <span class="n">comb</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                                     <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+    <span class="k">assert</span> <span class="n">comb</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">comb</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">comb</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">,</span> <span class="p">[])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">,</span>
+                  <span class="p">[</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+    
+
+<span class="n">_ops</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">),</span>
+
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="p">]</span>
+
+<span class="n">_atomic</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="s2">&quot;VARIABLE&quot;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">_token_maker</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">make_token</span><span class="p">(</span><span class="n">scanner</span><span class="p">,</span> <span class="n">token_string</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;__OP__&quot;</span><span class="p">:</span>
+            <span class="n">actual_type</span> <span class="o">=</span> <span class="n">token_string</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">actual_type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="k">return</span> <span class="n">Token</span><span class="p">(</span><span class="n">actual_type</span><span class="p">,</span>
+                     <span class="n">Origin</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="o">*</span><span class="n">scanner</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">()),</span>
+                     <span class="n">token_string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">make_token</span>
+
+<span class="k">def</span> <span class="nf">_tokenize_constraint</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">):</span>
+    <span class="n">lparen_re</span> <span class="o">=</span> <span class="s2">r&quot;\(&quot;</span>
+    <span class="n">rparen_re</span> <span class="o">=</span> <span class="s2">r&quot;\)&quot;</span>
+    <span class="n">op_re</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">)</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">_ops</span><span class="p">])</span>
+    <span class="n">num_re</span> <span class="o">=</span> <span class="s2">r&quot;[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?&quot;</span>
+    <span class="n">whitespace_re</span> <span class="o">=</span> <span class="s2">r&quot;\s+&quot;</span>
+
+    <span class="c1"># Prefer long matches:</span>
+    <span class="n">variable_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">variable_re</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">variable_names</span><span class="p">])</span>
+
+    <span class="n">lexicon</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">lparen_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">rparen_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">op_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;__OP__&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">variable_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">num_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">whitespace_re</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">]</span>
+
+    <span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">lexicon</span><span class="p">)</span>
+    <span class="n">tokens</span><span class="p">,</span> <span class="n">leftover</span> <span class="o">=</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">leftover</span><span class="p">:</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">leftover</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;unrecognized token in constraint&quot;</span><span class="p">,</span>
+                            <span class="n">Origin</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">tokens</span>
+
+<span class="k">def</span> <span class="nf">test__tokenize_constraint</span><span class="p">():</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;2 * (a + b) = q&quot;</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">_tokenize_constraint</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">])</span>
+    <span class="n">expecteds</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="s2">&quot;=&quot;</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">got</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">expecteds</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">got</span><span class="p">,</span> <span class="n">Token</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">got</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">expected</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">got</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">expected</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">expected</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">got</span><span class="o">.</span><span class="n">extra</span> <span class="o">==</span> <span class="n">expected</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_tokenize_constraint</span><span class="p">,</span> <span class="s2">&quot;1 + @b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="c1"># Shouldn&#39;t raise an error:</span>
+    <span class="n">_tokenize_constraint</span><span class="p">(</span><span class="s2">&quot;1 + @b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;@b&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Check we aren&#39;t confused by names which are proper prefixes of other</span>
+    <span class="c1"># names:</span>
+    <span class="k">for</span> <span class="n">names</span> <span class="ow">in</span> <span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]):</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="n">_tokenize_constraint</span><span class="p">(</span><span class="s2">&quot;a aa a&quot;</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+        <span class="k">assert</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">extra</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Check that embedding ops and numbers inside a variable name works</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">_tokenize_constraint</span><span class="p">(</span><span class="s2">&quot;2 * a[1,1],&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a[1,1]&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+    <span class="k">assert</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">type</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">extra</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;a[1,1]&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">parse_constraint</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">infix_parse</span><span class="p">(</span><span class="n">_tokenize_constraint</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">),</span>
+                       <span class="n">_ops</span><span class="p">,</span> <span class="n">_atomic</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_EvalConstraint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variable_names</span> <span class="o">=</span> <span class="n">variable_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_variable</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_number</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_unary_plus</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_unary_minus</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_plus</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_minus</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_multiply</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_div</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_eq</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_binary_comma</span><span class="p">,</span>
+            <span class="p">}</span>
+
+    <span class="c1"># General scheme: there are 2 types we deal with:</span>
+    <span class="c1">#   - linear combinations (&quot;lincomb&quot;s) of variables and constants,</span>
+    <span class="c1">#     represented as ndarrays with size N+1</span>
+    <span class="c1">#     The last entry is the constant, so [10, 20, 30] means 10x + 20y +</span>
+    <span class="c1">#     30.</span>
+    <span class="c1">#   - LinearConstraint objects</span>
+
+    <span class="k">def</span> <span class="nf">is_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">coefs</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_eval_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">extra</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">coefs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">coefs</span>
+
+    <span class="k">def</span> <span class="nf">_eval_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">coefs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">extra</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coefs</span>
+
+    <span class="k">def</span> <span class="nf">_eval_unary_plus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_eval_unary_minus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_plus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_minus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_div</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_constant</span><span class="p">(</span><span class="n">right</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t divide by a variable in a linear &quot;</span>
+                                <span class="s2">&quot;constraint&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">left</span> <span class="o">/</span> <span class="n">right</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_constant</span><span class="p">(</span><span class="n">left</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">right</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_constant</span><span class="p">(</span><span class="n">right</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">left</span> <span class="o">*</span> <span class="n">right</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t multiply one variable by another &quot;</span>
+                                <span class="s2">&quot;in a linear constraint&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_eq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="c1"># Handle &quot;a1 = a2 = a3&quot;, which is parsed as &quot;(a1 = a2) = a3&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;=&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="c1"># make our left argument be their right argument, or</span>
+                <span class="c1"># vice-versa</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">left</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">]</span> <span class="o">-</span> <span class="n">right</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">coefs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;no variables appear in constraint&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+        <span class="n">constant</span> <span class="o">=</span> <span class="o">-</span><span class="n">left</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">right</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">constraint</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constant</span><span class="p">)</span>
+        <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_eval_binary_comma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="n">tree</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">constraint</span><span class="p">:</span>
+            <span class="c1"># Force it to be a constraint</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">val</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">val</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">val</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;term is constant, with no variables&quot;</span><span class="p">,</span>
+                                        <span class="n">tree</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_names</span><span class="p">,</span>
+                                        <span class="n">val</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_N</span><span class="p">],</span>
+                                        <span class="o">-</span><span class="n">val</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Force it to *not* be a constraint</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;unexpected constraint object&quot;</span><span class="p">,</span> <span class="n">tree</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">val</span>
+
+<span class="k">def</span> <span class="nf">linear_constraint</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is the internal interface implementing</span>
+<span class="sd">    DesignInfo.linear_constraint, see there for docs.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">constraint_like</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">!=</span> <span class="n">variable_names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;LinearConstraint has wrong variable_names &quot;</span>
+                             <span class="s2">&quot;(got </span><span class="si">%r</span><span class="s2">, expected </span><span class="si">%r</span><span class="s2">)&quot;</span>
+                             <span class="o">%</span> <span class="p">(</span><span class="n">constraint_like</span><span class="o">.</span><span class="n">variable_names</span><span class="p">,</span>
+                                <span class="n">variable_names</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">constraint_like</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="c1"># Simple conjunction-of-equality constraints can be specified as</span>
+        <span class="c1"># dicts. {&quot;x&quot;: 1, &quot;y&quot;: 2} -&gt; tests x = 1 and y = 2. Keys can be</span>
+        <span class="c1"># either variable names, or variable indices.</span>
+        <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)),</span>
+                         <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">))</span>
+        <span class="n">used</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">variable_names</span><span class="p">:</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">variable_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">integer_types</span><span class="p">):</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unrecognized variable name/index </span><span class="si">%r</span><span class="s2">&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">used</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;duplicated constraint on </span><span class="si">%r</span><span class="s2">&quot;</span>
+                                 <span class="o">%</span> <span class="p">(</span><span class="n">variable_names</span><span class="p">[</span><span class="n">idx</span><span class="p">],))</span>
+            <span class="n">used</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">coefs</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">constants</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">constraint_like</span> <span class="o">=</span> <span class="p">[</span><span class="n">constraint_like</span><span class="p">]</span>
+        <span class="c1"># fall-through</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">constraint_like</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">constraint_like</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected a string, not </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="p">,))</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">parse_constraint</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">)</span>
+            <span class="n">evaluator</span> <span class="o">=</span> <span class="n">_EvalConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraint tuple must have length 2&quot;</span><span class="p">)</span>
+        <span class="n">coef</span><span class="p">,</span> <span class="n">constants</span> <span class="o">=</span> <span class="n">constraint_like</span>
+        <span class="k">return</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span>
+
+    <span class="c1"># assume a raw ndarray</span>
+    <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_check_lincon</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">varnames</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">linear_constraint</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">varnames</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;got&quot;</span><span class="p">,</span> <span class="n">got</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">varnames</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">coefs</span><span class="p">)</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">constants</span><span class="p">)</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+    <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">test_linear_constraint</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">_check_lincon</span>
+
+    <span class="n">t</span><span class="p">(</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span>
+                  <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                  <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+    <span class="n">t</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]),</span>
+      <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]),</span>
+      <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">([(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]),</span>
+      <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+    <span class="n">t</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a - 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a + 1 = 3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a + b = 3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = 2, b = 3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;b = 3, a = 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">([</span><span class="s2">&quot;a = 2&quot;</span><span class="p">,</span> <span class="s2">&quot;b = 3&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Actual evaluator tests</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;2 * (a + b/3) + b + 2*3/4 = 1 + 2*3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+      <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">2.0</span><span class="o">/</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">7</span> <span class="o">-</span> <span class="mf">6.0</span><span class="o">/</span><span class="mi">4</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;+2 * -a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a - b, a + b = 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = 1, a = 2, a = 3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+      <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a * 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;-a = 1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;(2 + a - a) * b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = 1 = b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = (1 = b)&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a = 1, a = b = c&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span>
+      <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="c1"># One should never do this of course, but test that it works anyway...</span>
+    <span class="n">t</span><span class="p">(</span><span class="s2">&quot;a + 1 = 2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a + 1&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">]])</span>
+
+    <span class="n">t</span><span class="p">(([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">30</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">30</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(([[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="mi">35</span><span class="p">]]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+      <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="mi">35</span><span class="p">]])</span>
+    <span class="c1"># wrong-length tuple</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span>
+                  <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+    <span class="n">t</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="n">t</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+      <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="c1"># unknown object type</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+
+<span class="n">_parse_eval_error_tests</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Bad token</span>
+    <span class="s2">&quot;a + &lt;f&gt;oo&quot;</span><span class="p">,</span>
+    <span class="c1"># No pure constant equalities</span>
+    <span class="s2">&quot;a = 1, &lt;1 = 1&gt;, b = 1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a = 1, &lt;b * 2 - b + (-2/2 * b)&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a = 1, &lt;1&gt;, b = 2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a = 1, &lt;2 * b = b + b&gt;, c&quot;</span><span class="p">,</span>
+    <span class="c1"># No non-linearities</span>
+    <span class="s2">&quot;a + &lt;a * b&gt; + c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + 2 / &lt;b&gt; + c&quot;</span><span class="p">,</span>
+    <span class="c1"># Constraints are not numbers</span>
+    <span class="s2">&quot;a = 1, 2 * &lt;(a = b)&gt;, c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a = 1, a + &lt;(a = b)&gt;, c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a = 1, &lt;(a, b)&gt; + 2, c&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.parse_formula</span> <span class="k">import</span> <span class="n">_parsing_error_test</span>
+<span class="k">def</span> <span class="nf">test_eval_errors</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">doit</span><span class="p">(</span><span class="n">bad_code</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">linear_constraint</span><span class="p">(</span><span class="n">bad_code</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="n">_parsing_error_test</span><span class="p">(</span><span class="n">doit</span><span class="p">,</span> <span class="n">_parse_eval_error_tests</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

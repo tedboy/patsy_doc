@@ -1,0 +1,6 @@
+patsy.DesignInfo.column_names
+=============================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignInfo.column_names

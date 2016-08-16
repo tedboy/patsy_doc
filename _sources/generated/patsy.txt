@@ -1,0 +1,98 @@
+patsy
+=====
+
+.. automodule:: patsy
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      balanced
+      bs
+      build_design_matrices
+      cc
+      center
+      cr
+      demo_data
+      design_matrix_builders
+      dmatrices
+      dmatrix
+      incr_dbuilder
+      incr_dbuilders
+      scale
+      standardize
+      stateful_transform
+      te
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      ContrastMatrix
+      DesignInfo
+      DesignMatrix
+      Diff
+      EvalEnvironment
+      EvalFactor
+      FactorInfo
+      Helmert
+      LinearConstraint
+      LookupFactor
+      ModelDesc
+      NAAction
+      Origin
+      Poly
+      SubtermInfo
+      Sum
+      Term
+      Treatment
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.ContrastMatrix
+       generated/patsy.DesignInfo
+       generated/patsy.DesignMatrix
+       generated/patsy.Diff
+       generated/patsy.EvalEnvironment
+       generated/patsy.EvalFactor
+       generated/patsy.FactorInfo
+       generated/patsy.Helmert
+       generated/patsy.LinearConstraint
+       generated/patsy.LookupFactor
+       generated/patsy.ModelDesc
+       generated/patsy.NAAction
+       generated/patsy.Origin
+       generated/patsy.Poly
+       generated/patsy.SubtermInfo
+       generated/patsy.Sum
+       generated/patsy.Term
+       generated/patsy.Treatment
+
+   
+   
+
+   
+   
+   Exceptions
+   ----------
+   .. autosummary::
+      :toctree:
+
+   
+      PatsyError
+   
+   

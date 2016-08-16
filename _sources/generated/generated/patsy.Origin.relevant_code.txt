@@ -1,0 +1,6 @@
+patsy.Origin.relevant_code
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: Origin.relevant_code

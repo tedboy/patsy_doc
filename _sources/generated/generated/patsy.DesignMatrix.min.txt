@@ -1,0 +1,6 @@
+patsy.DesignMatrix.min
+======================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.min

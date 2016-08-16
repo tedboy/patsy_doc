@@ -1,0 +1,6 @@
+patsy.cc
+========
+
+.. currentmodule:: patsy
+
+.. autofunction:: cc

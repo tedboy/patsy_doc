@@ -1,0 +1,6 @@
+patsy.NAAction.handle_NA
+========================
+
+.. currentmodule:: patsy
+
+.. automethod:: NAAction.handle_NA

@@ -1,0 +1,6 @@
+patsy.EvalEnvironment.__init__
+==============================
+
+.. currentmodule:: patsy
+
+.. automethod:: EvalEnvironment.__init__

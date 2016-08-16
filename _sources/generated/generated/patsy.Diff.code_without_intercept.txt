@@ -1,0 +1,6 @@
+patsy.Diff.code_without_intercept
+=================================
+
+.. currentmodule:: patsy
+
+.. automethod:: Diff.code_without_intercept

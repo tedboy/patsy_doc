@@ -1,0 +1,6 @@
+patsy.DesignMatrix.argsort
+==========================
+
+.. currentmodule:: patsy
+
+.. automethod:: DesignMatrix.argsort

@@ -1,0 +1,6 @@
+patsy.LookupFactor.memorize_chunk
+=================================
+
+.. currentmodule:: patsy
+
+.. automethod:: LookupFactor.memorize_chunk

@@ -1,0 +1,6 @@
+patsy.Origin.__init__
+=====================
+
+.. currentmodule:: patsy
+
+.. automethod:: Origin.__init__

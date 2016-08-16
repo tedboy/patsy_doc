@@ -1,0 +1,6 @@
+patsy.DesignMatrix.dtype
+========================
+
+.. currentmodule:: patsy
+
+.. autoattribute:: DesignMatrix.dtype
