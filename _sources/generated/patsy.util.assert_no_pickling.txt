@@ -1,0 +1,6 @@
+patsy.util.assert_no_pickling
+=============================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: assert_no_pickling

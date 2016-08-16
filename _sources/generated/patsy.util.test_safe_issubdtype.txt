@@ -1,0 +1,6 @@
+patsy.util.test_safe_issubdtype
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_safe_issubdtype

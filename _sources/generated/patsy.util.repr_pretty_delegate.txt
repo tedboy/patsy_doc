@@ -1,0 +1,6 @@
+patsy.util.repr_pretty_delegate
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: repr_pretty_delegate

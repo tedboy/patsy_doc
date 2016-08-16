@@ -1,0 +1,6 @@
+patsy.parse_formula.PatsyError
+==============================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autoexception:: PatsyError

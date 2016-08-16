@@ -1,0 +1,6 @@
+patsy.parse_formula.Token.__init__
+==================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: Token.__init__

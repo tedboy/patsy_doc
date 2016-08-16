@@ -1,0 +1,6 @@
+patsy.util.widen
+================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: widen

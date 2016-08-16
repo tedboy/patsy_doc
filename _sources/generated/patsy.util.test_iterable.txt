@@ -1,0 +1,6 @@
+patsy.util.test_iterable
+========================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_iterable

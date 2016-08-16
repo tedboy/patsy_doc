@@ -1,0 +1,6 @@
+patsy.builtins.ContrastMatrix.__init__
+======================================
+
+.. currentmodule:: patsy.builtins
+
+.. automethod:: ContrastMatrix.__init__

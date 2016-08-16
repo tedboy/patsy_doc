@@ -1,0 +1,6 @@
+patsy.categorical.pandas_Categorical_from_codes
+===============================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: pandas_Categorical_from_codes

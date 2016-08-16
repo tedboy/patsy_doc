@@ -1,0 +1,65 @@
+patsy.parse_formula
+===================
+
+.. automodule:: patsy.parse_formula
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      infix_parse
+      parse_formula
+      pretty_untokenize
+      python_tokenize
+      test__tokenize_formula
+      test_parse_errors
+      test_parse_extra_op
+      test_parse_formula
+      test_parse_origin
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      Operator
+      Origin
+      ParseNode
+      PushbackAdapter
+      Token
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.parse_formula.Operator
+       generated/patsy.parse_formula.Origin
+       generated/patsy.parse_formula.ParseNode
+       generated/patsy.parse_formula.PushbackAdapter
+       generated/patsy.parse_formula.Token
+
+   
+   
+
+   
+   
+   Exceptions
+   ----------
+   .. autosummary::
+      :toctree:
+
+   
+      PatsyError
+   
+   

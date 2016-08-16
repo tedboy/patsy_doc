@@ -1,0 +1,23 @@
+patsy.builtins.Poly
+===================
+
+.. currentmodule:: patsy.builtins
+.. autoclass:: Poly
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Poly.__init__
+   ~Poly.code_with_intercept
+   ~Poly.code_without_intercept
+
+
+
+
+

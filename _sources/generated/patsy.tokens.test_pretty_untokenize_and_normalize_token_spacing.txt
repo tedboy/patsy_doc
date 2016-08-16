@@ -1,0 +1,6 @@
+patsy.tokens.test_pretty_untokenize_and_normalize_token_spacing
+===============================================================
+
+.. currentmodule:: patsy.tokens
+
+.. autofunction:: test_pretty_untokenize_and_normalize_token_spacing

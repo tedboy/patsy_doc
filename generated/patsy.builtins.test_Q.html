@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2.1.12. patsy.builtins.test_Q &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="2. patsy.builtins" href="patsy.builtins.html"/>
+        <link rel="next" title="2.2.1. patsy.builtins.ContrastMatrix" href="generated/patsy.builtins.ContrastMatrix.html"/>
+        <link rel="prev" title="2.1.11. patsy.builtins.test_I" href="patsy.builtins.test_I.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="patsy.html">1. patsy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="patsy.builtins.html">2. patsy.builtins</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="patsy.builtins.html#functions">2.1. Functions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.C.html">2.1.1. patsy.builtins.C</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.I.html">2.1.2. patsy.builtins.I</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Q.html">2.1.3. patsy.builtins.Q</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.bs.html">2.1.4. patsy.builtins.bs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.cc.html">2.1.5. patsy.builtins.cc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.center.html">2.1.6. patsy.builtins.center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.cr.html">2.1.7. patsy.builtins.cr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.scale.html">2.1.8. patsy.builtins.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.standardize.html">2.1.9. patsy.builtins.standardize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.te.html">2.1.10. patsy.builtins.te</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.test_I.html">2.1.11. patsy.builtins.test_I</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.1.12. patsy.builtins.test_Q</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="patsy.builtins.html#classes">2.2. Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="patsy.builtins.html">2. patsy.builtins</a> &raquo;</li>
+        
+      <li>2.1.12. patsy.builtins.test_Q</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/patsy.builtins.test_Q.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-builtins-test-q">
+<h1>2.1.12. patsy.builtins.test_Q<a class="headerlink" href="#patsy-builtins-test-q" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="patsy.builtins.test_Q">
+<code class="descclassname">patsy.builtins.</code><code class="descname">test_Q</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/patsy/builtins.html#test_Q"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.builtins.test_Q" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="generated/patsy.builtins.ContrastMatrix.html" class="btn btn-neutral float-right" title="2.2.1. patsy.builtins.ContrastMatrix" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.builtins.test_I.html" class="btn btn-neutral" title="2.1.11. patsy.builtins.test_I" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

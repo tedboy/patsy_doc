@@ -1,0 +1,6 @@
+patsy.infix_parser.Origin.__init__
+==================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Origin.__init__

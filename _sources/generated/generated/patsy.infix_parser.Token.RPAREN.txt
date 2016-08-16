@@ -1,0 +1,6 @@
+patsy.infix_parser.Token.RPAREN
+===============================
+
+.. currentmodule:: patsy.infix_parser
+
+.. autoattribute:: Token.RPAREN

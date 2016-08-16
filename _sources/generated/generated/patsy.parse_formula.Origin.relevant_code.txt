@@ -1,0 +1,6 @@
+patsy.parse_formula.Origin.relevant_code
+========================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: Origin.relevant_code

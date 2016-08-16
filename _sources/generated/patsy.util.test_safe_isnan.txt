@@ -1,0 +1,6 @@
+patsy.util.test_safe_isnan
+==========================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_safe_isnan

@@ -1,0 +1,53 @@
+patsy.tokens
+============
+
+.. automodule:: patsy.tokens
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      normalize_token_spacing
+      pretty_untokenize
+      python_tokenize
+      test_pretty_untokenize_and_normalize_token_spacing
+      test_python_tokenize
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      Origin
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.tokens.Origin
+
+   
+   
+
+   
+   
+   Exceptions
+   ----------
+   .. autosummary::
+      :toctree:
+
+   
+      PatsyError
+   
+   

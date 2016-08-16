@@ -1,0 +1,6 @@
+patsy.util.test_atleast_2d_column_default
+=========================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_atleast_2d_column_default

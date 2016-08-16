@@ -1,0 +1,21 @@
+patsy.parse_formula.ParseNode
+=============================
+
+.. currentmodule:: patsy.parse_formula
+.. autoclass:: ParseNode
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~ParseNode.__init__
+
+
+
+
+

@@ -1,0 +1,6 @@
+patsy.util.PushbackAdapter.peek
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: PushbackAdapter.peek

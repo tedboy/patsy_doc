@@ -1,0 +1,6 @@
+patsy.categorical.safe_is_pandas_categorical
+============================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: safe_is_pandas_categorical

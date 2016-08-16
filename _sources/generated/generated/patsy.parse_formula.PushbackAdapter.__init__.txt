@@ -1,0 +1,6 @@
+patsy.parse_formula.PushbackAdapter.__init__
+============================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: PushbackAdapter.__init__

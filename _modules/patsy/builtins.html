@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.builtins &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.builtins</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.builtins</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2013 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># This module sets up the namespace of stuff that is available to formulas by</span>
+<span class="c1"># default. All formulas are interpreted in an environment that acts as if</span>
+<span class="c1">#   from patsy.builtins import *</span>
+<span class="c1"># has been executed. (Of course, you can also execute this yourself if you</span>
+<span class="c1"># want to use these in your regular code for some reason.)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.contrasts</span> <span class="k">import</span> <span class="n">ContrastMatrix</span><span class="p">,</span> <span class="n">Treatment</span><span class="p">,</span> <span class="n">Poly</span><span class="p">,</span> <span class="n">Sum</span><span class="p">,</span> <span class="n">Helmert</span><span class="p">,</span> <span class="n">Diff</span>
+<span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;ContrastMatrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span> <span class="s2">&quot;Poly&quot;</span><span class="p">,</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span> <span class="s2">&quot;Helmert&quot;</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+<span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="k">import</span> <span class="n">center</span><span class="p">,</span> <span class="n">standardize</span><span class="p">,</span> <span class="n">scale</span>
+<span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;standardize&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.splines</span> <span class="k">import</span> <span class="n">bs</span>
+<span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;bs&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy.mgcv_cubic_splines</span> <span class="k">import</span> <span class="n">cr</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">te</span>
+<span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="I"><a class="viewcode-back" href="../../generated/patsy.builtins.I.html#patsy.builtins.I">[docs]</a><span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The identity function. Simply returns its input unchanged.</span>
+
+<span class="sd">    Since Patsy&#39;s formula parser ignores anything inside a function call</span>
+<span class="sd">    syntax, this is useful to &#39;hide&#39; arithmetic operations from it. For</span>
+<span class="sd">    instance::</span>
+
+<span class="sd">      y ~ x1 + x2</span>
+
+<span class="sd">    has ``x1`` and ``x2`` as two separate predictors. But in::</span>
+
+<span class="sd">      y ~ I(x1 + x2)</span>
+
+<span class="sd">    we instead have a single predictor, defined to be the sum of ``x1`` and</span>
+<span class="sd">    ``x2``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="test_I"><a class="viewcode-back" href="../../generated/patsy.builtins.test_I.html#patsy.builtins.test_I">[docs]</a><span class="k">def</span> <span class="nf">test_I</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">I</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">I</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Q"><a class="viewcode-back" href="../../generated/patsy.builtins.Q.html#patsy.builtins.Q">[docs]</a><span class="k">def</span> <span class="nf">Q</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A way to &#39;quote&#39; variable names, especially ones that do not otherwise</span>
+<span class="sd">    meet Python&#39;s variable name rules.</span>
+
+<span class="sd">    If ``x`` is a variable, ``Q(&quot;x&quot;)`` returns the value of ``x``. (Note that</span>
+<span class="sd">    ``Q`` takes the *string* ``&quot;x&quot;``, not the value of ``x`` itself.) This</span>
+<span class="sd">    works even if instead of ``x``, we have a variable name that would not</span>
+<span class="sd">    otherwise be legal in Python.</span>
+
+<span class="sd">    For example, if you have a column of data named ``weight.in.kg``, then you</span>
+<span class="sd">    can&#39;t write::</span>
+
+<span class="sd">      y ~ weight.in.kg</span>
+
+<span class="sd">    because Python will try to find a variable named ``weight``, that has an</span>
+<span class="sd">    attribute named ``in``, that has an attribute named ``kg``. (And worse</span>
+<span class="sd">    yet, ``in`` is a reserved word, which makes this example doubly broken.)</span>
+<span class="sd">    Instead, write::</span>
+
+<span class="sd">      y ~ Q(&quot;weight.in.kg&quot;)</span>
+
+<span class="sd">    and all will be well. Note, though, that this requires embedding a Python</span>
+<span class="sd">    string inside your formula, which may require some care with your quote</span>
+<span class="sd">    marks. Some standard options include::</span>
+
+<span class="sd">      my_fit_function(&quot;y ~ Q(&#39;weight.in.kg&#39;)&quot;, ...)</span>
+<span class="sd">      my_fit_function(&#39;y ~ Q(&quot;weight.in.kg&quot;)&#39;, ...)</span>
+<span class="sd">      my_fit_function(&quot;y ~ Q(\\&quot;weight.in.kg\\&quot;)&quot;, ...)</span>
+
+<span class="sd">    Note also that ``Q`` is an ordinary Python function, which means that you</span>
+<span class="sd">    can use it in more complex expressions. For example, this is a legal</span>
+<span class="sd">    formula::</span>
+
+<span class="sd">      y ~ np.sqrt(Q(&quot;weight.in.kg&quot;))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="k">import</span> <span class="n">EvalEnvironment</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">namespace</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;no data named </span><span class="si">%r</span><span class="s2"> found&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span></div>
+
+<div class="viewcode-block" id="test_Q"><a class="viewcode-back" href="../../generated/patsy.builtins.test_Q.html#patsy.builtins.test_Q">[docs]</a><span class="k">def</span> <span class="nf">test_Q</span><span class="p">():</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Q</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">NameError</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="s2">&quot;asdfsadfdsad&quot;</span><span class="p">)</span></div>
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

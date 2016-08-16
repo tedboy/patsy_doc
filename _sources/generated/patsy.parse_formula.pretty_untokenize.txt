@@ -1,0 +1,6 @@
+patsy.parse_formula.pretty_untokenize
+=====================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: pretty_untokenize

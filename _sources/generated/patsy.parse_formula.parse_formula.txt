@@ -1,0 +1,6 @@
+patsy.parse_formula.parse_formula
+=================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: parse_formula

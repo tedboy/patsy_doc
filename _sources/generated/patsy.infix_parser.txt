@@ -1,0 +1,60 @@
+patsy.infix_parser
+==================
+
+.. automodule:: patsy.infix_parser
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      assert_no_pickling
+      infix_parse
+      no_pickling
+      repr_pretty_delegate
+      repr_pretty_impl
+      test_infix_parse
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      Operator
+      Origin
+      ParseNode
+      Token
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.infix_parser.Operator
+       generated/patsy.infix_parser.Origin
+       generated/patsy.infix_parser.ParseNode
+       generated/patsy.infix_parser.Token
+
+   
+   
+
+   
+   
+   Exceptions
+   ----------
+   .. autosummary::
+      :toctree:
+
+   
+      PatsyError
+   
+   

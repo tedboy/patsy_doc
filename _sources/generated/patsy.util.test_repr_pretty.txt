@@ -1,0 +1,6 @@
+patsy.util.test_repr_pretty
+===========================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_repr_pretty

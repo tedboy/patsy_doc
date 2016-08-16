@@ -1,0 +1,24 @@
+patsy.parse_formula.Origin
+==========================
+
+.. currentmodule:: patsy.parse_formula
+.. autoclass:: Origin
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Origin.__init__
+   ~Origin.caretize
+   ~Origin.combine
+   ~Origin.relevant_code
+
+
+
+
+

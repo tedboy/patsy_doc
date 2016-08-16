@@ -1,0 +1,6 @@
+patsy.parse_formula.Origin.combine
+==================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: Origin.combine

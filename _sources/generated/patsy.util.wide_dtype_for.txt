@@ -1,0 +1,6 @@
+patsy.util.wide_dtype_for
+=========================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: wide_dtype_for

@@ -1,0 +1,6 @@
+patsy.builtins.Poly.__init__
+============================
+
+.. currentmodule:: patsy.builtins
+
+.. automethod:: Poly.__init__

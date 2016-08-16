@@ -1,0 +1,6 @@
+patsy.infix_parser.Origin.caretize
+==================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Origin.caretize

@@ -1,0 +1,6 @@
+patsy.util.safe_is_pandas_categorical_dtype
+===========================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: safe_is_pandas_categorical_dtype

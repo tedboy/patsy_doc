@@ -1,0 +1,6 @@
+patsy.builtins.scale
+====================
+
+.. currentmodule:: patsy.builtins
+
+.. autofunction:: scale

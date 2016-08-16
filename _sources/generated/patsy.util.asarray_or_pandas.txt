@@ -1,0 +1,6 @@
+patsy.util.asarray_or_pandas
+============================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: asarray_or_pandas

@@ -1,0 +1,6 @@
+patsy.categorical.PatsyError
+============================
+
+.. currentmodule:: patsy.categorical
+
+.. autoexception:: PatsyError

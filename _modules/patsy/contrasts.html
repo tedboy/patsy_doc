@@ -84,6 +84,12 @@
                 <p class="caption"><span class="caption-text">Table of Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.util.html">7. patsy.util</a></li>
 </ul>
 
             
@@ -166,7 +172,7 @@
                         <span class="n">safe_issubdtype</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ContrastMatrix"><a class="viewcode-back" href="../../generated/generated/patsy.ContrastMatrix.html#patsy.ContrastMatrix">[docs]</a><span class="k">class</span> <span class="nc">ContrastMatrix</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ContrastMatrix"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.ContrastMatrix.html#patsy.ContrastMatrix">[docs]</a><span class="k">class</span> <span class="nc">ContrastMatrix</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A simple container for a matrix used for coding categorical factors.</span>
 
 <span class="sd">    Attributes:</span>
@@ -185,7 +191,7 @@
 <span class="sd">       final column names. E.g. for treatment coding the entries will look</span>
 <span class="sd">       like ``&quot;[T.level1]&quot;``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="ContrastMatrix.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.ContrastMatrix.__init__.html#patsy.ContrastMatrix.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">):</span>
+<div class="viewcode-block" id="ContrastMatrix.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.ContrastMatrix.__init__.html#patsy.ContrastMatrix.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">=</span> <span class="n">column_suffixes</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_suffixes</span><span class="p">):</span>
@@ -281,7 +287,7 @@
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Treatment"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.html#patsy.Treatment">[docs]</a><span class="k">class</span> <span class="nc">Treatment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Treatment"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.html#patsy.Treatment">[docs]</a><span class="k">class</span> <span class="nc">Treatment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Treatment coding (also known as dummy coding).</span>
 
 <span class="sd">    This is the default coding.</span>
@@ -311,13 +317,13 @@
 <span class="sd">    using ``Treatment(reference=-1)`` will produce contrasts that are</span>
 <span class="sd">    &quot;equivalent to those produced by many (but not all) SAS procedures&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Treatment.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.__init__.html#patsy.Treatment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Treatment.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.__init__.html#patsy.Treatment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">=</span> <span class="n">reference</span></div>
 
-<div class="viewcode-block" id="Treatment.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.code_with_intercept.html#patsy.Treatment.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Treatment.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.code_with_intercept.html#patsy.Treatment.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_dummy_code</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Treatment.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Treatment.code_without_intercept.html#patsy.Treatment.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Treatment.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.code_without_intercept.html#patsy.Treatment.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">reference</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
@@ -354,7 +360,7 @@
     <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[T.1]&quot;</span><span class="p">,</span> <span class="s2">&quot;[T.0]&quot;</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
 
-<div class="viewcode-block" id="Poly"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.html#patsy.Poly">[docs]</a><span class="k">class</span> <span class="nc">Poly</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Poly"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.html#patsy.Poly">[docs]</a><span class="k">class</span> <span class="nc">Poly</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Orthogonal polynomial contrast coding.</span>
 
 <span class="sd">    This coding scheme treats the levels as ordered samples from an underlying</span>
@@ -388,7 +394,7 @@
 <span class="sd">    rank encodings are always dummy-coded, regardless of what contrast you</span>
 <span class="sd">    have set.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Poly.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.__init__.html#patsy.Poly.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Poly.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.__init__.html#patsy.Poly.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span></div>
 
     <span class="k">def</span> <span class="nf">_code_either</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
@@ -421,10 +427,10 @@
             <span class="c1"># orthogonalize against, but we don&#39;t always return it:</span>
             <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
-<div class="viewcode-block" id="Poly.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.code_with_intercept.html#patsy.Poly.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Poly.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.code_with_intercept.html#patsy.Poly.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Poly.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Poly.code_without_intercept.html#patsy.Poly.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Poly.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.code_without_intercept.html#patsy.Poly.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
 
     <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
@@ -478,7 +484,7 @@
                                       <span class="s2">&quot;.Cubic&quot;</span><span class="p">,</span> <span class="s2">&quot;^4&quot;</span><span class="p">,</span> <span class="s2">&quot;^5&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="Sum"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.html#patsy.Sum">[docs]</a><span class="k">class</span> <span class="nc">Sum</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Sum"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.html#patsy.Sum">[docs]</a><span class="k">class</span> <span class="nc">Sum</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Deviation coding (also known as sum-to-zero coding).</span>
 
 <span class="sd">    Compares the mean of each level to the mean-of-means. (In a balanced</span>
@@ -507,7 +513,7 @@
 
 <span class="sd">    This is equivalent to R&#39;s `contr.sum`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Sum.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.__init__.html#patsy.Sum.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Sum.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.__init__.html#patsy.Sum.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="o">=</span> <span class="n">omit</span></div>
 
     <span class="k">def</span> <span class="nf">_omit_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
@@ -527,14 +533,14 @@
         <span class="n">out</span><span class="p">[</span><span class="n">omit_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">eye</span><span class="p">[</span><span class="n">omit_i</span><span class="p">:,</span> <span class="p">:]</span>
         <span class="k">return</span> <span class="n">out</span>
 
-<div class="viewcode-block" id="Sum.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.code_with_intercept.html#patsy.Sum.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Sum.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.code_with_intercept.html#patsy.Sum.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
                                   <span class="n">contrast</span><span class="o">.</span><span class="n">matrix</span><span class="p">))</span>
         <span class="n">column_suffixes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;[mean]&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">contrast</span><span class="o">.</span><span class="n">column_suffixes</span>
         <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Sum.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Sum.code_without_intercept.html#patsy.Sum.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Sum.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.code_without_intercept.html#patsy.Sum.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="n">omit_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_omit_i</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="n">included_levels</span> <span class="o">=</span> <span class="n">levels</span><span class="p">[:</span><span class="n">omit_i</span><span class="p">]</span> <span class="o">+</span> <span class="n">levels</span><span class="p">[</span><span class="n">omit_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
@@ -579,7 +585,7 @@
     <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;[S.b]&quot;</span><span class="p">,</span> <span class="s2">&quot;[S.c]&quot;</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
 
-<div class="viewcode-block" id="Helmert"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.html#patsy.Helmert">[docs]</a><span class="k">class</span> <span class="nc">Helmert</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Helmert"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Helmert.html#patsy.Helmert">[docs]</a><span class="k">class</span> <span class="nc">Helmert</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Helmert contrasts.</span>
 
 <span class="sd">    Compares the second level with the first, the third with the average of</span>
@@ -624,13 +630,13 @@
         <span class="n">contr</span><span class="p">[</span><span class="n">triu_indices</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">return</span> <span class="n">contr</span>
 
-<div class="viewcode-block" id="Helmert.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.code_with_intercept.html#patsy.Helmert.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Helmert.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Helmert.code_with_intercept.html#patsy.Helmert.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">_helmert_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)))</span>
         <span class="n">column_suffixes</span> <span class="o">=</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;H.&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;intercept&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
         <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">column_suffixes</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Helmert.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Helmert.code_without_intercept.html#patsy.Helmert.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Helmert.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Helmert.code_without_intercept.html#patsy.Helmert.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helmert_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span>
                               <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;H.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span></div>
@@ -656,7 +662,7 @@
                                            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                                            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
 
-<div class="viewcode-block" id="Diff"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.html#patsy.Diff">[docs]</a><span class="k">class</span> <span class="nc">Diff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Diff"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Diff.html#patsy.Diff">[docs]</a><span class="k">class</span> <span class="nc">Diff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Backward difference coding.</span>
 
 <span class="sd">    This coding scheme is useful for ordered factors, and compares the mean of</span>
@@ -693,12 +699,12 @@
         <span class="n">contr</span><span class="p">[</span><span class="n">row_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">col_i</span><span class="p">[</span><span class="n">col_order</span><span class="p">]]</span> <span class="o">=</span> <span class="n">lower_int</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nlevels</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">contr</span>
 
-<div class="viewcode-block" id="Diff.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.code_with_intercept.html#patsy.Diff.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Diff.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Diff.code_with_intercept.html#patsy.Diff.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)),</span>
                                     <span class="bp">self</span><span class="o">.</span><span class="n">_diff_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;D.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Diff.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.Diff.code_without_intercept.html#patsy.Diff.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
+<div class="viewcode-block" id="Diff.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Diff.code_without_intercept.html#patsy.Diff.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff_contrast</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">_name_levels</span><span class="p">(</span><span class="s2">&quot;D.&quot;</span><span class="p">,</span> <span class="n">levels</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
 

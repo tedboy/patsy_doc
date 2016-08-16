@@ -1,0 +1,6 @@
+patsy.parse_formula.infix_parse
+===============================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: infix_parse

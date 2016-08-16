@@ -1,0 +1,6 @@
+patsy.tokens.normalize_token_spacing
+====================================
+
+.. currentmodule:: patsy.tokens
+
+.. autofunction:: normalize_token_spacing

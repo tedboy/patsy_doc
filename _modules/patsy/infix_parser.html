@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.infix_parser &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.infix_parser</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.infix_parser</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># This file implements a simple &quot;shunting yard algorithm&quot; parser for infix</span>
+<span class="c1"># languages with parentheses. It is used as the core of our parser for</span>
+<span class="c1"># formulas, but is generic enough to be used for other purposes as well</span>
+<span class="c1"># (e.g. parsing linear constraints). It just builds a parse tree; semantics</span>
+<span class="c1"># are somebody else&#39;s problem.</span>
+<span class="c1"># </span>
+<span class="c1"># Plus it spends energy on tracking where each item in the parse tree comes</span>
+<span class="c1"># from, to allow high-quality error reporting.</span>
+<span class="c1">#</span>
+<span class="c1"># You are expected to provide an collection of Operators, a collection of</span>
+<span class="c1"># atomic types, and an iterator that provides Tokens. Each Operator should</span>
+<span class="c1"># have a unique token_type (which is an arbitrary Python object), and each</span>
+<span class="c1"># Token should have a matching token_type, or one of the special types</span>
+<span class="c1"># Token.LPAREN, Token.RPAREN. Each Token is required to have a valid Origin</span>
+<span class="c1"># attached, for error reporting.</span>
+
+<span class="c1"># XX: still seriously consider putting the magic intercept handling into the</span>
+<span class="c1"># tokenizer. we&#39;d still need separate term-sets that get pasted together by ~</span>
+<span class="c1"># to create the modeldesc, though... heck maybe we should just have a</span>
+<span class="c1"># modeldesc be 1-or-more termsets, with the convention that if it&#39;s 1, then</span>
+<span class="c1"># it&#39;s a rhs, and if it&#39;s 2, it&#39;s (lhs, rhs), and otherwise you&#39;re on your</span>
+<span class="c1"># own. Test: would this be useful for multiple-group log-linear models,</span>
+<span class="c1"># maybe? Answer: Perhaps. outcome ~ x1 + x2 ~ group. But lots of other</span>
+<span class="c1"># plausible, maybe better ways to write this -- (outcome | group) ~ x1 + x2?</span>
+<span class="c1"># &quot;outcome ~ x1 + x2&quot;, group=&quot;group&quot;? etc.</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Token&quot;</span><span class="p">,</span> <span class="s2">&quot;ParseNode&quot;</span><span class="p">,</span> <span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="s2">&quot;parse&quot;</span><span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
+                        <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_UniqueValue</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">print_as</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_as</span> <span class="o">=</span> <span class="n">print_as</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_print_as</span><span class="p">)</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<div class="viewcode-block" id="Token"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Token.html#patsy.infix_parser.Token">[docs]</a><span class="k">class</span> <span class="nc">Token</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A token with possible payload.</span>
+
+<span class="sd">    .. attribute:: type</span>
+
+<span class="sd">       An arbitrary object indicating the type of this token. Should be</span>
+<span class="sd">      :term:`hashable`, but otherwise it can be whatever you like.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">LPAREN</span> <span class="o">=</span> <span class="n">_UniqueValue</span><span class="p">(</span><span class="s2">&quot;LPAREN&quot;</span><span class="p">)</span>
+    <span class="n">RPAREN</span> <span class="o">=</span> <span class="n">_UniqueValue</span><span class="p">(</span><span class="s2">&quot;RPAREN&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Token.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Token.__init__.html#patsy.infix_parser.Token.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="o">=</span> <span class="n">extra</span></div>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;extra&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<div class="viewcode-block" id="ParseNode"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.ParseNode.html#patsy.infix_parser.ParseNode">[docs]</a><span class="k">class</span> <span class="nc">ParseNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ParseNode.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.ParseNode.__init__.html#patsy.infix_parser.ParseNode.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span></div>
+
+    <span class="n">__repr__</span> <span class="o">=</span> <span class="n">repr_pretty_delegate</span>
+    <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">])</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<div class="viewcode-block" id="Operator"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Operator.html#patsy.infix_parser.Operator">[docs]</a><span class="k">class</span> <span class="nc">Operator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="Operator.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Operator.__init__.html#patsy.infix_parser.Operator.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">arity</span><span class="p">,</span> <span class="n">precedence</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_type</span> <span class="o">=</span> <span class="n">token_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arity</span> <span class="o">=</span> <span class="n">arity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precedence</span> <span class="o">=</span> <span class="n">precedence</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(</span><span class="si">%r</span><span class="s2">, </span><span class="si">%r</span><span class="s2">, </span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precedence</span><span class="p">)</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
+
+<span class="k">class</span> <span class="nc">_StackOperator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">op</span> <span class="o">=</span> <span class="n">op</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="n">_open_paren</span> <span class="o">=</span> <span class="n">Operator</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">9999999</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_ParseContext</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unary_ops</span><span class="p">,</span> <span class="n">binary_ops</span><span class="p">,</span> <span class="n">atomic_types</span><span class="p">,</span> <span class="n">trace</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">op_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noun_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unary_ops</span> <span class="o">=</span> <span class="n">unary_ops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binary_ops</span> <span class="o">=</span> <span class="n">binary_ops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atomic_types</span> <span class="o">=</span> <span class="n">atomic_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span>
+
+    <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
+
+<span class="k">def</span> <span class="nf">_read_noun_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing open-paren&quot;</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackOperator</span><span class="p">(</span><span class="n">_open_paren</span><span class="p">,</span> <span class="n">token</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">unary_ops</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing unary op </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,))</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackOperator</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">unary_ops</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="n">token</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">atomic_types</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing noun </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">extra</span><span class="p">))</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ParseNode</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="p">[],</span>
+                                      <span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected a noun, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">relevant_code</span><span class="p">(),),</span>
+                            <span class="n">token</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span>
+    <span class="n">stackop</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">arity</span><span class="p">):</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reducing </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+    <span class="n">node</span> <span class="o">=</span> <span class="n">ParseNode</span><span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="n">stackop</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>
+                     <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">stackop</span><span class="o">.</span><span class="n">token</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span><span class="p">))</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_read_op_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found close-paren&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span> <span class="o">!=</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">:</span>
+            <span class="n">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;missing &#39;(&#39; or extra &#39;)&#39;&quot;</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span>
+        <span class="c1"># Expand the origin of the item on top of the noun stack to include</span>
+        <span class="c1"># the open and close parens:</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                                   <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="p">,</span>
+                                   <span class="n">token</span><span class="p">])</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">combined</span>
+        <span class="c1"># Pop the open-paren</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">binary_ops</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+        <span class="n">stackop</span> <span class="o">=</span> <span class="n">_StackOperator</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">binary_ops</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="n">token</span><span class="p">)</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op_stack</span>
+               <span class="ow">and</span> <span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">precedence</span> <span class="o">&lt;=</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">precedence</span><span class="p">):</span>
+            <span class="n">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stackop</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected an operator, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">relevant_code</span><span class="p">(),),</span>
+                            <span class="n">token</span><span class="p">)</span>
+
+<div class="viewcode-block" id="infix_parse"><a class="viewcode-back" href="../../generated/patsy.parse_formula.infix_parse.html#patsy.infix_parser.infix_parse">[docs]</a><span class="k">def</span> <span class="nf">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">atomic_types</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">token_source</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+
+    <span class="n">unary_ops</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">binary_ops</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">operators</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">op</span><span class="o">.</span><span class="n">precedence</span> <span class="o">&gt;</span> <span class="n">_open_paren</span><span class="o">.</span><span class="n">precedence</span>
+        <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">arity</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">unary_ops</span><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">op</span>
+        <span class="k">elif</span> <span class="n">op</span><span class="o">.</span><span class="n">arity</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">binary_ops</span><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">op</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;operators must be unary or binary&quot;</span><span class="p">)</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">_ParseContext</span><span class="p">(</span><span class="n">unary_ops</span><span class="p">,</span> <span class="n">binary_ops</span><span class="p">,</span> <span class="n">atomic_types</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+    <span class="c1"># This is an implementation of Dijkstra&#39;s shunting yard algorithm:</span>
+    <span class="c1">#   http://en.wikipedia.org/wiki/Shunting_yard_algorithm</span>
+    <span class="c1">#   http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm</span>
+
+    <span class="n">want_noun</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">token_source</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading next token (want_noun=</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">want_noun</span><span class="p">,))</span>
+        <span class="k">if</span> <span class="n">want_noun</span><span class="p">:</span>
+            <span class="n">want_noun</span> <span class="o">=</span> <span class="n">_read_noun_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">want_noun</span> <span class="o">=</span> <span class="n">_read_op_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;End of token stream&quot;</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">want_noun</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected a noun, but instead the expression ended&quot;</span><span class="p">,</span>
+                            <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;Unmatched &#39;(&#39;&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span></div>
+
+<span class="c1"># Much more thorough tests in parse_formula.py, this is just a smoke test:</span>
+<div class="viewcode-block" id="test_infix_parse"><a class="viewcode-back" href="../../generated/patsy.infix_parser.test_infix_parse.html#patsy.infix_parser.test_infix_parse">[docs]</a><span class="k">def</span> <span class="nf">test_infix_parse</span><span class="p">():</span>
+    <span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+           <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+           <span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">30</span><span class="p">)]</span>
+    <span class="n">atomic</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="s2">&quot;ATOM2&quot;</span><span class="p">]</span>
+    <span class="c1"># a + -b * (c + d)</span>
+    <span class="n">mock_origin</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">[</span><span class="n">Token</span><span class="p">(</span><span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;ATOM2&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="s2">&quot;ATOM2&quot;</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+              <span class="n">Token</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">,</span> <span class="n">mock_origin</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">)]</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">atomic</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">te</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">extra</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">tree</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="nb">type</span>
+        <span class="k">assert</span> <span class="n">tree</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">extra</span> <span class="o">==</span> <span class="n">extra</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span> <span class="o">==</span> <span class="p">[]</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">)</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ATOM2&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">)</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
+    <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;ATOM2&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="c1"># No ternary ops</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
+                  <span class="n">infix_parse</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)],</span> <span class="p">[</span><span class="s2">&quot;ATOMIC&quot;</span><span class="p">])</span>
+
+    <span class="c1"># smoke test just to make sure there are no egregious bugs in &#39;trace&#39;</span>
+    <span class="n">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">atomic</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

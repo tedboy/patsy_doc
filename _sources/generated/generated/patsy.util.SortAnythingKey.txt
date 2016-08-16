@@ -1,0 +1,21 @@
+patsy.util.SortAnythingKey
+==========================
+
+.. currentmodule:: patsy.util
+.. autoclass:: SortAnythingKey
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~SortAnythingKey.__init__
+
+
+
+
+

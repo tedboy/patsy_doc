@@ -1,0 +1,23 @@
+patsy.builtins.Sum
+==================
+
+.. currentmodule:: patsy.builtins
+.. autoclass:: Sum
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Sum.__init__
+   ~Sum.code_with_intercept
+   ~Sum.code_without_intercept
+
+
+
+
+

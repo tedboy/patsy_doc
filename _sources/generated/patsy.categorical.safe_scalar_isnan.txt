@@ -1,0 +1,6 @@
+patsy.categorical.safe_scalar_isnan
+===================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: safe_scalar_isnan

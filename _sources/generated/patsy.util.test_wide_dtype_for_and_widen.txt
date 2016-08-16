@@ -1,0 +1,6 @@
+patsy.util.test_wide_dtype_for_and_widen
+========================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_wide_dtype_for_and_widen

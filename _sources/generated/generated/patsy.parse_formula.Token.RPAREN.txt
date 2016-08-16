@@ -1,0 +1,6 @@
+patsy.parse_formula.Token.RPAREN
+================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autoattribute:: Token.RPAREN

@@ -1,0 +1,6 @@
+patsy.util.test_pandas_Categorical_accessors
+============================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_pandas_Categorical_accessors

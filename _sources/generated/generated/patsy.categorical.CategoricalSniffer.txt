@@ -1,0 +1,23 @@
+patsy.categorical.CategoricalSniffer
+====================================
+
+.. currentmodule:: patsy.categorical
+.. autoclass:: CategoricalSniffer
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~CategoricalSniffer.__init__
+   ~CategoricalSniffer.levels_contrast
+   ~CategoricalSniffer.sniff
+
+
+
+
+

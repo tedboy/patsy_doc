@@ -1,0 +1,6 @@
+patsy.infix_parser.PatsyError
+=============================
+
+.. currentmodule:: patsy.infix_parser
+
+.. autoexception:: PatsyError

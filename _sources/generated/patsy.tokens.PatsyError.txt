@@ -1,0 +1,6 @@
+patsy.tokens.PatsyError
+=======================
+
+.. currentmodule:: patsy.tokens
+
+.. autoexception:: PatsyError

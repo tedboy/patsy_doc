@@ -1,0 +1,6 @@
+patsy.parse_formula.python_tokenize
+===================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: python_tokenize

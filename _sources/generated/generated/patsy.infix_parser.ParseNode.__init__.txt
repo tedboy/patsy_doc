@@ -1,0 +1,6 @@
+patsy.infix_parser.ParseNode.__init__
+=====================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: ParseNode.__init__

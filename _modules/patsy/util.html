@@ -1,0 +1,916 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.util &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.util</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.util</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011-2013 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># Some generic utilities.</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;atleast_2d_column_default&quot;</span><span class="p">,</span> <span class="s2">&quot;uniqueify_list&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;widest_float&quot;</span><span class="p">,</span> <span class="s2">&quot;widest_complex&quot;</span><span class="p">,</span> <span class="s2">&quot;wide_dtype_for&quot;</span><span class="p">,</span> <span class="s2">&quot;widen&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;repr_pretty_delegate&quot;</span><span class="p">,</span> <span class="s2">&quot;repr_pretty_impl&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;SortAnythingKey&quot;</span><span class="p">,</span> <span class="s2">&quot;safe_scalar_isnan&quot;</span><span class="p">,</span> <span class="s2">&quot;safe_isnan&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;iterable&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;have_pandas&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;have_pandas_categorical&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;have_pandas_categorical_dtype&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;pandas_Categorical_from_codes&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;pandas_Categorical_categories&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;pandas_Categorical_codes&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;safe_is_pandas_categorical_dtype&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;safe_is_pandas_categorical&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;safe_issubdtype&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;no_pickling&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;assert_no_pickling&quot;</span><span class="p">,</span>
+           <span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="n">cStringIO</span> <span class="k">as</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">.compat</span> <span class="k">import</span> <span class="n">optional_dep_ok</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">have_pandas</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">have_pandas</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># Pandas versions &lt; 0.9.0 don&#39;t have Categorical</span>
+<span class="c1"># Can drop this guard whenever we drop support for such older versions of</span>
+<span class="c1"># pandas.</span>
+<span class="n">have_pandas_categorical</span> <span class="o">=</span> <span class="p">(</span><span class="n">have_pandas</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pandas</span><span class="p">,</span> <span class="s2">&quot;Categorical&quot;</span><span class="p">))</span>
+<span class="n">have_pandas_categorical_dtype</span> <span class="o">=</span> <span class="p">(</span><span class="n">have_pandas</span>
+                                  <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">common</span><span class="p">,</span>
+                                              <span class="s2">&quot;is_categorical_dtype&quot;</span><span class="p">))</span>
+
+<span class="c1"># Passes through Series and DataFrames, call np.asarray() on everything else</span>
+<div class="viewcode-block" id="asarray_or_pandas"><a class="viewcode-back" href="../../generated/patsy.util.asarray_or_pandas.html#patsy.categorical.asarray_or_pandas">[docs]</a><span class="k">def</span> <span class="nf">asarray_or_pandas</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subok</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+            <span class="c1"># The .name attribute on Series is discarded when passing through</span>
+            <span class="c1"># the constructor:</span>
+            <span class="c1">#   https://github.com/pydata/pandas/issues/1578</span>
+            <span class="n">extra_args</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">):</span>
+                <span class="n">extra_args</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="o">**</span><span class="n">extra_args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">subok</span><span class="o">=</span><span class="n">subok</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_asarray_or_pandas"><a class="viewcode-back" href="../../generated/patsy.util.test_asarray_or_pandas.html#patsy.categorical.test_asarray_or_pandas">[docs]</a><span class="k">def</span> <span class="nf">test_asarray_or_pandas</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])))</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]),</span> <span class="n">subok</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="ow">is</span> <span class="n">a</span>
+    <span class="n">a_copy</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a_copy</span><span class="p">)</span>
+    <span class="n">a_copy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a_copy</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
+                       <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">asarray_or_pandas</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">a_view</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">a_view</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">99</span>
+    <span class="k">assert</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">99</span>
+    <span class="k">global</span> <span class="n">have_pandas</span>
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="n">s_view1</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">s_view1</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">s_view1</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="n">s_view1</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">101</span>
+        <span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="mi">101</span>
+        <span class="n">s_copy</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">s_copy</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">s_copy</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">s_copy</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="n">s_copy</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">s_copy</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">s_view2</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">s_view2</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">s_view2</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">])</span>
+        <span class="n">s_view2</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">99</span>
+        <span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="mi">99</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span>
+                              <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span>
+                              <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="n">df_view1</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df_view1</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">101</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_view1</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_view1</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">df</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">101</span>
+        <span class="n">df_copy</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_copy</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_copy</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_copy</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="n">df_copy</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_copy</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+        <span class="n">df_converted</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">df_converted</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">df_converted</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_converted</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_converted</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="n">df_view2</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_view2</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df_view2</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+        <span class="c1"># This actually makes a copy, not a view, because of a pandas bug:</span>
+        <span class="c1">#   https://github.com/pydata/pandas/issues/1572</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df_view2</span><span class="p">)</span>
+        <span class="c1"># df_view2[0][0] = 99</span>
+        <span class="c1"># assert df[0][0] == 99</span>
+
+        <span class="n">had_pandas</span> <span class="o">=</span> <span class="n">have_pandas</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])))</span>
+                    <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])))</span>
+                    <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="n">had_pandas</span></div>
+
+<span class="c1"># Like np.atleast_2d, but this converts lower-dimensional arrays into columns,</span>
+<span class="c1"># instead of rows. It also converts ndarray subclasses into basic ndarrays,</span>
+<span class="c1"># which makes it easier to guarantee correctness. However, there are many</span>
+<span class="c1"># places in the code where we want to preserve pandas indexing information if</span>
+<span class="c1"># present, so there is also an option </span>
+<div class="viewcode-block" id="atleast_2d_column_default"><a class="viewcode-back" href="../../generated/patsy.util.atleast_2d_column_default.html#patsy.categorical.atleast_2d_column_default">[docs]</a><span class="k">def</span> <span class="nf">atleast_2d_column_default</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">preserve_pandas</span> <span class="ow">and</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">a</span>
+        <span class="c1"># fall through</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">a</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;=</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="test_atleast_2d_column_default"><a class="viewcode-back" href="../../generated/patsy.util.test_atleast_2d_column_default.html#patsy.categorical.test_atleast_2d_column_default">[docs]</a><span class="k">def</span> <span class="nf">test_atleast_2d_column_default</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">([[</span><span class="mi">1</span><span class="p">]])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">([[[</span><span class="mi">1</span><span class="p">]]])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">atleast_2d_column_default</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
+    <span class="k">global</span> <span class="n">have_pandas</span>
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])))</span>
+                <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])))</span>
+                <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
+                                               <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="o">==</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                               <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="o">==</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;hi&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;hi&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                                           <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+                                           <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="n">had_pandas</span> <span class="o">=</span> <span class="n">have_pandas</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span>
+                                                   <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                    <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]]),</span>
+                                                   <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                    <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="n">had_pandas</span></div>
+
+<span class="c1"># A version of .reshape() that knows how to down-convert a 1-column</span>
+<span class="c1"># pandas.DataFrame into a pandas.Series. Useful for code that wants to be</span>
+<span class="c1"># agnostic between 1d and 2d data, with the pattern:</span>
+<span class="c1">#   new_a = atleast_2d_column_default(a, preserve_pandas=True)</span>
+<span class="c1">#   # do stuff to new_a, which can assume it&#39;s always 2 dimensional</span>
+<span class="c1">#   return pandas_friendly_reshape(new_a, a.shape)</span>
+<div class="viewcode-block" id="pandas_friendly_reshape"><a class="viewcode-back" href="../../generated/patsy.util.pandas_friendly_reshape.html#patsy.categorical.pandas_friendly_reshape">[docs]</a><span class="k">def</span> <span class="nf">pandas_friendly_reshape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+    <span class="c1"># we have a DataFrame. Only supported reshapes are no-op, and</span>
+    <span class="c1"># single-column DataFrame -&gt; Series.</span>
+    <span class="k">if</span> <span class="n">new_shape</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">new_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;arrays have incompatible sizes&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot reshape a DataFrame with shape </span><span class="si">%s</span><span class="s2"> to shape </span><span class="si">%s</span><span class="s2">&quot;</span>
+                     <span class="o">%</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="test_pandas_friendly_reshape"><a class="viewcode-back" href="../../generated/patsy.util.test_pandas_friendly_reshape.html#patsy.categorical.test_pandas_friendly_reshape">[docs]</a><span class="k">def</span> <span class="nf">test_pandas_friendly_reshape</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="k">global</span> <span class="n">have_pandas</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                               <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+        <span class="n">noop</span> <span class="o">=</span> <span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">noop</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">noop</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">noop</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+        <span class="n">squozen</span> <span class="o">=</span> <span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">squozen</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">squozen</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">squozen</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;x&quot;</span>
+
+        <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">4</span><span class="p">,))</span>
+        <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="n">had_pandas</span> <span class="o">=</span> <span class="n">have_pandas</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># this will try to do a reshape directly, and DataFrames *have* no</span>
+            <span class="c1"># reshape method</span>
+            <span class="n">assert_raises</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">have_pandas</span> <span class="o">=</span> <span class="n">had_pandas</span></div>
+
+<div class="viewcode-block" id="uniqueify_list"><a class="viewcode-back" href="../../generated/patsy.util.uniqueify_list.html#patsy.categorical.uniqueify_list">[docs]</a><span class="k">def</span> <span class="nf">uniqueify_list</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="n">seq_new</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="n">seq_new</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">seq_new</span></div>
+
+<div class="viewcode-block" id="test_to_uniqueify_list"><a class="viewcode-back" href="../../generated/patsy.util.test_to_uniqueify_list.html#patsy.categorical.test_to_uniqueify_list">[docs]</a><span class="k">def</span> <span class="nf">test_to_uniqueify_list</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">uniqueify_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">uniqueify_list</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">uniqueify_list</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">==</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span></div>
+
+<span class="k">for</span> <span class="n">float_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;float128&quot;</span><span class="p">,</span> <span class="s2">&quot;float96&quot;</span><span class="p">,</span> <span class="s2">&quot;float64&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">float_type</span><span class="p">):</span>
+        <span class="n">widest_float</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">float_type</span><span class="p">)</span>
+        <span class="k">break</span>
+<span class="k">else</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
+    <span class="k">assert</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">complex_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;complex256&quot;</span><span class="p">,</span> <span class="s2">&quot;complex196&quot;</span><span class="p">,</span> <span class="s2">&quot;complex128&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">complex_type</span><span class="p">):</span>
+        <span class="n">widest_complex</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">np</span><span class="p">,</span> <span class="n">complex_type</span><span class="p">)</span>
+        <span class="k">break</span>
+<span class="k">else</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
+    <span class="k">assert</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="wide_dtype_for"><a class="viewcode-back" href="../../generated/patsy.util.wide_dtype_for.html#patsy.categorical.wide_dtype_for">[docs]</a><span class="k">def</span> <span class="nf">wide_dtype_for</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">widest_float</span>
+    <span class="k">elif</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">complexfloating</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">widest_complex</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot widen a non-numeric type </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,))</span></div>
+
+<div class="viewcode-block" id="widen"><a class="viewcode-back" href="../../generated/patsy.util.widen.html#patsy.categorical.widen">[docs]</a><span class="k">def</span> <span class="nf">widen</span><span class="p">(</span><span class="n">arr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">arr</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="test_wide_dtype_for_and_widen"><a class="viewcode-back" href="../../generated/patsy.util.test_wide_dtype_for_and_widen.html#patsy.categorical.test_wide_dtype_for_and_widen">[docs]</a><span class="k">def</span> <span class="nf">test_wide_dtype_for_and_widen</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">widen</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">widen</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">widest_float</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">widen</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">widen</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">widest_float</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">widen</span><span class="p">([</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">widen</span><span class="p">([</span><span class="mi">1</span><span class="o">+</span><span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">widest_complex</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">widen</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;hi&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PushbackAdapter"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.html#patsy.categorical.PushbackAdapter">[docs]</a><span class="k">class</span> <span class="nc">PushbackAdapter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="PushbackAdapter.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.__init__.html#patsy.categorical.PushbackAdapter.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">it</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_it</span> <span class="o">=</span> <span class="n">it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pushed</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="PushbackAdapter.push_back"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.push_back.html#patsy.categorical.PushbackAdapter.push_back">[docs]</a>    <span class="k">def</span> <span class="nf">push_back</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pushed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PushbackAdapter.next"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.next.html#patsy.categorical.PushbackAdapter.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pushed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pushed</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># May raise StopIteration</span>
+            <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">advance_iterator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_it</span><span class="p">)</span></div>
+    <span class="n">__next__</span> <span class="o">=</span> <span class="nb">next</span>
+
+<div class="viewcode-block" id="PushbackAdapter.peek"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.peek.html#patsy.categorical.PushbackAdapter.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">six</span><span class="o">.</span><span class="n">advance_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no more data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="PushbackAdapter.has_more"><a class="viewcode-back" href="../../generated/generated/patsy.util.PushbackAdapter.has_more.html#patsy.categorical.PushbackAdapter.has_more">[docs]</a>    <span class="k">def</span> <span class="nf">has_more</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div></div>
+
+<div class="viewcode-block" id="test_PushbackAdapter"><a class="viewcode-back" href="../../generated/patsy.util.test_PushbackAdapter.html#patsy.categorical.test_PushbackAdapter">[docs]</a><span class="k">def</span> <span class="nf">test_PushbackAdapter</span><span class="p">():</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="n">PushbackAdapter</span><span class="p">(</span><span class="nb">iter</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">has_more</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">six</span><span class="o">.</span><span class="n">advance_iterator</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">it</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">six</span><span class="o">.</span><span class="n">advance_iterator</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">six</span><span class="o">.</span><span class="n">advance_iterator</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="n">it</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span> <span class="o">==</span> <span class="mi">10</span>
+    <span class="n">it</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span> <span class="o">==</span> <span class="mi">20</span>
+    <span class="k">assert</span> <span class="n">it</span><span class="o">.</span><span class="n">has_more</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">it</span><span class="o">.</span><span class="n">has_more</span><span class="p">()</span></div>
+
+<span class="c1"># The IPython pretty-printer gives very nice output that is difficult to get</span>
+<span class="c1"># otherwise, e.g., look how much more readable this is than if it were all</span>
+<span class="c1"># smooshed onto one line:</span>
+<span class="c1"># </span>
+<span class="c1">#    ModelDesc(input_code=&#39;y ~ x*asdf&#39;,</span>
+<span class="c1">#              lhs_terms=[Term([EvalFactor(&#39;y&#39;)])],</span>
+<span class="c1">#              rhs_terms=[Term([]),</span>
+<span class="c1">#                         Term([EvalFactor(&#39;x&#39;)]),</span>
+<span class="c1">#                         Term([EvalFactor(&#39;asdf&#39;)]),</span>
+<span class="c1">#                         Term([EvalFactor(&#39;x&#39;), EvalFactor(&#39;asdf&#39;)])],</span>
+<span class="c1">#              )</span>
+<span class="c1">#              </span>
+<span class="c1"># But, we don&#39;t want to assume it always exists; nor do we want to be</span>
+<span class="c1"># re-writing every repr function twice, once for regular repr and once for</span>
+<span class="c1"># the pretty printer. So, here&#39;s an ugly fallback implementation that can be</span>
+<span class="c1"># used unconditionally to implement __repr__ in terms of _pretty_repr_.</span>
+<span class="c1">#</span>
+<span class="c1"># Pretty printer docs:</span>
+<span class="c1">#   http://ipython.org/ipython-doc/dev/api/generated/IPython.lib.pretty.html</span>
+
+<span class="k">class</span> <span class="nc">_MiniPPrinter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indentation</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">breakable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">begin_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">end_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pretty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_repr_pretty_&quot;</span><span class="p">):</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">getvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_mini_pretty</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+   <span class="n">printer</span> <span class="o">=</span> <span class="n">_MiniPPrinter</span><span class="p">()</span>
+   <span class="n">printer</span><span class="o">.</span><span class="n">pretty</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+   <span class="k">return</span> <span class="n">printer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+<div class="viewcode-block" id="repr_pretty_delegate"><a class="viewcode-back" href="../../generated/patsy.util.repr_pretty_delegate.html#patsy.categorical.repr_pretty_delegate">[docs]</a><span class="k">def</span> <span class="nf">repr_pretty_delegate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="c1"># If IPython is already loaded, then might as well use it. (Most commonly</span>
+    <span class="c1"># this will occur if we are in an IPython session, but somehow someone has</span>
+    <span class="c1"># called repr() directly. This can happen for example if printing an</span>
+    <span class="c1"># container like a namedtuple that IPython lacks special code for</span>
+    <span class="c1"># pretty-printing.)  But, if IPython is not already imported, we do not</span>
+    <span class="c1"># attempt to import it. This makes patsy itself faster to import (as of</span>
+    <span class="c1"># Nov. 2012 I measured the extra overhead from loading IPython as ~4</span>
+    <span class="c1"># seconds on a cold cache), it prevents IPython from automatically</span>
+    <span class="c1"># spawning a bunch of child processes (!) which may not be what you want</span>
+    <span class="c1"># if you are not otherwise using IPython, and it avoids annoying the</span>
+    <span class="c1"># pandas people who have some hack to tell whether you are using IPython</span>
+    <span class="c1"># in their test suite (see patsy bug #12).</span>
+    <span class="k">if</span> <span class="n">optional_dep_ok</span> <span class="ow">and</span> <span class="s2">&quot;IPython&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">IPython.lib.pretty</span> <span class="k">import</span> <span class="n">pretty</span>
+        <span class="k">return</span> <span class="n">pretty</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_mini_pretty</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="repr_pretty_impl"><a class="viewcode-back" href="../../generated/patsy.util.repr_pretty_impl.html#patsy.categorical.repr_pretty_impl">[docs]</a><span class="k">def</span> <span class="nf">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">begin_group</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span>
+    <span class="k">def</span> <span class="nf">new_item</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">started</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">breakable</span><span class="p">()</span>
+        <span class="n">started</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">new_item</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">pretty</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">new_item</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">begin_group</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,))</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">pretty</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">end_group</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">end_group</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_repr_pretty"><a class="viewcode-back" href="../../generated/patsy.util.test_repr_pretty.html#patsy.categorical.test_repr_pretty">[docs]</a><span class="k">def</span> <span class="nf">test_repr_pretty</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">repr_pretty_delegate</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&#39;asdf&#39;&quot;</span>
+    <span class="n">printer</span> <span class="o">=</span> <span class="n">_MiniPPrinter</span><span class="p">()</span>
+    <span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">printer</span><span class="p">,</span> <span class="n">MyClass</span><span class="p">(),</span>
+                     <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">,</span> <span class="s2">&quot;asdf&quot;</span><span class="p">)])</span>
+    <span class="k">assert</span> <span class="n">printer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;MyClass(&#39;a&#39;, 1, foo=&#39;bar&#39;, asdf=&#39;asdf&#39;)&quot;</span></div>
+
+<span class="c1"># In Python 3, objects of different types are not generally comparable, so a</span>
+<span class="c1"># list of heterogenous types cannot be sorted. This implements a Python 2</span>
+<span class="c1"># style comparison for arbitrary types. (It works on Python 2 too, but just</span>
+<span class="c1"># gives you the built-in ordering.) To understand why this is tricky, consider</span>
+<span class="c1"># this example:</span>
+<span class="c1">#   a = 1    # type &#39;int&#39;</span>
+<span class="c1">#   b = 1.5  # type &#39;float&#39;</span>
+<span class="c1">#   class gggg:</span>
+<span class="c1">#       pass</span>
+<span class="c1">#   c = gggg()</span>
+<span class="c1">#   sorted([a, b, c])</span>
+<span class="c1"># The fallback ordering sorts by class name, so according to the fallback</span>
+<span class="c1"># ordering, we have b &lt; c &lt; a. But, of course, a and b are comparable (even</span>
+<span class="c1"># though they&#39;re of different types), so we also have a &lt; b. This is</span>
+<span class="c1"># inconsistent. There is no general solution to this problem (which I guess is</span>
+<span class="c1"># why Python 3 stopped trying), but the worst offender is all the different</span>
+<span class="c1"># &quot;numeric&quot; classes (int, float, complex, decimal, rational...), so as a</span>
+<span class="c1"># special-case, we sort all numeric objects to the start of the list.</span>
+<span class="c1"># (In Python 2, there is also a similar special case for str and unicode, but</span>
+<span class="c1"># we don&#39;t have to worry about that for Python 3.)</span>
+<div class="viewcode-block" id="SortAnythingKey"><a class="viewcode-back" href="../../generated/generated/patsy.util.SortAnythingKey.html#patsy.categorical.SortAnythingKey">[docs]</a><span class="k">class</span> <span class="nc">SortAnythingKey</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SortAnythingKey.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.util.SortAnythingKey.__init__.html#patsy.categorical.SortAnythingKey.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span></div>
+
+    <span class="k">def</span> <span class="nf">_python_lt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_obj</span><span class="p">):</span>
+        <span class="c1"># On Py2, &lt; never raises an error, so this is just &lt;. (Actually it</span>
+        <span class="c1"># does raise a TypeError for comparing complex to numeric, but not for</span>
+        <span class="c1"># comparisons of complex to other types. Sigh. Whatever.)</span>
+        <span class="c1"># On Py3, this returns a bool if available, and otherwise returns</span>
+        <span class="c1"># NotImplemented</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">&lt;</span> <span class="n">other_obj</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SortAnythingKey</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_python_lt</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">NotImplemented</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="c1"># Okay, that didn&#39;t work, time to fall back.</span>
+        <span class="c1"># If one of these is a number, then it is smaller.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_python_lt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">NotImplemented</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">_python_lt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">NotImplemented</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="c1"># Also check ==, since it may well be defined for otherwise</span>
+        <span class="c1"># unorderable objects, and if so then we should be consistent with</span>
+        <span class="c1"># it:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">obj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="c1"># Otherwise, we break ties based on class name and memory position</span>
+        <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">))</span>
+                <span class="o">&lt;</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">obj</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="test_SortAnythingKey"><a class="viewcode-back" href="../../generated/patsy.util.test_SortAnythingKey.html#patsy.categorical.test_SortAnythingKey">[docs]</a><span class="k">def</span> <span class="nf">test_SortAnythingKey</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">([</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">SortAnythingKey</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">SortAnythingKey</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">sorted</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mf">20.5</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">SortAnythingKey</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mf">20.5</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
+    <span class="k">class</span> <span class="nc">a</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">class</span> <span class="nc">b</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">class</span> <span class="nc">z</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="n">a_obj</span> <span class="o">=</span> <span class="n">a</span><span class="p">()</span>
+    <span class="n">b_obj</span> <span class="o">=</span> <span class="n">b</span><span class="p">()</span>
+    <span class="n">z_obj</span> <span class="o">=</span> <span class="n">z</span><span class="p">()</span>
+    <span class="n">o_obj</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">sorted</span><span class="p">([</span><span class="n">z_obj</span><span class="p">,</span> <span class="n">a_obj</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">b_obj</span><span class="p">,</span> <span class="n">o_obj</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">SortAnythingKey</span><span class="p">)</span>
+            <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">a_obj</span><span class="p">,</span> <span class="n">b_obj</span><span class="p">,</span> <span class="n">o_obj</span><span class="p">,</span> <span class="n">z_obj</span><span class="p">])</span></div>
+
+<span class="c1"># NaN checking functions that work on arbitrary objects, on old Python</span>
+<span class="c1"># versions (math.isnan is only in 2.6+), etc.</span>
+<div class="viewcode-block" id="safe_scalar_isnan"><a class="viewcode-back" href="../../generated/patsy.util.safe_scalar_isnan.html#patsy.categorical.safe_scalar_isnan">[docs]</a><span class="k">def</span> <span class="nf">safe_scalar_isnan</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+<span class="n">safe_isnan</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">safe_scalar_isnan</span><span class="p">,</span> <span class="n">otypes</span><span class="o">=</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span>
+
+<div class="viewcode-block" id="test_safe_scalar_isnan"><a class="viewcode-back" href="../../generated/patsy.util.test_safe_scalar_isnan.html#patsy.categorical.test_safe_scalar_isnan">[docs]</a><span class="k">def</span> <span class="nf">test_safe_scalar_isnan</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="s2">&quot;sadf&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_scalar_isnan</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="test_safe_isnan"><a class="viewcode-back" href="../../generated/patsy.util.test_safe_isnan.html#patsy.categorical.test_safe_isnan">[docs]</a><span class="k">def</span> <span class="nf">test_safe_isnan</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">safe_isnan</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="s2">&quot;asdf&quot;</span><span class="p">]),</span>
+                          <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">safe_isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">safe_isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_isnan</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># raw isnan raises a *different* error for strings than for objects:</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_isnan</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="iterable"><a class="viewcode-back" href="../../generated/patsy.util.iterable.html#patsy.categorical.iterable">[docs]</a><span class="k">def</span> <span class="nf">iterable</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">iter</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="test_iterable"><a class="viewcode-back" href="../../generated/patsy.util.test_iterable.html#patsy.categorical.test_iterable">[docs]</a><span class="k">def</span> <span class="nf">test_iterable</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">iterable</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">iterable</span><span class="p">([])</span>
+    <span class="k">assert</span> <span class="n">iterable</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">iterable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">iterable</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span></div>
+
+<span class="c1">##### Handling Pandas&#39;s categorical stuff is horrible and hateful</span>
+
+<span class="c1"># Basically they decided that they didn&#39;t like how numpy does things, so their</span>
+<span class="c1"># categorical stuff is *kinda* like how numpy would do it (e.g. they have a</span>
+<span class="c1"># special &quot;.dtype&quot; attribute to mark categorical data), so by default you&#39;ll</span>
+<span class="c1"># find yourself using the same code paths to handle pandas categorical data</span>
+<span class="c1"># and other non-categorical data. BUT, all the idioms for detecting</span>
+<span class="c1"># categorical data blow up with errors if you try them with real numpy dtypes,</span>
+<span class="c1"># and all numpy&#39;s idioms for detecting non-categorical types blow up with</span>
+<span class="c1"># errors if you try them with pandas categorical stuff. So basically they have</span>
+<span class="c1"># just poisoned all code that touches dtypes; the old numpy stuff is unsafe,</span>
+<span class="c1"># and you must use special code like below.</span>
+<span class="c1">#</span>
+<span class="c1"># Also there are hoops to jump through to handle both the old style</span>
+<span class="c1"># (Categorical objects) and new-style (Series with dtype=&quot;category&quot;).</span>
+
+<span class="c1"># Needed to support pandas &lt; 0.15</span>
+<div class="viewcode-block" id="pandas_Categorical_from_codes"><a class="viewcode-back" href="../../generated/patsy.util.pandas_Categorical_from_codes.html#patsy.categorical.pandas_Categorical_from_codes">[docs]</a><span class="k">def</span> <span class="nf">pandas_Categorical_from_codes</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="n">categories</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">have_pandas_categorical</span>
+
+    <span class="c1"># Old versions of pandas sometimes fail to coerce this to an array and</span>
+    <span class="c1"># just return it directly from .labels (?!).</span>
+    <span class="n">codes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">,</span> <span class="s2">&quot;from_codes&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="o">.</span><span class="n">from_codes</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">codes</span><span class="p">,</span> <span class="n">categories</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_pandas_Categorical_from_codes"><a class="viewcode-back" href="../../generated/patsy.util.test_pandas_Categorical_from_codes.html#patsy.categorical.test_pandas_Categorical_from_codes">[docs]</a><span class="k">def</span> <span class="nf">test_pandas_Categorical_from_codes</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">pandas_Categorical_from_codes</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">c</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+<span class="c1"># Needed to support pandas &lt; 0.15</span>
+<div class="viewcode-block" id="pandas_Categorical_categories"><a class="viewcode-back" href="../../generated/patsy.util.pandas_Categorical_categories.html#patsy.categorical.pandas_Categorical_categories">[docs]</a><span class="k">def</span> <span class="nf">pandas_Categorical_categories</span><span class="p">(</span><span class="n">cat</span><span class="p">):</span>
+    <span class="c1"># In 0.15+, a categorical Series has a .cat attribute which is similar to</span>
+    <span class="c1"># a Categorical object, and Categorical objects are what have .categories</span>
+    <span class="c1"># and .codes attributes.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">):</span>
+        <span class="n">cat</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">cat</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="s2">&quot;categories&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cat</span><span class="o">.</span><span class="n">categories</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cat</span><span class="o">.</span><span class="n">levels</span></div>
+
+<span class="c1"># Needed to support pandas &lt; 0.15</span>
+<div class="viewcode-block" id="pandas_Categorical_codes"><a class="viewcode-back" href="../../generated/patsy.util.pandas_Categorical_codes.html#patsy.categorical.pandas_Categorical_codes">[docs]</a><span class="k">def</span> <span class="nf">pandas_Categorical_codes</span><span class="p">(</span><span class="n">cat</span><span class="p">):</span>
+    <span class="c1"># In 0.15+, a categorical Series has a .cat attribute which is a</span>
+    <span class="c1"># Categorical object, and Categorical objects are what have .categories /</span>
+    <span class="c1"># .codes attributes.</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">):</span>
+        <span class="n">cat</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">cat</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="s2">&quot;codes&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cat</span><span class="o">.</span><span class="n">codes</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cat</span><span class="o">.</span><span class="n">labels</span></div>
+
+<div class="viewcode-block" id="test_pandas_Categorical_accessors"><a class="viewcode-back" href="../../generated/patsy.util.test_pandas_Categorical_accessors.html#patsy.categorical.test_pandas_Categorical_accessors">[docs]</a><span class="k">def</span> <span class="nf">test_pandas_Categorical_accessors</span><span class="p">():</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">pandas_Categorical_from_codes</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pandas_Categorical_categories</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pandas_Categorical_codes</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">have_pandas_categorical_dtype</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pandas_Categorical_categories</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">pandas_Categorical_codes</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+<span class="c1"># Needed to support pandas &gt;= 0.15 (!)</span>
+<div class="viewcode-block" id="safe_is_pandas_categorical_dtype"><a class="viewcode-back" href="../../generated/patsy.util.safe_is_pandas_categorical_dtype.html#patsy.categorical.safe_is_pandas_categorical_dtype">[docs]</a><span class="k">def</span> <span class="nf">safe_is_pandas_categorical_dtype</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_pandas_categorical_dtype</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># WTF this incredibly crucial function is not even publically exported.</span>
+    <span class="c1"># Also if you read its source it uses a bare except: block which is broken</span>
+    <span class="c1"># by definition, but oh well there is not much I can do about this.</span>
+    <span class="k">return</span> <span class="n">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">is_categorical_dtype</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span></div>
+
+<span class="c1"># Needed to support pandas &gt;= 0.15 (!)</span>
+<div class="viewcode-block" id="safe_is_pandas_categorical"><a class="viewcode-back" href="../../generated/patsy.util.safe_is_pandas_categorical.html#patsy.categorical.safe_is_pandas_categorical">[docs]</a><span class="k">def</span> <span class="nf">safe_is_pandas_categorical</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_pandas_categorical</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">safe_is_pandas_categorical_dtype</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="test_safe_is_pandas_categorical"><a class="viewcode-back" href="../../generated/patsy.util.test_safe_is_pandas_categorical.html#patsy.categorical.test_safe_is_pandas_categorical">[docs]</a><span class="k">def</span> <span class="nf">test_safe_is_pandas_categorical</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_is_pandas_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">have_pandas_categorical</span><span class="p">:</span>
+        <span class="n">c_obj</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Categorical</span><span class="o">.</span><span class="n">from_array</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">safe_is_pandas_categorical</span><span class="p">(</span><span class="n">c_obj</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">have_pandas_categorical_dtype</span><span class="p">:</span>
+        <span class="n">s_obj</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">safe_is_pandas_categorical</span><span class="p">(</span><span class="n">s_obj</span><span class="p">)</span></div>
+
+<span class="c1"># Needed to support pandas &gt;= 0.15 (!)</span>
+<span class="c1"># Calling np.issubdtype on a pandas categorical will blow up -- the officially</span>
+<span class="c1"># recommended solution is to replace every piece of code like</span>
+<span class="c1">#   np.issubdtype(foo.dtype, bool)</span>
+<span class="c1"># with code like</span>
+<span class="c1">#   isinstance(foo.dtype, np.dtype) and np.issubdtype(foo.dtype, bool)</span>
+<span class="c1"># or</span>
+<span class="c1">#   not pandas.is_categorical_dtype(foo.dtype) and issubdtype(foo.dtype, bool)</span>
+<span class="c1"># We do the latter (with extra hoops) because the isinstance check is not</span>
+<span class="c1"># safe. See</span>
+<span class="c1">#   https://github.com/pydata/pandas/issues/9581</span>
+<span class="c1">#   https://github.com/pydata/pandas/issues/9581#issuecomment-77099564</span>
+<div class="viewcode-block" id="safe_issubdtype"><a class="viewcode-back" href="../../generated/patsy.util.safe_issubdtype.html#patsy.categorical.safe_issubdtype">[docs]</a><span class="k">def</span> <span class="nf">safe_issubdtype</span><span class="p">(</span><span class="n">dt1</span><span class="p">,</span> <span class="n">dt2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">safe_is_pandas_categorical_dtype</span><span class="p">(</span><span class="n">dt1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">dt1</span><span class="p">,</span> <span class="n">dt2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_safe_issubdtype"><a class="viewcode-back" href="../../generated/patsy.util.test_safe_issubdtype.html#patsy.categorical.test_safe_issubdtype">[docs]</a><span class="k">def</span> <span class="nf">test_safe_issubdtype</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">have_pandas_categorical_dtype</span><span class="p">:</span>
+        <span class="n">bad_dtype</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;category&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">safe_issubdtype</span><span class="p">(</span><span class="n">bad_dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="no_pickling"><a class="viewcode-back" href="../../generated/patsy.util.no_pickling.html#patsy.categorical.no_pickling">[docs]</a><span class="k">def</span> <span class="nf">no_pickling</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+        <span class="s2">&quot;Sorry, pickling not yet supported. &quot;</span>
+        <span class="s2">&quot;See https://github.com/pydata/patsy/issues/26 if you want to &quot;</span>
+        <span class="s2">&quot;help.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="assert_no_pickling"><a class="viewcode-back" href="../../generated/patsy.util.assert_no_pickling.html#patsy.categorical.assert_no_pickling">[docs]</a><span class="k">def</span> <span class="nf">assert_no_pickling</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pickle</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

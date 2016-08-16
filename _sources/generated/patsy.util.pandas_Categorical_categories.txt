@@ -1,0 +1,6 @@
+patsy.util.pandas_Categorical_categories
+========================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: pandas_Categorical_categories

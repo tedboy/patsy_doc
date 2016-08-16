@@ -1,0 +1,62 @@
+patsy.builtins
+==============
+
+.. automodule:: patsy.builtins
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      C
+      I
+      Q
+      bs
+      cc
+      center
+      cr
+      scale
+      standardize
+      te
+      test_I
+      test_Q
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      ContrastMatrix
+      Diff
+      Helmert
+      Poly
+      Sum
+      Treatment
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.builtins.ContrastMatrix
+       generated/patsy.builtins.Diff
+       generated/patsy.builtins.Helmert
+       generated/patsy.builtins.Poly
+       generated/patsy.builtins.Sum
+       generated/patsy.builtins.Treatment
+
+   
+   
+
+   
+   
+   

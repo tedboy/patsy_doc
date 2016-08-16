@@ -1,0 +1,6 @@
+patsy.tokens.pretty_untokenize
+==============================
+
+.. currentmodule:: patsy.tokens
+
+.. autofunction:: pretty_untokenize

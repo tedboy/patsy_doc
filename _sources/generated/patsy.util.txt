@@ -1,0 +1,75 @@
+patsy.util
+==========
+
+.. automodule:: patsy.util
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      asarray_or_pandas
+      assert_no_pickling
+      atleast_2d_column_default
+      iterable
+      no_pickling
+      pandas_Categorical_categories
+      pandas_Categorical_codes
+      pandas_Categorical_from_codes
+      pandas_friendly_reshape
+      repr_pretty_delegate
+      repr_pretty_impl
+      safe_is_pandas_categorical
+      safe_is_pandas_categorical_dtype
+      safe_issubdtype
+      safe_scalar_isnan
+      test_PushbackAdapter
+      test_SortAnythingKey
+      test_asarray_or_pandas
+      test_atleast_2d_column_default
+      test_iterable
+      test_pandas_Categorical_accessors
+      test_pandas_Categorical_from_codes
+      test_pandas_friendly_reshape
+      test_repr_pretty
+      test_safe_is_pandas_categorical
+      test_safe_isnan
+      test_safe_issubdtype
+      test_safe_scalar_isnan
+      test_to_uniqueify_list
+      test_wide_dtype_for_and_widen
+      uniqueify_list
+      wide_dtype_for
+      widen
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      PushbackAdapter
+      SortAnythingKey
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.util.PushbackAdapter
+       generated/patsy.util.SortAnythingKey
+
+   
+   
+
+   
+   
+   

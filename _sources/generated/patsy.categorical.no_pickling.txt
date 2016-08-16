@@ -1,0 +1,6 @@
+patsy.categorical.no_pickling
+=============================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: no_pickling

@@ -1,0 +1,6 @@
+patsy.builtins.test_Q
+=====================
+
+.. currentmodule:: patsy.builtins
+
+.. autofunction:: test_Q

@@ -1,0 +1,6 @@
+patsy.util.no_pickling
+======================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: no_pickling

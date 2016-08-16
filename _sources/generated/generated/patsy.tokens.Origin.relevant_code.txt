@@ -1,0 +1,6 @@
+patsy.tokens.Origin.relevant_code
+=================================
+
+.. currentmodule:: patsy.tokens
+
+.. automethod:: Origin.relevant_code

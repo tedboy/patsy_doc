@@ -1,0 +1,6 @@
+patsy.categorical.test_guess_categorical
+========================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: test_guess_categorical

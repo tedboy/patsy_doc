@@ -1,0 +1,6 @@
+patsy.categorical.assert_no_pickling
+====================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: assert_no_pickling

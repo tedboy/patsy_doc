@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>patsy.tokens &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="patsy" href="../patsy.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../generated/patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../patsy.html">patsy</a> &raquo;</li>
+        
+      <li>patsy.tokens</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for patsy.tokens</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of Patsy</span>
+<span class="c1"># Copyright (C) 2011 Nathaniel Smith &lt;njs@pobox.com&gt;</span>
+<span class="c1"># See file LICENSE.txt for license information.</span>
+
+<span class="c1"># Utilities for dealing with Python code at the token level.</span>
+<span class="c1">#</span>
+<span class="c1"># Includes:</span>
+<span class="c1">#   a &quot;pretty printer&quot; that converts a sequence of tokens back into a</span>
+<span class="c1">#       readable, white-space normalized string.</span>
+<span class="c1">#   a utility function to replace calls to global functions with calls to</span>
+<span class="c1">#       other functions</span>
+
+<span class="kn">import</span> <span class="nn">tokenize</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="n">cStringIO</span> <span class="k">as</span> <span class="n">StringIO</span>
+
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;python_tokenize&quot;</span><span class="p">,</span> <span class="s2">&quot;pretty_untokenize&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;normalize_token_spacing&quot;</span><span class="p">]</span>
+
+<span class="c1"># A convenience wrapper around tokenize.generate_tokens. yields tuples</span>
+<span class="c1">#   (tokenize type, token string, origin object)</span>
+<div class="viewcode-block" id="python_tokenize"><a class="viewcode-back" href="../../generated/patsy.tokens.python_tokenize.html#patsy.parse_formula.python_tokenize">[docs]</a><span class="k">def</span> <span class="nf">python_tokenize</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+    <span class="c1"># Since formulas can only contain Python expressions, and Python</span>
+    <span class="c1"># expressions cannot meaningfully contain newlines, we&#39;ll just remove all</span>
+    <span class="c1"># the newlines up front to avoid any complications:</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">generate_tokens</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">readline</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">pytype</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">start</span><span class="p">),</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span> <span class="n">code</span><span class="p">)</span> <span class="ow">in</span> <span class="n">it</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pytype</span> <span class="o">==</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">ENDMARKER</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">origin</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">pytype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NL</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">NEWLINE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pytype</span> <span class="o">==</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">ERRORTOKEN</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;error tokenizing input &quot;</span>
+                                 <span class="s2">&quot;(maybe an unclosed string?)&quot;</span><span class="p">,</span>
+                                 <span class="n">origin</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pytype</span> <span class="o">==</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">COMMENT</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;comments are not allowed&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">pytype</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stream ended without ENDMARKER?!?&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">TokenError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># TokenError is raised iff the tokenizer thinks that there is</span>
+        <span class="c1"># some sort of multi-line construct in progress (e.g., an</span>
+        <span class="c1"># unclosed parentheses, which in Python lets a virtual line</span>
+        <span class="c1"># continue past the end of the physical line), and it hits the</span>
+        <span class="c1"># end of the source text. We have our own error handling for</span>
+        <span class="c1"># such cases, so just treat this as an end-of-stream.</span>
+        <span class="c1"># </span>
+        <span class="c1"># Just in case someone adds some other error case:</span>
+        <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;EOF in multi-line&quot;</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="test_python_tokenize"><a class="viewcode-back" href="../../generated/patsy.tokens.test_python_tokenize.html#patsy.parse_formula.test_python_tokenize">[docs]</a><span class="k">def</span> <span class="nf">test_python_tokenize</span><span class="p">():</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;a + (foo * -1)&quot;</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">python_tokenize</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">)),</span>
+                <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">tokens</span> <span class="o">==</span> <span class="n">expected</span>
+
+    <span class="n">code2</span> <span class="o">=</span> <span class="s2">&quot;a + (b&quot;</span>
+    <span class="n">tokens2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">python_tokenize</span><span class="p">(</span><span class="n">code2</span><span class="p">))</span>
+    <span class="n">expected2</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">OP</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+                 <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))]</span>
+    <span class="k">assert</span> <span class="n">tokens2</span> <span class="o">==</span> <span class="n">expected2</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">python_tokenize</span><span class="p">(</span><span class="s2">&quot;a b # c&quot;</span><span class="p">))</span>
+
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="n">python_tokenize</span><span class="p">(</span><span class="s2">&quot;a b </span><span class="se">\&quot;</span><span class="s2">c&quot;</span><span class="p">))</span></div>
+
+<span class="n">_python_space_both</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="s2">&quot;+-*/%&amp;^|&lt;&gt;&quot;</span><span class="p">)</span>
+                      <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;==&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;!=&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">,</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;&lt;&lt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&gt;&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;**&quot;</span><span class="p">,</span> <span class="s2">&quot;//&quot;</span><span class="p">])</span>
+<span class="n">_python_space_before</span> <span class="o">=</span> <span class="p">(</span><span class="n">_python_space_both</span>
+                        <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;!&quot;</span><span class="p">,</span> <span class="s2">&quot;~&quot;</span><span class="p">])</span>
+<span class="n">_python_space_after</span> <span class="o">=</span> <span class="p">(</span><span class="n">_python_space_both</span>
+                       <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="pretty_untokenize"><a class="viewcode-back" href="../../generated/patsy.tokens.pretty_untokenize.html#patsy.parse_formula.pretty_untokenize">[docs]</a><span class="k">def</span> <span class="nf">pretty_untokenize</span><span class="p">(</span><span class="n">typed_tokens</span><span class="p">):</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">prev_was_space_delim</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">prev_wants_space</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">prev_was_open_paren_or_comma</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">prev_was_object_like</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">brackets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">typed_tokens</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">token_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">INDENT</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">DEDENT</span><span class="p">,</span>
+                                  <span class="n">tokenize</span><span class="o">.</span><span class="n">NEWLINE</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">NL</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">token_type</span> <span class="o">==</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">ENDMARKER</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">token_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">STRING</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">prev_wants_space</span> <span class="ow">or</span> <span class="n">prev_was_space_delim</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+            <span class="n">prev_wants_space</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">prev_was_space_delim</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;{&quot;</span><span class="p">):</span>
+                <span class="n">brackets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">brackets</span> <span class="ow">and</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;}&quot;</span><span class="p">):</span>
+                <span class="n">brackets</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">this_wants_space_before</span> <span class="o">=</span> <span class="p">(</span><span class="n">token</span> <span class="ow">in</span> <span class="n">_python_space_before</span><span class="p">)</span>
+            <span class="n">this_wants_space_after</span> <span class="o">=</span> <span class="p">(</span><span class="n">token</span> <span class="ow">in</span> <span class="n">_python_space_after</span><span class="p">)</span>
+            <span class="c1"># Special case for slice syntax: foo[:10]</span>
+            <span class="c1"># Otherwise &quot;:&quot; is spaced after, like: &quot;{1: ...}&quot;, &quot;if a: ...&quot;</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;:&quot;</span> <span class="ow">and</span> <span class="n">brackets</span> <span class="ow">and</span> <span class="n">brackets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+                <span class="n">this_wants_space_after</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># Special case for foo(*args), foo(a, *args):</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="s2">&quot;**&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">prev_was_open_paren_or_comma</span><span class="p">:</span>
+                <span class="n">this_wants_space_before</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">this_wants_space_after</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># Special case for &quot;a = foo(b=1)&quot;:</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;=&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">brackets</span><span class="p">:</span>
+                <span class="n">this_wants_space_before</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">this_wants_space_after</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># Special case for unary -, +. Our heuristic is that if we see the</span>
+            <span class="c1"># + or - after something that looks like an object (a NAME,</span>
+            <span class="c1"># NUMBER, STRING, or close paren) then it is probably binary,</span>
+            <span class="c1"># otherwise it is probably unary.</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prev_was_object_like</span><span class="p">:</span>
+                <span class="n">this_wants_space_before</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">this_wants_space_after</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">prev_wants_space</span> <span class="ow">or</span> <span class="n">this_wants_space_before</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+            <span class="n">prev_wants_space</span> <span class="o">=</span> <span class="n">this_wants_space_after</span>
+            <span class="n">prev_was_space_delim</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">token_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tokenize</span><span class="o">.</span><span class="n">NAME</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">NUMBER</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">STRING</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;)&quot;</span><span class="p">):</span>
+            <span class="n">prev_was_object_like</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prev_was_object_like</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">prev_was_open_paren_or_comma</span> <span class="o">=</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="normalize_token_spacing"><a class="viewcode-back" href="../../generated/patsy.tokens.normalize_token_spacing.html#patsy.parse_formula.normalize_token_spacing">[docs]</a><span class="k">def</span> <span class="nf">normalize_token_spacing</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+              <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokenize</span><span class="o">.</span><span class="n">generate_tokens</span><span class="p">(</span><span class="n">StringIO</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">readline</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">pretty_untokenize</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_pretty_untokenize_and_normalize_token_spacing"><a class="viewcode-back" href="../../generated/patsy.tokens.test_pretty_untokenize_and_normalize_token_spacing.html#patsy.parse_formula.test_pretty_untokenize_and_normalize_token_spacing">[docs]</a><span class="k">def</span> <span class="nf">test_pretty_untokenize_and_normalize_token_spacing</span><span class="p">():</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;1 + 1&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1 + 1&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;1+1&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1 + 1&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;1*(2+3**2)&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1 * (2 + 3 ** 2)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;a and b&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;a and b&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo(a=bar.baz[1:])&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(a=bar.baz[1:])&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;{&quot;hi&quot;:foo[:]}&quot;&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;&quot;{&quot;hi&quot;: foo[:]}&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;&#39;a&#39; &quot;b&quot; &#39;c&#39;&quot;&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&quot;&quot;&#39;a&#39; &quot;b&quot; &#39;c&#39;&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s1">&#39;&quot;&quot;&quot;a&quot;&quot;&quot; is 1 or 2==3&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;&quot;&quot;&quot;a&quot;&quot;&quot; is 1 or 2 == 3&#39;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo ( * args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(*args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo ( a * args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(a * args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo ( ** args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(**args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo ( a ** args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(a ** args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo (1, * args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(1, *args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo (1, a * args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(1, a * args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo (1, ** args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(1, **args)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo (1, a ** args )&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(1, a ** args)&quot;</span>
+
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;a=foo(b = 1)&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;a = foo(b=1)&quot;</span>
+
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;foo(+ 10, bar = - 1)&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;foo(+10, bar=-1)&quot;</span>
+    <span class="k">assert</span> <span class="n">normalize_token_spacing</span><span class="p">(</span><span class="s2">&quot;1 + +10 + -1 - 5&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;1 + +10 + -1 - 5&quot;</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

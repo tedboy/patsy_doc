@@ -1,0 +1,6 @@
+patsy.util.test_pandas_friendly_reshape
+=======================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_pandas_friendly_reshape

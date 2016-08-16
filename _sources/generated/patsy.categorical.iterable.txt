@@ -1,0 +1,6 @@
+patsy.categorical.iterable
+==========================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: iterable

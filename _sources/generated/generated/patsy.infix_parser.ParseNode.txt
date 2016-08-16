@@ -1,0 +1,21 @@
+patsy.infix_parser.ParseNode
+============================
+
+.. currentmodule:: patsy.infix_parser
+.. autoclass:: ParseNode
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~ParseNode.__init__
+
+
+
+
+

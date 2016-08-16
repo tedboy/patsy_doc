@@ -1,0 +1,6 @@
+patsy.builtins.bs
+=================
+
+.. currentmodule:: patsy.builtins
+
+.. autofunction:: bs

@@ -1,0 +1,6 @@
+patsy.categorical.CategoricalSniffer.__init__
+=============================================
+
+.. currentmodule:: patsy.categorical
+
+.. automethod:: CategoricalSniffer.__init__

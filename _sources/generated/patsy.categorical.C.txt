@@ -1,0 +1,6 @@
+patsy.categorical.C
+===================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: C

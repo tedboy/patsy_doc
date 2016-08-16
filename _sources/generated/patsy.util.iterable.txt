@@ -1,0 +1,6 @@
+patsy.util.iterable
+===================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: iterable

@@ -1,0 +1,6 @@
+patsy.parse_formula.Origin.caretize
+===================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: Origin.caretize

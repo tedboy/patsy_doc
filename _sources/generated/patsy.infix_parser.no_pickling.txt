@@ -1,0 +1,6 @@
+patsy.infix_parser.no_pickling
+==============================
+
+.. currentmodule:: patsy.infix_parser
+
+.. autofunction:: no_pickling

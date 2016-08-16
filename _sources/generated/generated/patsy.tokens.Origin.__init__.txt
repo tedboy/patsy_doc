@@ -1,0 +1,6 @@
+patsy.tokens.Origin.__init__
+============================
+
+.. currentmodule:: patsy.tokens
+
+.. automethod:: Origin.__init__

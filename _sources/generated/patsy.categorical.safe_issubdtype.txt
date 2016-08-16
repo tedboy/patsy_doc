@@ -1,0 +1,6 @@
+patsy.categorical.safe_issubdtype
+=================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: safe_issubdtype

@@ -1,0 +1,6 @@
+patsy.util.uniqueify_list
+=========================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: uniqueify_list

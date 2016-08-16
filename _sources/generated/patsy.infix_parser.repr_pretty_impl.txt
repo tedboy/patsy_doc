@@ -1,0 +1,6 @@
+patsy.infix_parser.repr_pretty_impl
+===================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. autofunction:: repr_pretty_impl

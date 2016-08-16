@@ -1,0 +1,6 @@
+patsy.util.test_SortAnythingKey
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_SortAnythingKey

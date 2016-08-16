@@ -1,0 +1,6 @@
+patsy.parse_formula.Origin.__init__
+===================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: Origin.__init__

@@ -1,0 +1,6 @@
+patsy.categorical.CategoricalSniffer.levels_contrast
+====================================================
+
+.. currentmodule:: patsy.categorical
+
+.. automethod:: CategoricalSniffer.levels_contrast

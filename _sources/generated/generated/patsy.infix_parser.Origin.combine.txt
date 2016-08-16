@@ -1,0 +1,6 @@
+patsy.infix_parser.Origin.combine
+=================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Origin.combine

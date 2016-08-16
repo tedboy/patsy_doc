@@ -1,0 +1,6 @@
+patsy.util.PushbackAdapter.has_more
+===================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: PushbackAdapter.has_more

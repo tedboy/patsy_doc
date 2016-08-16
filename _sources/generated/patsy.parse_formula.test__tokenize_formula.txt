@@ -1,0 +1,6 @@
+patsy.parse_formula.test__tokenize_formula
+==========================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: test__tokenize_formula

@@ -1,0 +1,6 @@
+patsy.util.PushbackAdapter.next
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: PushbackAdapter.next

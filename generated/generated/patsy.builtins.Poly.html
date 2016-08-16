@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2.2.4. patsy.builtins.Poly &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="2. patsy.builtins" href="../patsy.builtins.html"/>
+        <link rel="next" title="2.2.4.1.1. patsy.builtins.Poly.__init__" href="patsy.builtins.Poly.__init__.html"/>
+        <link rel="prev" title="2.2.3.1.2. patsy.builtins.Helmert.code_without_intercept" href="patsy.builtins.Helmert.code_without_intercept.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../patsy.html">1. patsy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../patsy.builtins.html">2. patsy.builtins</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../patsy.builtins.html#functions">2.1. Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../patsy.builtins.html#classes">2.2. Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.ContrastMatrix.html">2.2.1. patsy.builtins.ContrastMatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Diff.html">2.2.2. patsy.builtins.Diff</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Helmert.html">2.2.3. patsy.builtins.Helmert</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.4. patsy.builtins.Poly</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#methods">2.2.4.1. Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Sum.html">2.2.5. patsy.builtins.Sum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Treatment.html">2.2.6. patsy.builtins.Treatment</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="../patsy.builtins.html">2. patsy.builtins</a> &raquo;</li>
+        
+      <li>2.2.4. patsy.builtins.Poly</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/generated/generated/patsy.builtins.Poly.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-builtins-poly">
+<h1>2.2.4. patsy.builtins.Poly<a class="headerlink" href="#patsy-builtins-poly" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="patsy.builtins.Poly">
+<em class="property">class </em><code class="descclassname">patsy.builtins.</code><code class="descname">Poly</code><span class="sig-paren">(</span><em>scores=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/patsy/contrasts.html#Poly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.builtins.Poly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Orthogonal polynomial contrast coding.</p>
+<p>This coding scheme treats the levels as ordered samples from an underlying
+continuous scale, whose effect takes an unknown functional form which is
+<a class="reference external" href="https://en.wikipedia.org/wiki/Taylor_series">Taylor-decomposed</a> into the sum of a linear, quadratic, etc. components.</p>
+<p>For reduced-rank coding, you get a linear column, a quadratic column,
+etc., up to the number of levels provided.</p>
+<p>For full-rank coding, the same scheme is used, except that the zero-order
+constant polynomial is also included. I.e., you get an intercept column
+included as part of your categorical term.</p>
+<p>By default the levels are treated as equally spaced, but you can override
+this by providing a value for the <cite>scores</cite> argument.</p>
+<p>Examples:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span></span><span class="go"># Reduced rank</span>
+<span class="gp">In [1]: </span><span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Poly)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="nn">&lt;ipython-input-1-75f4ad9a290c&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Poly)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="ne">NameError</span>: name &#39;dmatrix&#39; is not defined
+
+<span class="c1"># Full rank</span>
+<span class="gp">In [2]: </span><span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a, Poly)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="nn">&lt;ipython-input-2-82bfd13ab484&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a, Poly)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="ne">NameError</span>: name &#39;dmatrix&#39; is not defined
+
+<span class="c1"># Explicit scores</span>
+<span class="gp">In [3]: </span><span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Poly([1, 2, 10]))&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+<span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="nn">&lt;ipython-input-3-80dde52f48d5&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Poly([1, 2, 10]))&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="ne">NameError</span>: name &#39;dmatrix&#39; is not defined
+</pre></div>
+</div>
+<p>This is equivalent to R&#8217;s <code class="docutils literal"><span class="pre">contr.poly</span></code>. (But note that in R, reduced
+rank encodings are always dummy-coded, regardless of what contrast you
+have set.)</p>
+<dl class="method">
+<dt id="patsy.builtins.Poly.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>scores=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/patsy/contrasts.html#Poly.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#patsy.builtins.Poly.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<div class="section" id="methods">
+<h2>2.2.4.1. Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.builtins.Poly.__init__.html#patsy.builtins.Poly.__init__" title="patsy.builtins.Poly.__init__"><code class="xref py py-obj docutils literal"><span class="pre">__init__</span></code></a>([scores])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.builtins.Poly.code_with_intercept.html#patsy.builtins.Poly.code_with_intercept" title="patsy.builtins.Poly.code_with_intercept"><code class="xref py py-obj docutils literal"><span class="pre">code_with_intercept</span></code></a>(levels)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.builtins.Poly.code_without_intercept.html#patsy.builtins.Poly.code_without_intercept" title="patsy.builtins.Poly.code_without_intercept"><code class="xref py py-obj docutils literal"><span class="pre">code_without_intercept</span></code></a>(levels)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.builtins.Poly.__init__.html" class="btn btn-neutral float-right" title="2.2.4.1.1. patsy.builtins.Poly.__init__" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.builtins.Helmert.code_without_intercept.html" class="btn btn-neutral" title="2.2.3.1.2. patsy.builtins.Helmert.code_without_intercept" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

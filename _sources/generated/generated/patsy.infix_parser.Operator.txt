@@ -1,0 +1,21 @@
+patsy.infix_parser.Operator
+===========================
+
+.. currentmodule:: patsy.infix_parser
+.. autoclass:: Operator
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Operator.__init__
+
+
+
+
+

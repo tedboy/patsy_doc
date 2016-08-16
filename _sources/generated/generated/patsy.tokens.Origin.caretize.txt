@@ -1,0 +1,6 @@
+patsy.tokens.Origin.caretize
+============================
+
+.. currentmodule:: patsy.tokens
+
+.. automethod:: Origin.caretize

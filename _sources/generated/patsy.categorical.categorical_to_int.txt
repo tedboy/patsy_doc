@@ -1,0 +1,6 @@
+patsy.categorical.categorical_to_int
+====================================
+
+.. currentmodule:: patsy.categorical
+
+.. autofunction:: categorical_to_int

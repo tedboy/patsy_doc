@@ -1,0 +1,6 @@
+patsy.tokens.python_tokenize
+============================
+
+.. currentmodule:: patsy.tokens
+
+.. autofunction:: python_tokenize

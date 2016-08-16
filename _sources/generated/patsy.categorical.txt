@@ -1,0 +1,66 @@
+patsy.categorical
+=================
+
+.. automodule:: patsy.categorical
+
+   
+   
+   Functions
+   ---------
+   .. autosummary::
+      :toctree:
+
+   
+      C
+      assert_no_pickling
+      categorical_to_int
+      guess_categorical
+      iterable
+      no_pickling
+      pandas_Categorical_categories
+      pandas_Categorical_codes
+      pandas_Categorical_from_codes
+      safe_is_pandas_categorical
+      safe_issubdtype
+      safe_scalar_isnan
+      test_C
+      test_CategoricalSniffer
+      test_categorical_to_int
+      test_guess_categorical
+   
+   
+
+   
+   
+   Classes
+   -------
+   .. autosummary::
+      :toctree:generated/
+      :template:class_custom.rst
+
+   
+      CategoricalSniffer
+      SortAnythingKey
+
+   .. toctree::
+       :maxdepth: 1
+       :hidden:
+
+   
+       generated/patsy.categorical.CategoricalSniffer
+       generated/patsy.categorical.SortAnythingKey
+
+   
+   
+
+   
+   
+   Exceptions
+   ----------
+   .. autosummary::
+      :toctree:
+
+   
+      PatsyError
+   
+   

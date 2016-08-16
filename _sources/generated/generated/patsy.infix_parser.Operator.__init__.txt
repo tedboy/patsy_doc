@@ -1,0 +1,6 @@
+patsy.infix_parser.Operator.__init__
+====================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Operator.__init__

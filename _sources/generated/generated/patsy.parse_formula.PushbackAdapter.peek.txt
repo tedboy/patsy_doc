@@ -1,0 +1,6 @@
+patsy.parse_formula.PushbackAdapter.peek
+========================================
+
+.. currentmodule:: patsy.parse_formula
+
+.. automethod:: PushbackAdapter.peek

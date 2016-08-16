@@ -1,0 +1,306 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2.1.5. patsy.builtins.cc &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="2. patsy.builtins" href="patsy.builtins.html"/>
+        <link rel="next" title="2.1.6. patsy.builtins.center" href="patsy.builtins.center.html"/>
+        <link rel="prev" title="2.1.4. patsy.builtins.bs" href="patsy.builtins.bs.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="patsy.html">1. patsy</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="patsy.builtins.html">2. patsy.builtins</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="patsy.builtins.html#functions">2.1. Functions</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.C.html">2.1.1. patsy.builtins.C</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.I.html">2.1.2. patsy.builtins.I</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Q.html">2.1.3. patsy.builtins.Q</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.bs.html">2.1.4. patsy.builtins.bs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.1.5. patsy.builtins.cc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.center.html">2.1.6. patsy.builtins.center</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.cr.html">2.1.7. patsy.builtins.cr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.scale.html">2.1.8. patsy.builtins.scale</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.standardize.html">2.1.9. patsy.builtins.standardize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.te.html">2.1.10. patsy.builtins.te</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.test_I.html">2.1.11. patsy.builtins.test_I</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.builtins.test_Q.html">2.1.12. patsy.builtins.test_Q</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="patsy.builtins.html#classes">2.2. Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="patsy.builtins.html">2. patsy.builtins</a> &raquo;</li>
+        
+      <li>2.1.5. patsy.builtins.cc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/patsy.builtins.cc.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-builtins-cc">
+<h1>2.1.5. patsy.builtins.cc<a class="headerlink" href="#patsy-builtins-cc" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="patsy.builtins.cc">
+<code class="descclassname">patsy.builtins.</code><code class="descname">cc</code><span class="sig-paren">(</span><em>x</em>, <em>df=None</em>, <em>knots=None</em>, <em>lower_bound=None</em>, <em>upper_bound=None</em>, <em>constraints=None</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.builtins.cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a cyclic cubic spline basis for <code class="docutils literal"><span class="pre">x</span></code>
+(with the option of absorbing centering or more general parameters
+constraints), allowing non-linear fits. The usual usage is something like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">~</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">cc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to fit <code class="docutils literal"><span class="pre">y</span></code> as a smooth function of <code class="docutils literal"><span class="pre">x</span></code>, with 7 degrees of freedom
+given to the smooth, and centering constraint absorbed in
+the resulting design matrix. Note that in this example, due to the centering
+and cyclic constraints, 9 knots will get computed from the input data <code class="docutils literal"><span class="pre">x</span></code>
+to achieve 7 degrees of freedom.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This function reproduce the cubic regression splines &#8216;cc&#8217;
+as implemented in the R package &#8216;mgcv&#8217; (GAM modelling).</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>df</strong> &#8211; The number of degrees of freedom to use for this spline. The
+return value will have this many columns. You must specify at least one
+of <code class="docutils literal"><span class="pre">df</span></code> and <code class="docutils literal"><span class="pre">knots</span></code>.</li>
+<li><strong>knots</strong> &#8211; The interior knots to use for the spline. If unspecified, then
+equally spaced quantiles of the input data are used. You must specify at
+least one of <code class="docutils literal"><span class="pre">df</span></code> and <code class="docutils literal"><span class="pre">knots</span></code>.</li>
+<li><strong>lower_bound</strong> &#8211; The lower exterior knot location.</li>
+<li><strong>upper_bound</strong> &#8211; The upper exterior knot location.</li>
+<li><strong>constraints</strong> &#8211; Either a 2-d array defining general linear constraints
+(that is <code class="docutils literal"><span class="pre">np.dot(constraints,</span> <span class="pre">betas)</span></code> is zero, where <code class="docutils literal"><span class="pre">betas</span></code> denotes
+the array of <em>initial</em> parameters, corresponding to the <em>initial</em>
+unconstrained design matrix), or the string
+<code class="docutils literal"><span class="pre">'center'</span></code> indicating that we should apply a centering constraint
+(this constraint will be computed from the input data, remembered and
+re-used for prediction from the fitted model).
+The constraints are absorbed in the resulting design matrix which means
+that the model is actually rewritten in terms of
+<em>unconstrained</em> parameters. For more details see <span class="xref std std-ref">spline-regression</span>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This is a stateful transforms (for details see
+<span class="xref std std-ref">stateful-transforms</span>). If <code class="docutils literal"><span class="pre">knots</span></code>, <code class="docutils literal"><span class="pre">lower_bound</span></code>, or
+<code class="docutils literal"><span class="pre">upper_bound</span></code> are not specified, they will be calculated from the data
+and then the chosen values will be remembered and re-used for prediction
+from the fitted model.</p>
+<p>Using this function requires scipy be installed.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version 0.3.0.</span></p>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.builtins.center.html" class="btn btn-neutral float-right" title="2.1.6. patsy.builtins.center" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.builtins.bs.html" class="btn btn-neutral" title="2.1.4. patsy.builtins.bs" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

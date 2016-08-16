@@ -1,0 +1,6 @@
+patsy.util.test_pandas_Categorical_from_codes
+=============================================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: test_pandas_Categorical_from_codes

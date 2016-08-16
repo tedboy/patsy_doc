@@ -1,0 +1,6 @@
+patsy.util.SortAnythingKey.__init__
+===================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: SortAnythingKey.__init__

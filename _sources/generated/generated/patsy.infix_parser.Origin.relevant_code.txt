@@ -1,0 +1,6 @@
+patsy.infix_parser.Origin.relevant_code
+=======================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Origin.relevant_code

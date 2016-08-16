@@ -1,0 +1,30 @@
+patsy.infix_parser.Token
+========================
+
+.. currentmodule:: patsy.infix_parser
+.. autoclass:: Token
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Token.__init__
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~Token.LPAREN
+   ~Token.RPAREN
+

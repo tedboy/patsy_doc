@@ -1,0 +1,6 @@
+patsy.infix_parser.infix_parse
+==============================
+
+.. currentmodule:: patsy.infix_parser
+
+.. autofunction:: infix_parse

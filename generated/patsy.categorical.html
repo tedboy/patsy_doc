@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. patsy.categorical &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../index.html"/>
+        <link rel="up" title="&lt;no title&gt;" href="../api.html"/>
+        <link rel="next" title="3.1.1. patsy.categorical.C" href="patsy.categorical.C.html"/>
+        <link rel="prev" title="2.2.6.1.3. patsy.builtins.Treatment.code_without_intercept" href="generated/patsy.builtins.Treatment.code_without_intercept.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. patsy.categorical</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functions">3.1. Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.C.html">3.1.1. patsy.categorical.C</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.assert_no_pickling.html">3.1.2. patsy.categorical.assert_no_pickling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.categorical_to_int.html">3.1.3. patsy.categorical.categorical_to_int</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.guess_categorical.html">3.1.4. patsy.categorical.guess_categorical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.iterable.html">3.1.5. patsy.categorical.iterable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.no_pickling.html">3.1.6. patsy.categorical.no_pickling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.pandas_Categorical_categories.html">3.1.7. patsy.categorical.pandas_Categorical_categories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.pandas_Categorical_codes.html">3.1.8. patsy.categorical.pandas_Categorical_codes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.pandas_Categorical_from_codes.html">3.1.9. patsy.categorical.pandas_Categorical_from_codes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.safe_is_pandas_categorical.html">3.1.10. patsy.categorical.safe_is_pandas_categorical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.safe_issubdtype.html">3.1.11. patsy.categorical.safe_issubdtype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.safe_scalar_isnan.html">3.1.12. patsy.categorical.safe_scalar_isnan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.test_C.html">3.1.13. patsy.categorical.test_C</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.test_CategoricalSniffer.html">3.1.14. patsy.categorical.test_CategoricalSniffer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.test_categorical_to_int.html">3.1.15. patsy.categorical.test_categorical_to_int</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.test_guess_categorical.html">3.1.16. patsy.categorical.test_guess_categorical</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#classes">3.2. Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.categorical.CategoricalSniffer.html">3.2.1. patsy.categorical.CategoricalSniffer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/patsy.categorical.SortAnythingKey.html">3.2.2. patsy.categorical.SortAnythingKey</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#exceptions">3.3. Exceptions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="patsy.categorical.PatsyError.html">3.3.1. patsy.categorical.PatsyError</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1"><a class="reference internal" href="patsy.util.html">7. patsy.util</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+      <li>3. patsy.categorical</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/generated/patsy.categorical.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-patsy.categorical">
+<span id="patsy-categorical"></span><h1>3. patsy.categorical<a class="headerlink" href="#module-patsy.categorical" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="functions">
+<h2>3.1. Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.C.html#patsy.categorical.C" title="patsy.categorical.C"><code class="xref py py-obj docutils literal"><span class="pre">C</span></code></a>(data[,&nbsp;contrast,&nbsp;levels])</td>
+<td>Marks some <cite>data</cite> as being categorical, and specifies how to interpret it.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.assert_no_pickling.html#patsy.categorical.assert_no_pickling" title="patsy.categorical.assert_no_pickling"><code class="xref py py-obj docutils literal"><span class="pre">assert_no_pickling</span></code></a>(obj)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.categorical_to_int.html#patsy.categorical.categorical_to_int" title="patsy.categorical.categorical_to_int"><code class="xref py py-obj docutils literal"><span class="pre">categorical_to_int</span></code></a>(data,&nbsp;levels,&nbsp;NA_action)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.guess_categorical.html#patsy.categorical.guess_categorical" title="patsy.categorical.guess_categorical"><code class="xref py py-obj docutils literal"><span class="pre">guess_categorical</span></code></a>(data)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.iterable.html#patsy.categorical.iterable" title="patsy.categorical.iterable"><code class="xref py py-obj docutils literal"><span class="pre">iterable</span></code></a>(obj)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.no_pickling.html#patsy.categorical.no_pickling" title="patsy.categorical.no_pickling"><code class="xref py py-obj docutils literal"><span class="pre">no_pickling</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.pandas_Categorical_categories.html#patsy.categorical.pandas_Categorical_categories" title="patsy.categorical.pandas_Categorical_categories"><code class="xref py py-obj docutils literal"><span class="pre">pandas_Categorical_categories</span></code></a>(cat)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.pandas_Categorical_codes.html#patsy.categorical.pandas_Categorical_codes" title="patsy.categorical.pandas_Categorical_codes"><code class="xref py py-obj docutils literal"><span class="pre">pandas_Categorical_codes</span></code></a>(cat)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.pandas_Categorical_from_codes.html#patsy.categorical.pandas_Categorical_from_codes" title="patsy.categorical.pandas_Categorical_from_codes"><code class="xref py py-obj docutils literal"><span class="pre">pandas_Categorical_from_codes</span></code></a>(codes,&nbsp;categories)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.safe_is_pandas_categorical.html#patsy.categorical.safe_is_pandas_categorical" title="patsy.categorical.safe_is_pandas_categorical"><code class="xref py py-obj docutils literal"><span class="pre">safe_is_pandas_categorical</span></code></a>(data)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.safe_issubdtype.html#patsy.categorical.safe_issubdtype" title="patsy.categorical.safe_issubdtype"><code class="xref py py-obj docutils literal"><span class="pre">safe_issubdtype</span></code></a>(dt1,&nbsp;dt2)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.safe_scalar_isnan.html#patsy.categorical.safe_scalar_isnan" title="patsy.categorical.safe_scalar_isnan"><code class="xref py py-obj docutils literal"><span class="pre">safe_scalar_isnan</span></code></a>(x)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.test_C.html#patsy.categorical.test_C" title="patsy.categorical.test_C"><code class="xref py py-obj docutils literal"><span class="pre">test_C</span></code></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.test_CategoricalSniffer.html#patsy.categorical.test_CategoricalSniffer" title="patsy.categorical.test_CategoricalSniffer"><code class="xref py py-obj docutils literal"><span class="pre">test_CategoricalSniffer</span></code></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.test_categorical_to_int.html#patsy.categorical.test_categorical_to_int" title="patsy.categorical.test_categorical_to_int"><code class="xref py py-obj docutils literal"><span class="pre">test_categorical_to_int</span></code></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.categorical.test_guess_categorical.html#patsy.categorical.test_guess_categorical" title="patsy.categorical.test_guess_categorical"><code class="xref py py-obj docutils literal"><span class="pre">test_guess_categorical</span></code></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="classes">
+<h2>3.2. Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/patsy.categorical.CategoricalSniffer.html#patsy.categorical.CategoricalSniffer" title="patsy.categorical.CategoricalSniffer"><code class="xref py py-obj docutils literal"><span class="pre">CategoricalSniffer</span></code></a>(NA_action[,&nbsp;origin])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/patsy.categorical.SortAnythingKey.html#patsy.categorical.SortAnythingKey" title="patsy.categorical.SortAnythingKey"><code class="xref py py-obj docutils literal"><span class="pre">SortAnythingKey</span></code></a>(obj)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="exceptions">
+<h2>3.3. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.categorical.PatsyError.html#patsy.categorical.PatsyError" title="patsy.categorical.PatsyError"><code class="xref py py-obj docutils literal"><span class="pre">PatsyError</span></code></a>(message[,&nbsp;origin])</td>
+<td>This is the main error type raised by Patsy functions.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.categorical.C.html" class="btn btn-neutral float-right" title="3.1.1. patsy.categorical.C" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="generated/patsy.builtins.Treatment.code_without_intercept.html" class="btn btn-neutral" title="2.2.6.1.3. patsy.builtins.Treatment.code_without_intercept" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

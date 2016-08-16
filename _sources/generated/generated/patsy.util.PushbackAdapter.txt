@@ -1,0 +1,25 @@
+patsy.util.PushbackAdapter
+==========================
+
+.. currentmodule:: patsy.util
+.. autoclass:: PushbackAdapter
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~PushbackAdapter.__init__
+   ~PushbackAdapter.has_more
+   ~PushbackAdapter.next
+   ~PushbackAdapter.peek
+   ~PushbackAdapter.push_back
+
+
+
+
+

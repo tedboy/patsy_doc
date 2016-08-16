@@ -1,0 +1,6 @@
+patsy.infix_parser.Token.__init__
+=================================
+
+.. currentmodule:: patsy.infix_parser
+
+.. automethod:: Token.__init__

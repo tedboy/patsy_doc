@@ -1,0 +1,22 @@
+patsy.builtins.Diff
+===================
+
+.. currentmodule:: patsy.builtins
+.. autoclass:: Diff
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~Diff.code_with_intercept
+   ~Diff.code_without_intercept
+
+
+
+
+

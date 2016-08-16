@@ -1,0 +1,6 @@
+patsy.builtins.cc
+=================
+
+.. currentmodule:: patsy.builtins
+
+.. autofunction:: cc

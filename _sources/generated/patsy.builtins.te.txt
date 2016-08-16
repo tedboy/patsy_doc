@@ -1,0 +1,6 @@
+patsy.builtins.te
+=================
+
+.. currentmodule:: patsy.builtins
+
+.. autofunction:: te
