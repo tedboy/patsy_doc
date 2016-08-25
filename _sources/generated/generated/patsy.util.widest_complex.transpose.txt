@@ -1,0 +1,6 @@
+patsy.util.widest_complex.transpose
+===================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.transpose

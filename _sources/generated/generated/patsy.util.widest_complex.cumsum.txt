@@ -1,0 +1,6 @@
+patsy.util.widest_complex.cumsum
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.cumsum

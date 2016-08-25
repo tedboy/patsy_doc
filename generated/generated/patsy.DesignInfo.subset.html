@@ -194,7 +194,7 @@
 subset of the terms that the current <a class="reference internal" href="patsy.DesignInfo.html#patsy.DesignInfo" title="patsy.DesignInfo"><code class="xref py py-class docutils literal"><span class="pre">DesignInfo</span></code></a> does.</p>
 <p>For example, if <code class="docutils literal"><span class="pre">design_info</span></code> has terms <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">z</span></code>,
 then:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">design_info2</span> <span class="o">=</span> <span class="n">design_info</span><span class="o">.</span><span class="n">subset</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">design_info2</span> <span class="o">=</span> <span class="n">design_info</span><span class="o">.</span><span class="n">subset</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>will return a new DesignInfo that can be used to construct design
@@ -202,7 +202,7 @@ matrices with only the columns corresponding to the terms <code class="docutils 
 <code class="docutils literal"><span class="pre">z</span></code>. After we do this, then in general these two expressions will
 return the same thing (here we assume that <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">z</span></code>
 each generate a single column of the output):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">build_design_matrix</span><span class="p">([</span><span class="n">design_info</span><span class="p">],</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">build_design_matrix</span><span class="p">([</span><span class="n">design_info</span><span class="p">],</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">][:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
 <span class="n">build_design_matrix</span><span class="p">([</span><span class="n">design_info2</span><span class="p">],</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -218,7 +218,7 @@ matrix, in case you want to do that for some reason. I can&#8217;t think of
 any.</p>
 <p>Note that this method will generally <em>not</em> produce the same result as
 creating a new model directly. Consider these DesignInfo objects:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">design1</span> <span class="o">=</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;1 + C(a)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">design1</span> <span class="o">=</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;1 + C(a)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 <span class="n">design2</span> <span class="o">=</span> <span class="n">design1</span><span class="o">.</span><span class="n">subset</span><span class="p">(</span><span class="s2">&quot;0 + C(a)&quot;</span><span class="p">)</span>
 <span class="n">design3</span> <span class="o">=</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>

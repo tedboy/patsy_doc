@@ -102,7 +102,7 @@
 <li class="toctree-l3"><a class="reference internal" href="patsy.scale.html">1.1.13. patsy.scale</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.standardize.html">1.1.14. patsy.standardize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.stateful_transform.html">1.1.15. patsy.stateful_transform</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">1.1.16. patsy.te</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">1.1.16. patsy.te</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="patsy.html#classes">1.2. Classes</a></li>
@@ -190,7 +190,7 @@ corresponding to the value of the <code class="docutils literal"><span class="pr
 data point.
 The resulting basis dimension is the product of the basis dimensions of
 the marginal smooths. The usual usage is something like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">~</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">te</span><span class="p">(</span><span class="n">cr</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">cc</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span> <span class="n">constraints</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>y ~ 1 + te(cr(x1, df=5), cc(x2, df=6), constraints=&#39;center&#39;)
 </pre></div>
 </div>
 <p>to fit <code class="docutils literal"><span class="pre">y</span></code> as a smooth function of both <code class="docutils literal"><span class="pre">x1</span></code> and <code class="docutils literal"><span class="pre">x2</span></code>, with a natural

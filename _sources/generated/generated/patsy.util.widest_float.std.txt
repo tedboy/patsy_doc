@@ -1,0 +1,6 @@
+patsy.util.widest_float.std
+===========================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.std

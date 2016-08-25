@@ -1,0 +1,6 @@
+patsy.util.widest_complex.strides
+=================================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.strides

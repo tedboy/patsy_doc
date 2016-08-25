@@ -94,7 +94,7 @@
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.bs.html">2.1.4. patsy.builtins.bs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.cc.html">2.1.5. patsy.builtins.cc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.center.html">2.1.6. patsy.builtins.center</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">2.1.7. patsy.builtins.cr</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">2.1.7. patsy.builtins.cr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.scale.html">2.1.8. patsy.builtins.scale</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.standardize.html">2.1.9. patsy.builtins.standardize</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.te.html">2.1.10. patsy.builtins.te</a></li>
@@ -180,7 +180,7 @@
 <dd><p>Generates a natural cubic spline basis for <code class="docutils literal"><span class="pre">x</span></code>
 (with the option of absorbing centering or more general parameters
 constraints), allowing non-linear fits. The usual usage is something like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">~</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">cr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>y ~ 1 + cr(x, df=5, constraints=&#39;center&#39;)
 </pre></div>
 </div>
 <p>to fit <code class="docutils literal"><span class="pre">y</span></code> as a smooth function of <code class="docutils literal"><span class="pre">x</span></code>, with 5 degrees of freedom

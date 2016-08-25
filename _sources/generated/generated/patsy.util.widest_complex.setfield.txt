@@ -1,0 +1,6 @@
+patsy.util.widest_complex.setfield
+==================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.setfield

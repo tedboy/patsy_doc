@@ -11,6 +11,7 @@ patsy.tokens
       :toctree:
 
    
+      StringIO
       normalize_token_spacing
       pretty_untokenize
       python_tokenize

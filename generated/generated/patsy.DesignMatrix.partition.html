@@ -199,20 +199,20 @@ the two partitions is undefined.</p>
 <p><span class="versionmodified">New in version 1.8.0.</span></p>
 </div>
 <dl class="docutils">
-<dt>kth</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int or sequence of ints</span><dd>Element index to partition by. The kth element value will be in its
+<dt>kth <span class="classifier-delimiter">:</span> <span class="classifier">int or sequence of ints</span></dt>
+<dd>Element index to partition by. The kth element value will be in its
 final sorted position and all smaller elements will be moved before it
 and all equal or greater elements behind it.
 The order all elements in the partitions is undefined.
 If provided with a sequence of kth it will partition all elements
 indexed by kth of them into their sorted position at once.</dd>
-<dt>axis</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Axis along which to sort. Default is -1, which means sort along the
+<dt>axis <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Axis along which to sort. Default is -1, which means sort along the
 last axis.</dd>
-<dt>kind</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;introselect&#8217;}, optional</span><dd>Selection algorithm. Default is &#8216;introselect&#8217;.</dd>
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str or list of str, optional</span><dd>When <cite>a</cite> is an array with fields defined, this argument specifies
+<dt>kind <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;introselect&#8217;}, optional</span></dt>
+<dd>Selection algorithm. Default is &#8216;introselect&#8217;.</dd>
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">str or list of str, optional</span></dt>
+<dd>When <cite>a</cite> is an array with fields defined, this argument specifies
 which fields to compare first, second, etc.  A single field can
 be specified as a string, and not all fields need be specified,
 but unspecified fields will still be used, in the order in which
@@ -222,13 +222,13 @@ they come up in the dtype, to break ties.</dd>
 argpartition : Indirect partition.
 sort : Full sort.</p>
 <p>See <code class="docutils literal"><span class="pre">np.partition</span></code> for notes on the different algorithms.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
 <span class="go">array([2, 1, 3, 4])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">partition</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">partition</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="go">array([1, 2, 3, 4])</span>
 </pre></div>
 </div>

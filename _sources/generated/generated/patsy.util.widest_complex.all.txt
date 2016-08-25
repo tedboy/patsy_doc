@@ -1,0 +1,6 @@
+patsy.util.widest_complex.all
+=============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.all

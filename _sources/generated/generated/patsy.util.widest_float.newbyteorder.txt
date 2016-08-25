@@ -1,0 +1,6 @@
+patsy.util.widest_float.newbyteorder
+====================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.newbyteorder

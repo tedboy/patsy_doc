@@ -1,0 +1,6 @@
+patsy.util.widest_float.strides
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_float.strides

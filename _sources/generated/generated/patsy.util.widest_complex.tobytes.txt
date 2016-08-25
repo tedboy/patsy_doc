@@ -1,0 +1,6 @@
+patsy.util.widest_complex.tobytes
+=================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.tobytes

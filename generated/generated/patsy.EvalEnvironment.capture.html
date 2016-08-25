@@ -202,7 +202,7 @@ convenient for functions which want to capture their caller&#8217;s
 environment by default, but also allow explicit environments to be
 specified. See the second example.</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">this_env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">()</span>
 <span class="k">assert</span> <span class="n">this_env</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
 <span class="k">def</span> <span class="nf">child_func</span><span class="p">():</span>
@@ -212,7 +212,7 @@ specified. See the second example.</p>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># This function can be used like:</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># This function can be used like:</span>
 <span class="c1">#   my_model(formula_like, data)</span>
 <span class="c1">#     -&gt; evaluates formula_like in caller&#39;s environment</span>
 <span class="c1">#   my_model(formula_like, data, eval_env=1)</span>

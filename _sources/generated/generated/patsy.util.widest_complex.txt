@@ -1,0 +1,94 @@
+patsy.util.widest_complex
+=========================
+
+.. currentmodule:: patsy.util
+.. autoclass:: widest_complex
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~widest_complex.all
+   ~widest_complex.any
+   ~widest_complex.argmax
+   ~widest_complex.argmin
+   ~widest_complex.argsort
+   ~widest_complex.astype
+   ~widest_complex.byteswap
+   ~widest_complex.choose
+   ~widest_complex.clip
+   ~widest_complex.compress
+   ~widest_complex.conj
+   ~widest_complex.conjugate
+   ~widest_complex.copy
+   ~widest_complex.cumprod
+   ~widest_complex.cumsum
+   ~widest_complex.diagonal
+   ~widest_complex.dump
+   ~widest_complex.dumps
+   ~widest_complex.fill
+   ~widest_complex.flatten
+   ~widest_complex.getfield
+   ~widest_complex.item
+   ~widest_complex.itemset
+   ~widest_complex.max
+   ~widest_complex.mean
+   ~widest_complex.min
+   ~widest_complex.newbyteorder
+   ~widest_complex.nonzero
+   ~widest_complex.prod
+   ~widest_complex.ptp
+   ~widest_complex.put
+   ~widest_complex.ravel
+   ~widest_complex.repeat
+   ~widest_complex.reshape
+   ~widest_complex.resize
+   ~widest_complex.round
+   ~widest_complex.searchsorted
+   ~widest_complex.setfield
+   ~widest_complex.setflags
+   ~widest_complex.sort
+   ~widest_complex.squeeze
+   ~widest_complex.std
+   ~widest_complex.sum
+   ~widest_complex.swapaxes
+   ~widest_complex.take
+   ~widest_complex.tobytes
+   ~widest_complex.tofile
+   ~widest_complex.tolist
+   ~widest_complex.tostring
+   ~widest_complex.trace
+   ~widest_complex.transpose
+   ~widest_complex.var
+   ~widest_complex.view
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~widest_complex.T
+   ~widest_complex.base
+   ~widest_complex.data
+   ~widest_complex.dtype
+   ~widest_complex.flags
+   ~widest_complex.flat
+   ~widest_complex.imag
+   ~widest_complex.itemsize
+   ~widest_complex.nbytes
+   ~widest_complex.ndim
+   ~widest_complex.real
+   ~widest_complex.shape
+   ~widest_complex.size
+   ~widest_complex.strides
+

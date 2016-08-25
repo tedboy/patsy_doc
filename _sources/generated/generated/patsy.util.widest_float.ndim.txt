@@ -1,0 +1,6 @@
+patsy.util.widest_float.ndim
+============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_float.ndim

@@ -163,19 +163,19 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;Q&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.contrasts</span> <span class="k">import</span> <span class="n">ContrastMatrix</span><span class="p">,</span> <span class="n">Treatment</span><span class="p">,</span> <span class="n">Poly</span><span class="p">,</span> <span class="n">Sum</span><span class="p">,</span> <span class="n">Helmert</span><span class="p">,</span> <span class="n">Diff</span>
+<span class="kn">from</span> <span class="nn">patsy.contrasts</span> <span class="kn">import</span> <span class="n">ContrastMatrix</span><span class="p">,</span> <span class="n">Treatment</span><span class="p">,</span> <span class="n">Poly</span><span class="p">,</span> <span class="n">Sum</span><span class="p">,</span> <span class="n">Helmert</span><span class="p">,</span> <span class="n">Diff</span>
 <span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;ContrastMatrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span> <span class="s2">&quot;Poly&quot;</span><span class="p">,</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span> <span class="s2">&quot;Helmert&quot;</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="k">import</span> <span class="n">C</span>
+<span class="kn">from</span> <span class="nn">patsy.categorical</span> <span class="kn">import</span> <span class="n">C</span>
 <span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="k">import</span> <span class="n">center</span><span class="p">,</span> <span class="n">standardize</span><span class="p">,</span> <span class="n">scale</span>
+<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="kn">import</span> <span class="n">center</span><span class="p">,</span> <span class="n">standardize</span><span class="p">,</span> <span class="n">scale</span>
 <span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="s2">&quot;standardize&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.splines</span> <span class="k">import</span> <span class="n">bs</span>
+<span class="kn">from</span> <span class="nn">patsy.splines</span> <span class="kn">import</span> <span class="n">bs</span>
 <span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;bs&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.mgcv_cubic_splines</span> <span class="k">import</span> <span class="n">cr</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">te</span>
+<span class="kn">from</span> <span class="nn">patsy.mgcv_cubic_splines</span> <span class="kn">import</span> <span class="n">cr</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">te</span>
 <span class="n">__all__</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="I"><a class="viewcode-back" href="../../generated/patsy.builtins.I.html#patsy.builtins.I">[docs]</a><span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -197,7 +197,7 @@
 
 <div class="viewcode-block" id="test_I"><a class="viewcode-back" href="../../generated/patsy.builtins.test_I.html#patsy.builtins.test_I">[docs]</a><span class="k">def</span> <span class="nf">test_I</span><span class="p">():</span>
     <span class="k">assert</span> <span class="n">I</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-    <span class="k">assert</span> <span class="n">I</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span></div>
+    <span class="k">assert</span> <span class="n">I</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span></div>
 
 <div class="viewcode-block" id="Q"><a class="viewcode-back" href="../../generated/patsy.builtins.Q.html#patsy.builtins.Q">[docs]</a><span class="k">def</span> <span class="nf">Q</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A way to &#39;quote&#39; variable names, especially ones that do not otherwise</span>
@@ -234,7 +234,7 @@
 
 <span class="sd">      y ~ np.sqrt(Q(&quot;weight.in.kg&quot;))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="k">import</span> <span class="n">EvalEnvironment</span>
+    <span class="kn">from</span> <span class="nn">patsy.eval</span> <span class="kn">import</span> <span class="n">EvalEnvironment</span>
     <span class="n">env</span> <span class="o">=</span> <span class="n">EvalEnvironment</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">namespace</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -245,7 +245,7 @@
     <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">assert</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="k">assert</span> <span class="n">Q</span><span class="p">(</span><span class="s2">&quot;Q&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Q</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">NameError</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="s2">&quot;asdfsadfdsad&quot;</span><span class="p">)</span></div>
     
 </pre></div>

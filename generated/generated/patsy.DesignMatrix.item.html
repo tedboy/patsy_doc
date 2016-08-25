@@ -205,8 +205,8 @@ array.</li>
 </ul>
 </div></blockquote>
 <dl class="docutils">
-<dt>z</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">Standard Python scalar object</span><dd>A copy of the specified element of the array as a suitable
+<dt>z <span class="classifier-delimiter">:</span> <span class="classifier">Standard Python scalar object</span></dt>
+<dd>A copy of the specified element of the array as a suitable
 Python scalar</dd>
 </dl>
 <p>When the data type of <cite>a</cite> is longdouble or clongdouble, item() returns
@@ -217,7 +217,7 @@ unless fields are defined, in which case a tuple is returned.</p>
 a standard Python scalar is returned. This can be useful for speeding up
 access to elements of the array and doing arithmetic on elements of the
 array using Python&#8217;s optimized math.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
 <span class="go">array([[3, 1, 7],</span>
 <span class="go">       [2, 8, 3],</span>

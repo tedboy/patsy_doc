@@ -91,7 +91,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../patsy.builtins.html#classes">2.2. Classes</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.ContrastMatrix.html">2.2.1. patsy.builtins.ContrastMatrix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="patsy.builtins.Diff.html">2.2.2. patsy.builtins.Diff</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.3. patsy.builtins.Helmert</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="">2.2.3. patsy.builtins.Helmert</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#methods">2.2.3.1. Methods</a></li>
 </ul>
 </li>
@@ -187,21 +187,29 @@ your results!</p>
 <p>Examples:</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span></span><span class="go"># Reduced rank</span>
 <span class="gp">In [1]: </span><span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Helmert)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-1-35415971022a&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;C(a, Helmert)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="gh">Out[1]: </span><span class="go"></span>
+<span class="go">DesignMatrix with shape (4, 4)</span>
+<span class="go">  Intercept  C(a, Helmert)[H.a2]  C(a, Helmert)[H.a3]  C(a, Helmert)[H.a4]</span>
+<span class="go">          1                   -1                   -1                   -1</span>
+<span class="go">          1                    1                   -1                   -1</span>
+<span class="go">          1                    0                    2                   -1</span>
+<span class="go">          1                    0                    0                    3</span>
+<span class="go">  Terms:</span>
+<span class="go">    &#39;Intercept&#39; (column 0)</span>
+<span class="go">    &#39;C(a, Helmert)&#39; (columns 1:4)</span>
 
-<span class="ne">NameError</span>: name &#39;dmatrix&#39; is not defined
-
-<span class="c1"># Full rank</span>
+<span class="go"># Full rank</span>
 <span class="gp">In [2]: </span><span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a, Helmert)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
-<span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="nn">&lt;ipython-input-2-903b764e70b3&gt;</span> in <span class="ni">&lt;module&gt;</span><span class="nt">()</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">dmatrix</span><span class="p">(</span><span class="s2">&quot;0 + C(a, Helmert)&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
-
-<span class="ne">NameError</span>: name &#39;dmatrix&#39; is not defined
+<span class="gh">Out[2]: </span><span class="go"></span>
+<span class="go">DesignMatrix with shape (4, 4)</span>
+<span class="go">  Columns:</span>
+<span class="go">    [&#39;C(a, Helmert)[H.intercept]&#39;,</span>
+<span class="go">     &#39;C(a, Helmert)[H.a2]&#39;,</span>
+<span class="go">     &#39;C(a, Helmert)[H.a3]&#39;,</span>
+<span class="go">     &#39;C(a, Helmert)[H.a4]&#39;]</span>
+<span class="go">  Terms:</span>
+<span class="go">    &#39;C(a, Helmert)&#39; (columns 0:4)</span>
+<span class="go">  (to view full data, use np.asarray(this_obj))</span>
 </pre></div>
 </div>
 <p>This is equivalent to R&#8217;s <cite>contr.helmert</cite>.</p>

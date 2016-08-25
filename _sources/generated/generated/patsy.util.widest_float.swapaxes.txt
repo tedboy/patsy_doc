@@ -1,0 +1,6 @@
+patsy.util.widest_float.swapaxes
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.swapaxes

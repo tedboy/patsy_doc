@@ -1,0 +1,6 @@
+patsy.util.widest_complex.trace
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.trace

@@ -1,0 +1,6 @@
+patsy.util.widest_complex.byteswap
+==================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.byteswap

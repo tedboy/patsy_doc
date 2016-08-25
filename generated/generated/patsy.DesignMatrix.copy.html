@@ -192,8 +192,8 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">copy</code><span class="sig-paren">(</span><em>order='C'</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.DesignMatrix.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the array.</p>
 <dl class="docutils">
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;, &#8216;K&#8217;}, optional</span><dd>Controls the memory layout of the copy. &#8216;C&#8217; means C-order,
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;, &#8216;K&#8217;}, optional</span></dt>
+<dd>Controls the memory layout of the copy. &#8216;C&#8217; means C-order,
 &#8216;F&#8217; means F-order, &#8216;A&#8217; means &#8216;F&#8217; if <cite>a</cite> is Fortran contiguous,
 &#8216;C&#8217; otherwise. &#8216;K&#8217; means match the layout of <cite>a</cite> as closely
 as possible. (Note that this function and :func:numpy.copy are very
@@ -202,26 +202,26 @@ arguments.)</dd>
 </dl>
 <p>numpy.copy
 numpy.copyto</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]],</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]],</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
 <span class="go">array([[0, 0, 0],</span>
 <span class="go">       [0, 0, 0]])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span>
 <span class="go">array([[1, 2, 3],</span>
 <span class="go">       [4, 5, 6]])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s1">&#39;C_CONTIGUOUS&#39;</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">.</span><span class="n">flags</span><span class="p">[</span><span class="s1">&#39;C_CONTIGUOUS&#39;</span><span class="p">]</span>
 <span class="go">True</span>
 </pre></div>
 </div>

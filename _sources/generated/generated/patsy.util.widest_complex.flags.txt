@@ -1,0 +1,6 @@
+patsy.util.widest_complex.flags
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.flags

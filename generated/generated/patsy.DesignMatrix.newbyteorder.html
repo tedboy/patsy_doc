@@ -192,14 +192,14 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">newbyteorder</code><span class="sig-paren">(</span><em>new_order='S'</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.DesignMatrix.newbyteorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the array with the same data viewed with a different byte order.</p>
 <p>Equivalent to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">arr</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">newbytorder</span><span class="p">(</span><span class="n">new_order</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">arr</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">newbytorder</span><span class="p">(</span><span class="n">new_order</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Changes are also made in all fields and sub-arrays of the array data
 type.</p>
 <dl class="docutils">
-<dt>new_order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span><dd><p class="first">Byte order to force; a value from the byte order specifications
+<dt>new_order <span class="classifier-delimiter">:</span> <span class="classifier">string, optional</span></dt>
+<dd><p class="first">Byte order to force; a value from the byte order specifications
 below. <cite>new_order</cite> codes can be any of:</p>
 <ul class="simple">
 <li>&#8216;S&#8217; - swap dtype from current to opposite endian</li>
@@ -215,8 +215,8 @@ any of &#8216;B&#8217; or &#8216;b&#8217; or &#8216;biggish&#8217; are valid to 
 </dd>
 </dl>
 <dl class="docutils">
-<dt>new_arr</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">array</span><dd>New array object with the dtype reflecting given change to the
+<dt>new_arr <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd>New array object with the dtype reflecting given change to the
 byte order.</dd>
 </dl>
 </dd></dl>

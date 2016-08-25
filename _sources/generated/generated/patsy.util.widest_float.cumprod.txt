@@ -1,0 +1,6 @@
+patsy.util.widest_float.cumprod
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.cumprod

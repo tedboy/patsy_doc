@@ -195,14 +195,14 @@
 The data produced by this method can be recovered using the function
 fromfile().</p>
 <dl class="docutils">
-<dt>fid</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">file or str</span><dd>An open file object, or a string containing a filename.</dd>
-<dt>sep</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Separator between array items for text output.
+<dt>fid <span class="classifier-delimiter">:</span> <span class="classifier">file or str</span></dt>
+<dd>An open file object, or a string containing a filename.</dd>
+<dt>sep <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Separator between array items for text output.
 If &#8220;&#8221; (empty), a binary file is written, equivalent to
 <code class="docutils literal"><span class="pre">file.write(a.tobytes())</span></code>.</dd>
-<dt>format</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Format string for text file output.
+<dt>format <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Format string for text file output.
 Each entry in the array is formatted to text by first converting
 it to the closest Python type, and then using &#8220;format&#8221; % item.</dd>
 </dl>

@@ -1,0 +1,6 @@
+patsy.util.widest_complex.tofile
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.tofile

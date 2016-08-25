@@ -1,0 +1,6 @@
+patsy.util.widest_complex.shape
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.shape

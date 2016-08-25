@@ -1,0 +1,6 @@
+patsy.util.widest_complex.newbyteorder
+======================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.newbyteorder

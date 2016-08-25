@@ -160,7 +160,7 @@
 <span class="c1"># uses the machinery in patsy.parse_core to do the heavy-lifting -- its</span>
 <span class="c1"># biggest job is to handle tokenization.</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;parse_formula&quot;</span><span class="p">]</span>
 
@@ -168,13 +168,13 @@
 <span class="kn">import</span> <span class="nn">tokenize</span>
 
 <span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="k">import</span> <span class="n">cStringIO</span> <span class="k">as</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="n">cStringIO</span> <span class="k">as</span> <span class="n">StringIO</span>
 
-<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
-<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
-<span class="kn">from</span> <span class="nn">patsy.infix_parser</span> <span class="k">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">infix_parse</span><span class="p">,</span> <span class="n">ParseNode</span>
-<span class="kn">from</span> <span class="nn">patsy.tokens</span> <span class="k">import</span> <span class="n">python_tokenize</span><span class="p">,</span> <span class="n">pretty_untokenize</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="n">PushbackAdapter</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="kn">import</span> <span class="n">Origin</span>
+<span class="kn">from</span> <span class="nn">patsy.infix_parser</span> <span class="kn">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">infix_parse</span><span class="p">,</span> <span class="n">ParseNode</span>
+<span class="kn">from</span> <span class="nn">patsy.tokens</span> <span class="kn">import</span> <span class="n">python_tokenize</span><span class="p">,</span> <span class="n">pretty_untokenize</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="n">PushbackAdapter</span>
 
 <span class="n">_atomic_token_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PYTHON_EXPR&quot;</span><span class="p">,</span> <span class="s2">&quot;ZERO&quot;</span><span class="p">,</span> <span class="s2">&quot;ONE&quot;</span><span class="p">,</span> <span class="s2">&quot;NUMBER&quot;</span><span class="p">]</span>
 
@@ -182,9 +182,9 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">f</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">False</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">True</span>
 
 <span class="c1"># Helper function for _tokenize_formula:</span>
 <span class="k">def</span> <span class="nf">_read_python_expr</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">end_tokens</span><span class="p">):</span>
@@ -250,18 +250,18 @@
     <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;y ~ a + (foo(b,c +   2)) + -1 + 0 + 10&quot;</span>
     <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_tokenize_formula</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;~&quot;</span><span class="p">]))</span>
     <span class="n">expecteds</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;PYTHON_EXPR&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;y&quot;</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
                  <span class="p">(</span><span class="s2">&quot;PYTHON_EXPR&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
-                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
                  <span class="p">(</span><span class="s2">&quot;PYTHON_EXPR&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="s2">&quot;foo(b, c + 2)&quot;</span><span class="p">),</span>
-                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
                  <span class="p">(</span><span class="s2">&quot;ONE&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">),</span> <span class="s2">&quot;1&quot;</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
                  <span class="p">(</span><span class="s2">&quot;ZERO&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">33</span><span class="p">),</span> <span class="s2">&quot;0&quot;</span><span class="p">),</span>
-                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span> <span class="kc">None</span><span class="p">),</span>
+                 <span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">35</span><span class="p">),</span> <span class="bp">None</span><span class="p">),</span>
                  <span class="p">(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">38</span><span class="p">),</span> <span class="s2">&quot;10&quot;</span><span class="p">),</span>
                  <span class="p">]</span>
     <span class="k">for</span> <span class="n">got</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">expecteds</span><span class="p">):</span>
@@ -300,7 +300,7 @@
                        <span class="n">operators</span><span class="p">,</span>
                        <span class="n">_atomic_token_types</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tree</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;~&quot;</span><span class="p">:</span>
-        <span class="n">tree</span> <span class="o">=</span> <span class="n">ParseNode</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="n">tree</span><span class="p">],</span> <span class="n">tree</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ParseNode</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="n">tree</span><span class="p">],</span> <span class="n">tree</span><span class="o">.</span><span class="n">origin</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">tree</span></div>
 
 <span class="c1">#############</span>
@@ -353,8 +353,8 @@
 <span class="k">def</span> <span class="nf">_do_parse_test</span><span class="p">(</span><span class="n">test_cases</span><span class="p">,</span> <span class="n">extra_operators</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">test_cases</span><span class="p">):</span>
         <span class="n">actual</span> <span class="o">=</span> <span class="n">parse_formula</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">extra_operators</span><span class="o">=</span><span class="n">extra_operators</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">code</span><span class="p">),</span> <span class="nb">repr</span><span class="p">(</span><span class="n">expected</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">code</span><span class="p">),</span> <span class="nb">repr</span><span class="p">(</span><span class="n">expected</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span>
         <span class="n">_compare_trees</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
 
 <div class="viewcode-block" id="test_parse_formula"><a class="viewcode-back" href="../../generated/patsy.parse_formula.test_parse_formula.html#patsy.parse_formula.test_parse_formula">[docs]</a><span class="k">def</span> <span class="nf">test_parse_formula</span><span class="p">():</span>
@@ -393,7 +393,7 @@
 
     <span class="s2">&quot;a + foo&lt;]&gt;bar&quot;</span><span class="p">,</span>
     <span class="s2">&quot;a + foo[]&lt;]&gt;bar&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;a + foo</span><span class="si">{}</span><span class="s2">&lt;}&gt;bar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;a + foo{}&lt;}&gt;bar&quot;</span><span class="p">,</span>
     <span class="s2">&quot;a + foo&lt;)&gt;bar&quot;</span><span class="p">,</span>
 
     <span class="s2">&quot;a + b&lt;)&gt;&quot;</span><span class="p">,</span>
@@ -409,8 +409,8 @@
 <span class="k">def</span> <span class="nf">_parsing_error_test</span><span class="p">(</span><span class="n">parse_fn</span><span class="p">,</span> <span class="n">error_descs</span><span class="p">):</span> <span class="c1"># pragma: no cover</span>
     <span class="k">for</span> <span class="n">error_desc</span> <span class="ow">in</span> <span class="n">error_descs</span><span class="p">:</span>
         <span class="n">letters</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">error_desc</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">letter</span> <span class="o">==</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">letters</span><span class="p">)</span>
@@ -419,18 +419,18 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">letters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
         <span class="n">bad_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">letters</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">error_desc</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">bad_code</span><span class="p">),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">error_desc</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">bad_code</span><span class="p">),</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">parse_fn</span><span class="p">(</span><span class="n">bad_code</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">PatsyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">code</span> <span class="o">==</span> <span class="n">bad_code</span>
             <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="n">start</span>
             <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">end</span> <span class="o">==</span> <span class="n">end</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;parser failed to report an error!&quot;</span>
+            <span class="k">assert</span> <span class="bp">False</span><span class="p">,</span> <span class="s2">&quot;parser failed to report an error!&quot;</span>
 
 <div class="viewcode-block" id="test_parse_errors"><a class="viewcode-back" href="../../generated/patsy.parse_formula.test_parse_errors.html#patsy.parse_formula.test_parse_errors">[docs]</a><span class="k">def</span> <span class="nf">test_parse_errors</span><span class="p">(</span><span class="n">extra_operators</span><span class="o">=</span><span class="p">[]):</span>
     <span class="k">def</span> <span class="nf">parse_fn</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>

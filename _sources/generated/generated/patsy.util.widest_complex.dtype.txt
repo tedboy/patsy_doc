@@ -1,0 +1,6 @@
+patsy.util.widest_complex.dtype
+===============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.dtype

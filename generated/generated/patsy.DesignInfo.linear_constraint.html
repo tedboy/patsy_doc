@@ -211,7 +211,7 @@ be equal to zero. Division is always float-based, even if
 <code class="docutils literal"><span class="pre">__future__.true_division</span></code> isn&#8217;t in effect.</p>
 <p>Returns a <a class="reference internal" href="patsy.LinearConstraint.html#patsy.LinearConstraint" title="patsy.LinearConstraint"><code class="xref py py-class docutils literal"><span class="pre">LinearConstraint</span></code></a> object.</p>
 <p>Examples:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">di</span> <span class="o">=</span> <span class="n">DesignInfo</span><span class="p">([</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">di</span> <span class="o">=</span> <span class="n">DesignInfo</span><span class="p">([</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">])</span>
 
 <span class="c1"># Equivalent ways to write x1 == 0:</span>
 <span class="n">di</span><span class="o">.</span><span class="n">linear_constraint</span><span class="p">({</span><span class="s2">&quot;x1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>  <span class="c1"># by name</span>

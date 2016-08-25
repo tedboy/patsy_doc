@@ -194,16 +194,16 @@
 <p>Place <cite>val</cite> into <cite>a</cite>&#8216;s field defined by <cite>dtype</cite> and beginning <cite>offset</cite>
 bytes into the field.</p>
 <dl class="docutils">
-<dt>val</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">object</span><dd>Value to be placed in field.</dd>
-<dt>dtype</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">dtype object</span><dd>Data-type of the field in which to place <cite>val</cite>.</dd>
-<dt>offset</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>The number of bytes into the field at which to place <cite>val</cite>.</dd>
+<dt>val <span class="classifier-delimiter">:</span> <span class="classifier">object</span></dt>
+<dd>Value to be placed in field.</dd>
+<dt>dtype <span class="classifier-delimiter">:</span> <span class="classifier">dtype object</span></dt>
+<dd>Data-type of the field in which to place <cite>val</cite>.</dd>
+<dt>offset <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>The number of bytes into the field at which to place <cite>val</cite>.</dd>
 </dl>
 <p>None</p>
 <p>getfield</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">getfield</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 <span class="go">array([[ 1.,  0.,  0.],</span>
 <span class="go">       [ 0.,  1.,  0.],</span>

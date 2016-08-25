@@ -1,0 +1,6 @@
+patsy.util.widest_complex.T
+===========================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.T

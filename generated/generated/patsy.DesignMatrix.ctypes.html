@@ -199,8 +199,8 @@ Notes below) which themselves return ctypes objects that can be used
 as arguments to a shared library.</p>
 <p>None</p>
 <dl class="docutils">
-<dt>c</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">Python object</span><dd>Possessing attributes data, shape, strides, etc.</dd>
+<dt>c <span class="classifier-delimiter">:</span> <span class="classifier">Python object</span></dt>
+<dd>Possessing attributes data, shape, strides, etc.</dd>
 </dl>
 <p>numpy.ctypeslib</p>
 <p>Below are the public attributes of this object which were documented
@@ -247,7 +247,7 @@ of array objects still returns something useful, but ctypes objects
 are not returned and errors may be raised instead. In particular,
 the object will still have the as parameter attribute which will
 return an integer equal to the data attribute.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">ctypes</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">ctypes</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
 <span class="go">array([[0, 1],</span>
 <span class="go">       [2, 3]])</span>

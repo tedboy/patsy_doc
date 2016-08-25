@@ -181,13 +181,13 @@
 <span class="c1"># plausible, maybe better ways to write this -- (outcome | group) ~ x1 + x2?</span>
 <span class="c1"># &quot;outcome ~ x1 + x2&quot;, group=&quot;group&quot;? etc.</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Token&quot;</span><span class="p">,</span> <span class="s2">&quot;ParseNode&quot;</span><span class="p">,</span> <span class="s2">&quot;Operator&quot;</span><span class="p">,</span> <span class="s2">&quot;parse&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
-<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="kn">import</span> <span class="n">Origin</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">_UniqueValue</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -210,7 +210,7 @@
     <span class="n">LPAREN</span> <span class="o">=</span> <span class="n">_UniqueValue</span><span class="p">(</span><span class="s2">&quot;LPAREN&quot;</span><span class="p">)</span>
     <span class="n">RPAREN</span> <span class="o">=</span> <span class="n">_UniqueValue</span><span class="p">(</span><span class="s2">&quot;RPAREN&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Token.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Token.__init__.html#patsy.infix_parser.Token.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Token.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.parse_formula.Token.__init__.html#patsy.infix_parser.Token.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">origin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="o">=</span> <span class="n">extra</span></div>
@@ -219,7 +219,7 @@
     <span class="k">def</span> <span class="nf">_repr_pretty_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">cycle</span><span class="p">):</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">cycle</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">kwargs</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;extra&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">repr_pretty_impl</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>
 
@@ -273,20 +273,20 @@
 <span class="k">def</span> <span class="nf">_read_noun_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing open-paren&quot;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Pushing open-paren&quot;</span><span class="p">)</span>
         <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackOperator</span><span class="p">(</span><span class="n">_open_paren</span><span class="p">,</span> <span class="n">token</span><span class="p">))</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">True</span>
     <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">unary_ops</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing unary op </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Pushing unary op </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,))</span>
         <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_StackOperator</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">unary_ops</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="n">token</span><span class="p">))</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">True</span>
     <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">atomic_types</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing noun </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">extra</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Pushing noun </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">token</span><span class="o">.</span><span class="n">extra</span><span class="p">))</span>
         <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ParseNode</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="p">[],</span>
                                       <span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="p">))</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">False</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected a noun, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
                             <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">relevant_code</span><span class="p">(),),</span>
@@ -300,7 +300,7 @@
         <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
     <span class="n">args</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reducing </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reducing </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
     <span class="n">node</span> <span class="o">=</span> <span class="n">ParseNode</span><span class="p">(</span><span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span><span class="p">,</span> <span class="n">stackop</span><span class="o">.</span><span class="n">token</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>
                      <span class="n">Origin</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">stackop</span><span class="o">.</span><span class="n">token</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span><span class="p">))</span>
     <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
@@ -308,7 +308,7 @@
 <span class="k">def</span> <span class="nf">_read_op_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Token</span><span class="o">.</span><span class="n">RPAREN</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found close-paren&quot;</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Found close-paren&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">token_type</span> <span class="o">!=</span> <span class="n">Token</span><span class="o">.</span><span class="n">LPAREN</span><span class="p">:</span>
             <span class="n">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">:</span>
@@ -322,24 +322,24 @@
         <span class="n">c</span><span class="o">.</span><span class="n">noun_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">origin</span> <span class="o">=</span> <span class="n">combined</span>
         <span class="c1"># Pop the open-paren</span>
         <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">False</span>
     <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">binary_ops</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Found binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
         <span class="n">stackop</span> <span class="o">=</span> <span class="n">_StackOperator</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">binary_ops</span><span class="p">[</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">],</span> <span class="n">token</span><span class="p">)</span>
         <span class="k">while</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op_stack</span>
                <span class="ow">and</span> <span class="n">stackop</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">precedence</span> <span class="o">&lt;=</span> <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">precedence</span><span class="p">):</span>
             <span class="n">_run_op</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pushing binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Pushing binary operator </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">))</span>
         <span class="n">c</span><span class="o">.</span><span class="n">op_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stackop</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected an operator, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span>
                             <span class="o">%</span> <span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">origin</span><span class="o">.</span><span class="n">relevant_code</span><span class="p">(),),</span>
                             <span class="n">token</span><span class="p">)</span>
 
-<div class="viewcode-block" id="infix_parse"><a class="viewcode-back" href="../../generated/patsy.parse_formula.infix_parse.html#patsy.infix_parser.infix_parse">[docs]</a><span class="k">def</span> <span class="nf">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">atomic_types</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="infix_parse"><a class="viewcode-back" href="../../generated/patsy.parse_formula.infix_parse.html#patsy.infix_parser.infix_parse">[docs]</a><span class="k">def</span> <span class="nf">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">atomic_types</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="n">token_source</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
 
     <span class="n">unary_ops</span> <span class="o">=</span> <span class="p">{}</span>
@@ -359,16 +359,16 @@
     <span class="c1">#   http://en.wikipedia.org/wiki/Shunting_yard_algorithm</span>
     <span class="c1">#   http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm</span>
 
-    <span class="n">want_noun</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">want_noun</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">token_source</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading next token (want_noun=</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">want_noun</span><span class="p">,))</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reading next token (want_noun=</span><span class="si">%r</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">want_noun</span><span class="p">,))</span>
         <span class="k">if</span> <span class="n">want_noun</span><span class="p">:</span>
             <span class="n">want_noun</span> <span class="o">=</span> <span class="n">_read_noun_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">want_noun</span> <span class="o">=</span> <span class="n">_read_op_context</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">trace</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;End of token stream&quot;</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;End of token stream&quot;</span><span class="p">)</span>
         
     <span class="k">if</span> <span class="n">want_noun</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">PatsyError</span><span class="p">(</span><span class="s2">&quot;expected a noun, but instead the expression ended&quot;</span><span class="p">,</span>
@@ -415,13 +415,13 @@
     <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;ATOM1&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
     <span class="n">te</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;ATOM2&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">)</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="c1"># No ternary ops</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span>
                   <span class="n">infix_parse</span><span class="p">,</span> <span class="p">[],</span> <span class="p">[</span><span class="n">Operator</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)],</span> <span class="p">[</span><span class="s2">&quot;ATOMIC&quot;</span><span class="p">])</span>
 
     <span class="c1"># smoke test just to make sure there are no egregious bugs in &#39;trace&#39;</span>
-    <span class="n">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">atomic</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    <span class="n">infix_parse</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">atomic</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

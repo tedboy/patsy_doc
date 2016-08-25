@@ -192,18 +192,18 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">flatten</code><span class="sig-paren">(</span><em>order='C'</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.DesignMatrix.flatten" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the array collapsed into one dimension.</p>
 <dl class="docutils">
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;}, optional</span><dd>Whether to flatten in row-major (C-style) or
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;}, optional</span></dt>
+<dd>Whether to flatten in row-major (C-style) or
 column-major (Fortran-style) order or preserve the
 C/Fortran ordering from <cite>a</cite>.  The default is &#8216;C&#8217;.</dd>
 </dl>
 <dl class="docutils">
-<dt>y</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>A copy of the input array, flattened to one dimension.</dd>
+<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>A copy of the input array, flattened to one dimension.</dd>
 </dl>
 <p>ravel : Return a flattened array.
 flat : A 1-D flat iterator over the array.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
 <span class="go">array([1, 2, 3, 4])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s1">&#39;F&#39;</span><span class="p">)</span>

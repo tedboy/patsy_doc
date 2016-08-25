@@ -1,0 +1,6 @@
+patsy.util.widest_complex.cumprod
+=================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.cumprod

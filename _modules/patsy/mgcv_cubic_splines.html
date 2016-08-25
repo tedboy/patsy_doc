@@ -160,11 +160,11 @@
 <span class="c1"># These are made available in the patsy.* namespace</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cr&quot;</span><span class="p">,</span> <span class="s2">&quot;cc&quot;</span><span class="p">,</span> <span class="s2">&quot;te&quot;</span><span class="p">]</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">have_pandas</span><span class="p">,</span> <span class="n">atleast_2d_column_default</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">have_pandas</span><span class="p">,</span> <span class="n">atleast_2d_column_default</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="k">import</span> <span class="n">stateful_transform</span>
+<span class="kn">from</span> <span class="nn">patsy.state</span> <span class="kn">import</span> <span class="n">stateful_transform</span>
 
 <span class="k">if</span> <span class="n">have_pandas</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pandas</span>
@@ -184,7 +184,7 @@
 <span class="sd">     ``linalg.solve_banded()``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">linalg</span>
+        <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Cubic spline functionality requires scipy.&quot;</span><span class="p">)</span>
 
@@ -238,7 +238,7 @@
 
 
 <span class="k">def</span> <span class="nf">test__map_cyclic_errors</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_map_cyclic</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_map_cyclic</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">)</span>
@@ -325,7 +325,7 @@
 
 
 <span class="k">def</span> <span class="nf">test__row_tensor_product_errors</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_row_tensor_product</span><span class="p">,</span> <span class="p">[])</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_row_tensor_product</span><span class="p">,</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_row_tensor_product</span><span class="p">,</span>
@@ -445,7 +445,7 @@
 <span class="sd">      ``qr(..., mode=&#39;complete&#39;)`` to get a full QR decomposition.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">linalg</span>
+        <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Cubic spline functionality requires scipy.&quot;</span><span class="p">)</span>
 
@@ -455,7 +455,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">design_matrix</span><span class="p">,</span> <span class="n">q</span><span class="p">[:,</span> <span class="n">m</span><span class="p">:])</span>
 
 
-<span class="k">def</span> <span class="nf">_get_free_crs_dmatrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_free_crs_dmatrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Builds an unconstrained cubic regression spline design matrix.</span>
 
 <span class="sd">    Returns design matrix with dimensions ``len(x) x n``</span>
@@ -497,7 +497,7 @@
     <span class="k">return</span> <span class="n">dmt</span><span class="o">.</span><span class="n">T</span>
 
 
-<span class="k">def</span> <span class="nf">_get_crs_dmatrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_crs_dmatrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Builds a cubic regression spline design matrix.</span>
 
 <span class="sd">    Returns design matrix with dimensions len(x) x n</span>
@@ -516,13 +516,13 @@
 <span class="sd">    :return: The (2-d array) design matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dm</span> <span class="o">=</span> <span class="n">_get_free_crs_dmatrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">cyclic</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">dm</span> <span class="o">=</span> <span class="n">_absorb_constraints</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">dm</span>
 
 
-<span class="k">def</span> <span class="nf">_get_te_dmatrix</span><span class="p">(</span><span class="n">design_matrices</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_te_dmatrix</span><span class="p">(</span><span class="n">design_matrices</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Builds tensor product design matrix, given the marginal design matrices.</span>
 
 <span class="sd">    :param design_matrices: A sequence of 2-d arrays (marginal design matrices).</span>
@@ -531,7 +531,7 @@
 <span class="sd">    :return: The (2-d array) design matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dm</span> <span class="o">=</span> <span class="n">_row_tensor_product</span><span class="p">(</span><span class="n">design_matrices</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">dm</span> <span class="o">=</span> <span class="n">_absorb_constraints</span><span class="p">(</span><span class="n">dm</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">dm</span>
@@ -540,8 +540,8 @@
 <span class="c1"># Stateful Transforms</span>
 
 
-<span class="k">def</span> <span class="nf">_get_all_sorted_knots</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_inner_knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inner_knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                              <span class="n">lower_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_get_all_sorted_knots</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n_inner_knots</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">inner_knots</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                              <span class="n">lower_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Gets all knots locations with lower and upper exterior knots included.</span>
 
 <span class="sd">    If needed, inner knots are computed as equally spaced quantiles of the</span>
@@ -559,23 +559,23 @@
 <span class="sd">    :raise ValueError: for various invalid parameters sets or if unable to</span>
 <span class="sd">     compute ``n_inner_knots + 2`` distinct knots.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot set lower exterior knot location: empty &quot;</span>
                          <span class="s2">&quot;input data and lower_bound not specified.&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot set upper exterior knot location: empty &quot;</span>
                          <span class="s2">&quot;input data and upper_bound not specified.&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">upper_bound</span> <span class="o">&lt;</span> <span class="n">lower_bound</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lower_bound &gt; upper_bound (</span><span class="si">%r</span><span class="s2"> &gt; </span><span class="si">%r</span><span class="s2">)&quot;</span>
                          <span class="o">%</span> <span class="p">(</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="n">inner_knots</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">inner_knots</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">n_inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">n_inner_knots</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid requested number of inner knots: </span><span class="si">%r</span><span class="s2">&quot;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">n_inner_knots</span><span class="p">,))</span>
@@ -594,9 +594,9 @@
                              <span class="s2">&quot;upper_bound(=</span><span class="si">%r</span><span class="s2">): cannot compute requested &quot;</span>
                              <span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> inner knot(s).&quot;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">lower_bound</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">,</span> <span class="n">n_inner_knots</span><span class="p">))</span>
-    <span class="k">elif</span> <span class="n">inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">inner_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">inner_knots</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">n_inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">n_inner_knots</span> <span class="o">!=</span> <span class="n">inner_knots</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n_inner_knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">n_inner_knots</span> <span class="o">!=</span> <span class="n">inner_knots</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Needed number of inner knots=</span><span class="si">%r</span><span class="s2"> does not match &quot;</span>
                              <span class="s2">&quot;provided number of inner knots=</span><span class="si">%r</span><span class="s2">.&quot;</span>
                              <span class="o">%</span> <span class="p">(</span><span class="n">n_inner_knots</span><span class="p">,</span> <span class="n">inner_knots</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
@@ -626,7 +626,7 @@
 
 
 <span class="k">def</span> <span class="nf">test__get_all_sorted_knots</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_get_all_sorted_knots</span><span class="p">,</span>
                   <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">_get_all_sorted_knots</span><span class="p">,</span>
@@ -739,12 +739,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cyclic</span> <span class="o">=</span> <span class="n">cyclic</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_all_knots</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_knots</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="bp">None</span>
 
-    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">lower_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                       <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                       <span class="n">lower_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                       <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="n">df</span><span class="p">,</span>
                 <span class="s2">&quot;knots&quot;</span><span class="p">:</span> <span class="n">knots</span><span class="p">,</span>
                 <span class="s2">&quot;lower_bound&quot;</span><span class="p">:</span> <span class="n">lower_bound</span><span class="p">,</span>
@@ -770,12 +770,12 @@
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span>
 
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either &#39;df&#39; or &#39;knots&#39;.&quot;</span><span class="p">)</span>
 
         <span class="n">constraints</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;constraints&quot;</span><span class="p">]</span>
         <span class="n">n_constraints</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">constraints</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
                 <span class="c1"># Here we collect only number of constraints,</span>
                 <span class="c1"># actual centering constraint will be computed after all_knots</span>
@@ -787,8 +787,8 @@
                                      <span class="s2">&quot;1-d vector.&quot;</span><span class="p">)</span>
                 <span class="n">n_constraints</span> <span class="o">=</span> <span class="n">constraints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">n_inner_knots</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_inner_knots</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">min_df</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cyclic</span> <span class="ow">and</span> <span class="n">n_constraints</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">min_df</span> <span class="o">=</span> <span class="mi">2</span>
@@ -803,7 +803,7 @@
                                                 <span class="n">inner_knots</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;knots&quot;</span><span class="p">],</span>
                                                 <span class="n">lower_bound</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;lower_bound&quot;</span><span class="p">],</span>
                                                 <span class="n">upper_bound</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="s2">&quot;upper_bound&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">constraints</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
                 <span class="c1"># Now we can compute centering constraints</span>
                 <span class="n">constraints</span> <span class="o">=</span> <span class="n">_get_centering_constraint_from_dmatrix</span><span class="p">(</span>
@@ -819,9 +819,9 @@
                                  <span class="o">%</span> <span class="p">(</span><span class="n">df_before_constraints</span><span class="p">,</span> <span class="n">constraints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="n">constraints</span>
 
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">lower_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                  <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">lower_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">constraints</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="n">x_orig</span> <span class="o">=</span> <span class="n">x</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -867,7 +867,7 @@
         <span class="n">__doc__</span> <span class="o">+=</span> <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">common_doc</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cr&#39;</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cr&#39;</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 <span class="n">cr</span> <span class="o">=</span> <span class="n">stateful_transform</span><span class="p">(</span><span class="n">CR</span><span class="p">)</span>
 
@@ -897,13 +897,13 @@
         <span class="n">__doc__</span> <span class="o">+=</span> <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">common_doc</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">CubicRegressionSpline</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;cc&#39;</span><span class="p">,</span> <span class="n">cyclic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="n">cc</span> <span class="o">=</span> <span class="n">stateful_transform</span><span class="p">(</span><span class="n">CC</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">test_crs_errors</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="c1"># Invalid &#39;x&#39; shape</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">cr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span> <span class="n">df</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">CR</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
@@ -924,14 +924,14 @@
 
 
 <span class="k">def</span> <span class="nf">test_crs_compat</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">patsy.test_state</span> <span class="k">import</span> <span class="n">check_stateful</span>
-    <span class="kn">from</span> <span class="nn">patsy.test_splines_crs_data</span> <span class="k">import</span> <span class="p">(</span><span class="n">R_crs_test_x</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">patsy.test_state</span> <span class="kn">import</span> <span class="n">check_stateful</span>
+    <span class="kn">from</span> <span class="nn">patsy.test_splines_crs_data</span> <span class="kn">import</span> <span class="p">(</span><span class="n">R_crs_test_x</span><span class="p">,</span>
                                              <span class="n">R_crs_test_data</span><span class="p">,</span>
                                              <span class="n">R_crs_num_tests</span><span class="p">)</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">R_crs_test_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">tests_ran</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">start_idx</span> <span class="o">=</span> <span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--BEGIN TEST CASE--&quot;</span><span class="p">)</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">lines</span><span class="p">[</span><span class="n">start_idx</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;--BEGIN TEST CASE--&quot;</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">start_idx</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -965,16 +965,16 @@
             <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;nb_knots&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="n">adjust_df</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]))</span>
         <span class="c1"># Do the actual test</span>
-        <span class="n">check_stateful</span><span class="p">(</span><span class="n">spline_type</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">R_crs_test_x</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">check_stateful</span><span class="p">(</span><span class="n">spline_type</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">R_crs_test_x</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">tests_ran</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="c1"># Set up for the next one</span>
         <span class="n">start_idx</span> <span class="o">=</span> <span class="n">stop_idx</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="k">assert</span> <span class="n">tests_ran</span> <span class="o">==</span> <span class="n">R_crs_num_tests</span>
 
-<span class="n">test_crs_compat</span><span class="o">.</span><span class="n">slow</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">test_crs_compat</span><span class="o">.</span><span class="n">slow</span> <span class="o">=</span> <span class="bp">True</span>
 
 <span class="k">def</span> <span class="nf">test_crs_with_specific_constraint</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="k">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span><span class="p">,</span> <span class="n">dmatrix</span>
+    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="kn">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span><span class="p">,</span> <span class="n">dmatrix</span>
     <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="c1"># Hard coded R values for smooth: s(x, bs=&quot;cr&quot;, k=5)</span>
     <span class="c1"># R&gt; knots &lt;- smooth$xp</span>
@@ -1001,7 +1001,7 @@
                             <span class="k">lambda</span><span class="p">:</span> <span class="nb">iter</span><span class="p">(</span><span class="n">data_chunked</span><span class="p">))</span>
     <span class="n">result2</span> <span class="o">=</span> <span class="n">build_design_matrices</span><span class="p">([</span><span class="n">builder</span><span class="p">],</span> <span class="n">new_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result1</span><span class="p">,</span> <span class="n">result2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">result1</span><span class="p">,</span> <span class="n">result2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">TE</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -1043,7 +1043,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span> <span class="o">=</span> <span class="bp">None</span>
 
     <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">constraints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;constraints&quot;</span><span class="p">,</span>
@@ -1071,7 +1071,7 @@
         <span class="c1"># Guards against invalid subsequent memorize_chunk() calls.</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp</span>
 
-        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">constraints</span> <span class="o">==</span> <span class="s2">&quot;center&quot;</span><span class="p">:</span>
                 <span class="n">constraints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">])</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1099,7 +1099,7 @@
 
 
 <span class="k">def</span> <span class="nf">test_te_errors</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">27</span><span class="p">)</span>
     <span class="c1"># Invalid input shape</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">te</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
@@ -1110,7 +1110,7 @@
 
 
 <span class="k">def</span> <span class="nf">test_te_1smooth</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">patsy.splines</span> <span class="k">import</span> <span class="n">bs</span>
+    <span class="kn">from</span> <span class="nn">patsy.splines</span> <span class="kn">import</span> <span class="n">bs</span>
     <span class="c1"># Tensor product of 1 smooth covariate should be the same</span>
     <span class="c1"># as the smooth alone</span>
     <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
@@ -1127,7 +1127,7 @@
 
 
 <span class="k">def</span> <span class="nf">test_te_2smooths</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="k">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span>
+    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="kn">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.6</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="c1"># Hard coded R results for smooth: te(x1, x2, bs=c(&quot;cs&quot;, &quot;cc&quot;), k=c(5,7))</span>
@@ -1204,17 +1204,17 @@
     <span class="n">builder</span> <span class="o">=</span> <span class="n">incr_dbuilder</span><span class="p">(</span><span class="s2">&quot;te(cr(x1, df=5), cc(x2, df=6)) - 1&quot;</span><span class="p">,</span>
                             <span class="k">lambda</span><span class="p">:</span> <span class="nb">iter</span><span class="p">(</span><span class="n">data_chunked</span><span class="p">))</span>
     <span class="n">dmatrix_nocons</span> <span class="o">=</span> <span class="n">build_design_matrices</span><span class="p">([</span><span class="n">builder</span><span class="p">],</span> <span class="n">new_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">dmatrix_nocons</span><span class="p">,</span> <span class="n">dmatrix_R_nocons</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">dmatrix_nocons</span><span class="p">,</span> <span class="n">dmatrix_R_nocons</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
 
     <span class="n">builder</span> <span class="o">=</span> <span class="n">incr_dbuilder</span><span class="p">(</span><span class="s2">&quot;te(cr(x1, df=5), cc(x2, df=6), &quot;</span>
                             <span class="s2">&quot;constraints=&#39;center&#39;) - 1&quot;</span><span class="p">,</span>
                             <span class="k">lambda</span><span class="p">:</span> <span class="nb">iter</span><span class="p">(</span><span class="n">data_chunked</span><span class="p">))</span>
     <span class="n">dmatrix_cons</span> <span class="o">=</span> <span class="n">build_design_matrices</span><span class="p">([</span><span class="n">builder</span><span class="p">],</span> <span class="n">new_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">dmatrix_cons</span><span class="p">,</span> <span class="n">dmatrix_R_cons</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">dmatrix_cons</span><span class="p">,</span> <span class="n">dmatrix_R_cons</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">test_te_3smooths</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="k">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span>
+    <span class="kn">from</span> <span class="nn">patsy.highlevel</span> <span class="kn">import</span> <span class="n">incr_dbuilder</span><span class="p">,</span> <span class="n">build_design_matrices</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.6</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
     <span class="n">x3</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.2</span><span class="p">)</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
@@ -1242,7 +1242,7 @@
     <span class="n">builder</span> <span class="o">=</span> <span class="n">incr_dbuilder</span><span class="p">(</span><span class="s2">&quot;te(cr(x1, df=3), cr(x2, df=3), cc(x3, df=3)) - 1&quot;</span><span class="p">,</span>
                             <span class="k">lambda</span><span class="p">:</span> <span class="nb">iter</span><span class="p">(</span><span class="n">data_chunked</span><span class="p">))</span>
     <span class="n">design_matrix</span> <span class="o">=</span> <span class="n">build_design_matrices</span><span class="p">([</span><span class="n">builder</span><span class="p">],</span> <span class="n">new_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">design_matrix</span><span class="p">,</span> <span class="n">design_matrix_R</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">design_matrix</span><span class="p">,</span> <span class="n">design_matrix_R</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
 </pre></div>
 
            </div>

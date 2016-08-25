@@ -198,14 +198,14 @@ array dtype; for example an array of dtype complex128 has 16-byte elements.
 If taking a view with a 32-bit integer (4 bytes), the offset needs to be
 between 0 and 12 bytes.</p>
 <dl class="docutils">
-<dt>dtype</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str or dtype</span><dd>The data type of the view. The dtype size of the view can not be larger
+<dt>dtype <span class="classifier-delimiter">:</span> <span class="classifier">str or dtype</span></dt>
+<dd>The data type of the view. The dtype size of the view can not be larger
 than that of the array itself.</dd>
-<dt>offset</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Number of bytes to skip before beginning the element view.</dd>
+<dt>offset <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Number of bytes to skip before beginning the element view.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">1.</span><span class="o">+</span><span class="mf">1.</span><span class="n">j</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">4.</span><span class="n">j</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">1.</span><span class="o">+</span><span class="mf">1.j</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="mf">4.j</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
 <span class="go">array([[ 1.+1.j,  0.+0.j],</span>
 <span class="go">       [ 0.+0.j,  2.+4.j]])</span>
@@ -216,7 +216,7 @@ than that of the array itself.</dd>
 </div>
 <p>By choosing an offset of 8 bytes we can select the complex part of the
 array for our view:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">getfield</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">getfield</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="go">array([[ 1.,  0.],</span>
 <span class="go">   [ 0.,  4.]])</span>
 </pre></div>

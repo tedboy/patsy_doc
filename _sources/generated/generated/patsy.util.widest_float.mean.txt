@@ -1,0 +1,6 @@
+patsy.util.widest_float.mean
+============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.mean

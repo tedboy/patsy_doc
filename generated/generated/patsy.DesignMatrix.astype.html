@@ -192,17 +192,17 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">astype</code><span class="sig-paren">(</span><em>dtype</em>, <em>order='K'</em>, <em>casting='unsafe'</em>, <em>subok=True</em>, <em>copy=True</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.DesignMatrix.astype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy of the array, cast to a specified type.</p>
 <dl class="docutils">
-<dt>dtype</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str or dtype</span><dd>Typecode or data-type to which the array is cast.</dd>
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;, &#8216;K&#8217;}, optional</span><dd>Controls the memory layout order of the result.
+<dt>dtype <span class="classifier-delimiter">:</span> <span class="classifier">str or dtype</span></dt>
+<dd>Typecode or data-type to which the array is cast.</dd>
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, &#8216;A&#8217;, &#8216;K&#8217;}, optional</span></dt>
+<dd>Controls the memory layout order of the result.
 &#8216;C&#8217; means C order, &#8216;F&#8217; means Fortran order, &#8216;A&#8217;
 means &#8216;F&#8217; order if all the arrays are Fortran contiguous,
 &#8216;C&#8217; order otherwise, and &#8216;K&#8217; means as close to the
 order the array elements appear in memory as possible.
 Default is &#8216;K&#8217;.</dd>
-<dt>casting</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;no&#8217;, &#8216;equiv&#8217;, &#8216;safe&#8217;, &#8216;same_kind&#8217;, &#8216;unsafe&#8217;}, optional</span><dd><p class="first">Controls what kind of data casting may occur. Defaults to &#8216;unsafe&#8217;
+<dt>casting <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;no&#8217;, &#8216;equiv&#8217;, &#8216;safe&#8217;, &#8216;same_kind&#8217;, &#8216;unsafe&#8217;}, optional</span></dt>
+<dd><p class="first">Controls what kind of data casting may occur. Defaults to &#8216;unsafe&#8217;
 for backwards compatibility.</p>
 <blockquote class="last">
 <div><ul class="simple">
@@ -215,18 +215,18 @@ like float64 to float32, are allowed.</li>
 </ul>
 </div></blockquote>
 </dd>
-<dt>subok</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>If True, then sub-classes will be passed-through (default), otherwise
+<dt>subok <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If True, then sub-classes will be passed-through (default), otherwise
 the returned array will be forced to be a base-class array.</dd>
-<dt>copy</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>By default, astype always returns a newly allocated array. If this
+<dt>copy <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>By default, astype always returns a newly allocated array. If this
 is set to false, and the <cite>dtype</cite>, <cite>order</cite>, and <cite>subok</cite>
 requirements are satisfied, the input array is returned instead
 of a copy.</dd>
 </dl>
 <dl class="docutils">
-<dt>arr_t</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>Unless <cite>copy</cite> is False and the other conditions for returning the input
+<dt>arr_t <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>Unless <cite>copy</cite> is False and the other conditions for returning the input
 array are satisfied (see description for <cite>copy</cite> input paramter), <cite>arr_t</cite>
 is a new array of the same shape as the input array, with dtype, order
 given by <cite>dtype</cite>, <cite>order</cite>.</dd>
@@ -240,12 +240,12 @@ was allowed even if the result was truncated.</p>
 <dd>When casting from complex to float or int. To avoid this,
 one should use <code class="docutils literal"><span class="pre">a.real.astype(t)</span></code>.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
 <span class="go">array([ 1. ,  2. ,  2.5])</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="go">array([1, 2, 2])</span>
 </pre></div>
 </div>

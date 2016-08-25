@@ -1,0 +1,6 @@
+patsy.util.widest_complex.astype
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.astype

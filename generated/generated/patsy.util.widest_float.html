@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>7.2.4. patsy.util.widest_float &mdash; Patsy API v1</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Patsy API v1" href="../../index.html"/>
+        <link rel="up" title="7. patsy.util" href="../patsy.util.html"/>
+        <link rel="next" title="7.2.4.1.1. patsy.util.widest_float.all" href="patsy.util.widest_float.all.html"/>
+        <link rel="prev" title="7.2.3.2.14. patsy.util.widest_complex.strides" href="patsy.util.widest_complex.strides.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Patsy API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../patsy.html">1. patsy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.builtins.html">2. patsy.builtins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.categorical.html">3. patsy.categorical</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.infix_parser.html">4. patsy.infix_parser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.parse_formula.html">5. patsy.parse_formula</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../patsy.tokens.html">6. patsy.tokens</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../patsy.util.html">7. patsy.util</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../patsy.util.html#functions">7.1. Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../patsy.util.html#classes">7.2. Classes</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="patsy.util.PushbackAdapter.html">7.2.1. patsy.util.PushbackAdapter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.util.SortAnythingKey.html">7.2.2. patsy.util.SortAnythingKey</a></li>
+<li class="toctree-l3"><a class="reference internal" href="patsy.util.widest_complex.html">7.2.3. patsy.util.widest_complex</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="">7.2.4. patsy.util.widest_float</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#methods">7.2.4.1. Methods</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#attributes">7.2.4.2. Attributes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Patsy API</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">&lt;no title&gt;</a> &raquo;</li>
+        
+          <li><a href="../patsy.util.html">7. patsy.util</a> &raquo;</li>
+        
+      <li>7.2.4. patsy.util.widest_float</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/generated/generated/patsy.util.widest_float.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="patsy-util-widest-float">
+<h1>7.2.4. patsy.util.widest_float<a class="headerlink" href="#patsy-util-widest-float" title="Permalink to this headline">¶</a></h1>
+<dl class="attribute">
+<dt id="patsy.util.widest_float">
+<code class="descclassname">patsy.util.</code><code class="descname">widest_float</code><a class="headerlink" href="#patsy.util.widest_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">float128</span></code></p>
+</dd></dl>
+
+<div class="section" id="methods">
+<h2>7.2.4.1. Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.all.html#patsy.util.widest_float.all" title="patsy.util.widest_float.all"><code class="xref py py-obj docutils literal"><span class="pre">all</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.any.html#patsy.util.widest_float.any" title="patsy.util.widest_float.any"><code class="xref py py-obj docutils literal"><span class="pre">any</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.argmax.html#patsy.util.widest_float.argmax" title="patsy.util.widest_float.argmax"><code class="xref py py-obj docutils literal"><span class="pre">argmax</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.argmin.html#patsy.util.widest_float.argmin" title="patsy.util.widest_float.argmin"><code class="xref py py-obj docutils literal"><span class="pre">argmin</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.argsort.html#patsy.util.widest_float.argsort" title="patsy.util.widest_float.argsort"><code class="xref py py-obj docutils literal"><span class="pre">argsort</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.astype.html#patsy.util.widest_float.astype" title="patsy.util.widest_float.astype"><code class="xref py py-obj docutils literal"><span class="pre">astype</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.byteswap.html#patsy.util.widest_float.byteswap" title="patsy.util.widest_float.byteswap"><code class="xref py py-obj docutils literal"><span class="pre">byteswap</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.choose.html#patsy.util.widest_float.choose" title="patsy.util.widest_float.choose"><code class="xref py py-obj docutils literal"><span class="pre">choose</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.clip.html#patsy.util.widest_float.clip" title="patsy.util.widest_float.clip"><code class="xref py py-obj docutils literal"><span class="pre">clip</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.compress.html#patsy.util.widest_float.compress" title="patsy.util.widest_float.compress"><code class="xref py py-obj docutils literal"><span class="pre">compress</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.conj.html#patsy.util.widest_float.conj" title="patsy.util.widest_float.conj"><code class="xref py py-obj docutils literal"><span class="pre">conj</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.conjugate.html#patsy.util.widest_float.conjugate" title="patsy.util.widest_float.conjugate"><code class="xref py py-obj docutils literal"><span class="pre">conjugate</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.copy.html#patsy.util.widest_float.copy" title="patsy.util.widest_float.copy"><code class="xref py py-obj docutils literal"><span class="pre">copy</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.cumprod.html#patsy.util.widest_float.cumprod" title="patsy.util.widest_float.cumprod"><code class="xref py py-obj docutils literal"><span class="pre">cumprod</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.cumsum.html#patsy.util.widest_float.cumsum" title="patsy.util.widest_float.cumsum"><code class="xref py py-obj docutils literal"><span class="pre">cumsum</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.diagonal.html#patsy.util.widest_float.diagonal" title="patsy.util.widest_float.diagonal"><code class="xref py py-obj docutils literal"><span class="pre">diagonal</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.dump.html#patsy.util.widest_float.dump" title="patsy.util.widest_float.dump"><code class="xref py py-obj docutils literal"><span class="pre">dump</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.dumps.html#patsy.util.widest_float.dumps" title="patsy.util.widest_float.dumps"><code class="xref py py-obj docutils literal"><span class="pre">dumps</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.fill.html#patsy.util.widest_float.fill" title="patsy.util.widest_float.fill"><code class="xref py py-obj docutils literal"><span class="pre">fill</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.flatten.html#patsy.util.widest_float.flatten" title="patsy.util.widest_float.flatten"><code class="xref py py-obj docutils literal"><span class="pre">flatten</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.getfield.html#patsy.util.widest_float.getfield" title="patsy.util.widest_float.getfield"><code class="xref py py-obj docutils literal"><span class="pre">getfield</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.item.html#patsy.util.widest_float.item" title="patsy.util.widest_float.item"><code class="xref py py-obj docutils literal"><span class="pre">item</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.itemset.html#patsy.util.widest_float.itemset" title="patsy.util.widest_float.itemset"><code class="xref py py-obj docutils literal"><span class="pre">itemset</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.max.html#patsy.util.widest_float.max" title="patsy.util.widest_float.max"><code class="xref py py-obj docutils literal"><span class="pre">max</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.mean.html#patsy.util.widest_float.mean" title="patsy.util.widest_float.mean"><code class="xref py py-obj docutils literal"><span class="pre">mean</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.min.html#patsy.util.widest_float.min" title="patsy.util.widest_float.min"><code class="xref py py-obj docutils literal"><span class="pre">min</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.newbyteorder.html#patsy.util.widest_float.newbyteorder" title="patsy.util.widest_float.newbyteorder"><code class="xref py py-obj docutils literal"><span class="pre">newbyteorder</span></code></a>([new_order])</td>
+<td>Return a new <cite>dtype</cite> with a different byte order.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.nonzero.html#patsy.util.widest_float.nonzero" title="patsy.util.widest_float.nonzero"><code class="xref py py-obj docutils literal"><span class="pre">nonzero</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.prod.html#patsy.util.widest_float.prod" title="patsy.util.widest_float.prod"><code class="xref py py-obj docutils literal"><span class="pre">prod</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.ptp.html#patsy.util.widest_float.ptp" title="patsy.util.widest_float.ptp"><code class="xref py py-obj docutils literal"><span class="pre">ptp</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.put.html#patsy.util.widest_float.put" title="patsy.util.widest_float.put"><code class="xref py py-obj docutils literal"><span class="pre">put</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.ravel.html#patsy.util.widest_float.ravel" title="patsy.util.widest_float.ravel"><code class="xref py py-obj docutils literal"><span class="pre">ravel</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.repeat.html#patsy.util.widest_float.repeat" title="patsy.util.widest_float.repeat"><code class="xref py py-obj docutils literal"><span class="pre">repeat</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.reshape.html#patsy.util.widest_float.reshape" title="patsy.util.widest_float.reshape"><code class="xref py py-obj docutils literal"><span class="pre">reshape</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.resize.html#patsy.util.widest_float.resize" title="patsy.util.widest_float.resize"><code class="xref py py-obj docutils literal"><span class="pre">resize</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.round.html#patsy.util.widest_float.round" title="patsy.util.widest_float.round"><code class="xref py py-obj docutils literal"><span class="pre">round</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.searchsorted.html#patsy.util.widest_float.searchsorted" title="patsy.util.widest_float.searchsorted"><code class="xref py py-obj docutils literal"><span class="pre">searchsorted</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.setfield.html#patsy.util.widest_float.setfield" title="patsy.util.widest_float.setfield"><code class="xref py py-obj docutils literal"><span class="pre">setfield</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.setflags.html#patsy.util.widest_float.setflags" title="patsy.util.widest_float.setflags"><code class="xref py py-obj docutils literal"><span class="pre">setflags</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.sort.html#patsy.util.widest_float.sort" title="patsy.util.widest_float.sort"><code class="xref py py-obj docutils literal"><span class="pre">sort</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.squeeze.html#patsy.util.widest_float.squeeze" title="patsy.util.widest_float.squeeze"><code class="xref py py-obj docutils literal"><span class="pre">squeeze</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.std.html#patsy.util.widest_float.std" title="patsy.util.widest_float.std"><code class="xref py py-obj docutils literal"><span class="pre">std</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.sum.html#patsy.util.widest_float.sum" title="patsy.util.widest_float.sum"><code class="xref py py-obj docutils literal"><span class="pre">sum</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.swapaxes.html#patsy.util.widest_float.swapaxes" title="patsy.util.widest_float.swapaxes"><code class="xref py py-obj docutils literal"><span class="pre">swapaxes</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.take.html#patsy.util.widest_float.take" title="patsy.util.widest_float.take"><code class="xref py py-obj docutils literal"><span class="pre">take</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.tobytes.html#patsy.util.widest_float.tobytes" title="patsy.util.widest_float.tobytes"><code class="xref py py-obj docutils literal"><span class="pre">tobytes</span></code></a></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.tofile.html#patsy.util.widest_float.tofile" title="patsy.util.widest_float.tofile"><code class="xref py py-obj docutils literal"><span class="pre">tofile</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.tolist.html#patsy.util.widest_float.tolist" title="patsy.util.widest_float.tolist"><code class="xref py py-obj docutils literal"><span class="pre">tolist</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.tostring.html#patsy.util.widest_float.tostring" title="patsy.util.widest_float.tostring"><code class="xref py py-obj docutils literal"><span class="pre">tostring</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.trace.html#patsy.util.widest_float.trace" title="patsy.util.widest_float.trace"><code class="xref py py-obj docutils literal"><span class="pre">trace</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.transpose.html#patsy.util.widest_float.transpose" title="patsy.util.widest_float.transpose"><code class="xref py py-obj docutils literal"><span class="pre">transpose</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.var.html#patsy.util.widest_float.var" title="patsy.util.widest_float.var"><code class="xref py py-obj docutils literal"><span class="pre">var</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.view.html#patsy.util.widest_float.view" title="patsy.util.widest_float.view"><code class="xref py py-obj docutils literal"><span class="pre">view</span></code></a></td>
+<td>Not implemented (virtual attribute)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="attributes">
+<h2>7.2.4.2. Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.T.html#patsy.util.widest_float.T" title="patsy.util.widest_float.T"><code class="xref py py-obj docutils literal"><span class="pre">T</span></code></a></td>
+<td>transpose</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.base.html#patsy.util.widest_float.base" title="patsy.util.widest_float.base"><code class="xref py py-obj docutils literal"><span class="pre">base</span></code></a></td>
+<td>base object</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.data.html#patsy.util.widest_float.data" title="patsy.util.widest_float.data"><code class="xref py py-obj docutils literal"><span class="pre">data</span></code></a></td>
+<td>pointer to start of data</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.dtype.html#patsy.util.widest_float.dtype" title="patsy.util.widest_float.dtype"><code class="xref py py-obj docutils literal"><span class="pre">dtype</span></code></a></td>
+<td>get array data-descriptor</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.flags.html#patsy.util.widest_float.flags" title="patsy.util.widest_float.flags"><code class="xref py py-obj docutils literal"><span class="pre">flags</span></code></a></td>
+<td>integer value of flags</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.flat.html#patsy.util.widest_float.flat" title="patsy.util.widest_float.flat"><code class="xref py py-obj docutils literal"><span class="pre">flat</span></code></a></td>
+<td>a 1-d view of scalar</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.imag.html#patsy.util.widest_float.imag" title="patsy.util.widest_float.imag"><code class="xref py py-obj docutils literal"><span class="pre">imag</span></code></a></td>
+<td>imaginary part of scalar</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.itemsize.html#patsy.util.widest_float.itemsize" title="patsy.util.widest_float.itemsize"><code class="xref py py-obj docutils literal"><span class="pre">itemsize</span></code></a></td>
+<td>length of one element in bytes</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.nbytes.html#patsy.util.widest_float.nbytes" title="patsy.util.widest_float.nbytes"><code class="xref py py-obj docutils literal"><span class="pre">nbytes</span></code></a></td>
+<td>length of item in bytes</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.ndim.html#patsy.util.widest_float.ndim" title="patsy.util.widest_float.ndim"><code class="xref py py-obj docutils literal"><span class="pre">ndim</span></code></a></td>
+<td>number of array dimensions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.real.html#patsy.util.widest_float.real" title="patsy.util.widest_float.real"><code class="xref py py-obj docutils literal"><span class="pre">real</span></code></a></td>
+<td>real part of scalar</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.shape.html#patsy.util.widest_float.shape" title="patsy.util.widest_float.shape"><code class="xref py py-obj docutils literal"><span class="pre">shape</span></code></a></td>
+<td>tuple of array dimensions</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="patsy.util.widest_float.size.html#patsy.util.widest_float.size" title="patsy.util.widest_float.size"><code class="xref py py-obj docutils literal"><span class="pre">size</span></code></a></td>
+<td>number of elements in the gentype</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="patsy.util.widest_float.strides.html#patsy.util.widest_float.strides" title="patsy.util.widest_float.strides"><code class="xref py py-obj docutils literal"><span class="pre">strides</span></code></a></td>
+<td>tuple of bytes steps in each dimension</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="patsy.util.widest_float.all.html" class="btn btn-neutral float-right" title="7.2.4.1.1. patsy.util.widest_float.all" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="patsy.util.widest_complex.strides.html" class="btn btn-neutral" title="7.2.3.2.14. patsy.util.widest_complex.strides" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

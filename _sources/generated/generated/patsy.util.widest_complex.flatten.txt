@@ -1,0 +1,6 @@
+patsy.util.widest_complex.flatten
+=================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.flatten

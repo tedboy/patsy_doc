@@ -157,22 +157,22 @@
 
 <span class="c1"># Interpreting linear constraints like &quot;2*x1 + x2 = 0&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="c1"># These are made available in the patsy.* namespace</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;LinearConstraint&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
-<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="kn">import</span> <span class="n">Origin</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
                         <span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
                         <span class="n">SortAnythingKey</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">patsy.infix_parser</span> <span class="k">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">,</span> <span class="n">infix_parse</span>
-<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span> <span class="nn">patsy.infix_parser</span> <span class="kn">import</span> <span class="n">Token</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">ParseNode</span><span class="p">,</span> <span class="n">infix_parse</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="kn">import</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">Mapping</span>
 
 <div class="viewcode-block" id="LinearConstraint"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.html#patsy.LinearConstraint">[docs]</a><span class="k">class</span> <span class="nc">LinearConstraint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A linear constraint in matrix form.</span>
@@ -196,10 +196,10 @@
 <span class="sd">       A list of strings giving the names of the variables being</span>
 <span class="sd">       constrained. (Used only for consistency checking.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="LinearConstraint.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.__init__.html#patsy.LinearConstraint.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LinearConstraint.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.LinearConstraint.__init__.html#patsy.LinearConstraint.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">constants</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">constants</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">constants</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">constants</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">constants</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
@@ -242,7 +242,7 @@
         <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span></div></div>
 
 <span class="k">def</span> <span class="nf">test_LinearConstraint</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="kn">import</span> <span class="n">assert_equal</span>
     <span class="n">lc</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="s2">&quot;bar&quot;</span><span class="p">]</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">lc</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
@@ -255,7 +255,7 @@
     <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">coefs</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">lc</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">]]])</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
@@ -272,11 +272,11 @@
     <span class="n">comb</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
                                      <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
     <span class="k">assert</span> <span class="n">comb</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
-    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="kn">import</span> <span class="n">assert_equal</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">comb</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">comb</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">,</span> <span class="p">[])</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">,</span>
                   <span class="p">[</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
@@ -317,7 +317,7 @@
     <span class="n">whitespace_re</span> <span class="o">=</span> <span class="s2">r&quot;\s+&quot;</span>
 
     <span class="c1"># Prefer long matches:</span>
-    <span class="n">variable_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">variable_names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">variable_re</span> <span class="o">=</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">variable_names</span><span class="p">])</span>
 
     <span class="n">lexicon</span> <span class="o">=</span> <span class="p">[</span>
@@ -326,7 +326,7 @@
         <span class="p">(</span><span class="n">op_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;__OP__&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
         <span class="p">(</span><span class="n">variable_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
         <span class="p">(</span><span class="n">num_re</span><span class="p">,</span> <span class="n">_token_maker</span><span class="p">(</span><span class="s2">&quot;NUMBER&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)),</span>
-        <span class="p">(</span><span class="n">whitespace_re</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">whitespace_re</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
         <span class="p">]</span>
 
     <span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">lexicon</span><span class="p">)</span>
@@ -356,7 +356,7 @@
         <span class="k">assert</span> <span class="n">got</span><span class="o">.</span><span class="n">origin</span> <span class="o">==</span> <span class="n">Origin</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">expected</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">expected</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
         <span class="k">assert</span> <span class="n">got</span><span class="o">.</span><span class="n">extra</span> <span class="o">==</span> <span class="n">expected</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_tokenize_constraint</span><span class="p">,</span> <span class="s2">&quot;1 + @b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">])</span>
     <span class="c1"># Shouldn&#39;t raise an error:</span>
     <span class="n">_tokenize_constraint</span><span class="p">(</span><span class="s2">&quot;1 + @b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;@b&quot;</span><span class="p">])</span>
@@ -454,7 +454,7 @@
         <span class="n">constraints</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">arg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;=&quot;</span><span class="p">:</span>
-                <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+                <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
                 <span class="c1"># make our left argument be their right argument, or</span>
                 <span class="c1"># vice-versa</span>
                 <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">]</span>
@@ -469,11 +469,11 @@
         <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_eval_binary_comma</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">):</span>
-        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">args</span><span class="p">))</span>
         <span class="k">assert</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span>
         <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch</span><span class="p">[</span><span class="n">key</span><span class="p">](</span><span class="n">tree</span><span class="p">)</span>
@@ -543,7 +543,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected a string, not </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">code</span><span class="p">,))</span>
             <span class="n">tree</span> <span class="o">=</span> <span class="n">parse_constraint</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">variable_names</span><span class="p">)</span>
             <span class="n">evaluator</span> <span class="o">=</span> <span class="n">_EvalConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">)</span>
-            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">constraints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">evaluator</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">constraint</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">LinearConstraint</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraint_like</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -557,11 +557,11 @@
     <span class="k">return</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">coefs</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_check_lincon</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">varnames</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="k">import</span> <span class="n">assert_equal</span>
+    <span class="kn">from</span> <span class="nn">numpy.testing.utils</span> <span class="kn">import</span> <span class="n">assert_equal</span>
     <span class="n">got</span> <span class="o">=</span> <span class="n">linear_constraint</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">varnames</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;got&quot;</span><span class="p">,</span> <span class="n">got</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;got&quot;</span><span class="p">,</span> <span class="n">got</span><span class="p">)</span>
     <span class="n">expected</span> <span class="o">=</span> <span class="n">LinearConstraint</span><span class="p">(</span><span class="n">varnames</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">constants</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;expected&quot;</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">variable_names</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">coefs</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">coefs</span><span class="p">)</span>
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">constants</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">constants</span><span class="p">)</span>
@@ -569,8 +569,8 @@
     <span class="n">assert_equal</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">test_linear_constraint</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
-    <span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_check_lincon</span>
 
     <span class="n">t</span><span class="p">(</span><span class="n">LinearConstraint</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
@@ -641,7 +641,7 @@
       <span class="p">[[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
 
     <span class="c1"># unknown object type</span>
-    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+    <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">linear_constraint</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
 
 <span class="n">_parse_eval_error_tests</span> <span class="o">=</span> <span class="p">[</span>
     <span class="c1"># Bad token</span>
@@ -660,7 +660,7 @@
     <span class="s2">&quot;a = 1, &lt;(a, b)&gt; + 2, c&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
-<span class="kn">from</span> <span class="nn">patsy.parse_formula</span> <span class="k">import</span> <span class="n">_parsing_error_test</span>
+<span class="kn">from</span> <span class="nn">patsy.parse_formula</span> <span class="kn">import</span> <span class="n">_parsing_error_test</span>
 <span class="k">def</span> <span class="nf">test_eval_errors</span><span class="p">():</span>
     <span class="k">def</span> <span class="nf">doit</span><span class="p">(</span><span class="n">bad_code</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">linear_constraint</span><span class="p">(</span><span class="n">bad_code</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>

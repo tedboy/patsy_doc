@@ -1,0 +1,6 @@
+patsy.util.widest_complex.ptp
+=============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.ptp

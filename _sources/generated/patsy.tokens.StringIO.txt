@@ -1,0 +1,6 @@
+patsy.tokens.StringIO
+=====================
+
+.. currentmodule:: patsy.tokens
+
+.. autofunction:: StringIO

@@ -194,25 +194,25 @@
 <p>Toggle between low-endian and big-endian data representation by
 returning a byteswapped array, optionally swapped in-place.</p>
 <dl class="docutils">
-<dt>inplace</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>If <code class="docutils literal"><span class="pre">True</span></code>, swap bytes in-place, default is <code class="docutils literal"><span class="pre">False</span></code>.</dd>
+<dt>inplace <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>If <code class="docutils literal"><span class="pre">True</span></code>, swap bytes in-place, default is <code class="docutils literal"><span class="pre">False</span></code>.</dd>
 </dl>
 <dl class="docutils">
-<dt>out</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span><dd>The byteswapped array. If <cite>inplace</cite> is <code class="docutils literal"><span class="pre">True</span></code>, this is
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">ndarray</span></dt>
+<dd>The byteswapped array. If <cite>inplace</cite> is <code class="docutils literal"><span class="pre">True</span></code>, this is
 a view to self.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">8755</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">8755</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">map</span><span class="p">(</span><span class="nb">hex</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
 <span class="go">[&#39;0x1&#39;, &#39;0x100&#39;, &#39;0x2233&#39;]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">byteswap</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">byteswap</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
 <span class="go">array([  256,     1, 13090], dtype=int16)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">map</span><span class="p">(</span><span class="nb">hex</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
 <span class="go">[&#39;0x100&#39;, &#39;0x1&#39;, &#39;0x3322&#39;]</span>
 </pre></div>
 </div>
 <p>Arrays of strings are not swapped</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;ceg&#39;</span><span class="p">,</span> <span class="s1">&#39;fac&#39;</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;ceg&#39;</span><span class="p">,</span> <span class="s1">&#39;fac&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">A</span><span class="o">.</span><span class="n">byteswap</span><span class="p">()</span>
 <span class="go">array([&#39;ceg&#39;, &#39;fac&#39;],</span>
 <span class="go">      dtype=&#39;|S3&#39;)</span>

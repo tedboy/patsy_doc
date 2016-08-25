@@ -1,0 +1,6 @@
+patsy.util.widest_complex.round
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.round

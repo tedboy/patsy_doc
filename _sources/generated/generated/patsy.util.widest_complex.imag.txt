@@ -1,0 +1,6 @@
+patsy.util.widest_complex.imag
+==============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.imag

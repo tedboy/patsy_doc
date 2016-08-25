@@ -1,0 +1,6 @@
+patsy.util.widest_complex.swapaxes
+==================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.swapaxes

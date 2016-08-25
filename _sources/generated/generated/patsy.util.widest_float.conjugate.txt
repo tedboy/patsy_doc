@@ -1,0 +1,6 @@
+patsy.util.widest_float.conjugate
+=================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.conjugate

@@ -1,0 +1,6 @@
+patsy.util.widest_complex.diagonal
+==================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.diagonal

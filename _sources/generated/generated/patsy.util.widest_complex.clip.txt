@@ -1,0 +1,6 @@
+patsy.util.widest_complex.clip
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.clip

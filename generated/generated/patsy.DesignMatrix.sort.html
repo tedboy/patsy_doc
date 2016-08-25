@@ -192,13 +192,13 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">sort</code><span class="sig-paren">(</span><em>axis=-1</em>, <em>kind='quicksort'</em>, <em>order=None</em><span class="sig-paren">)</span><a class="headerlink" href="#patsy.DesignMatrix.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort an array, in-place.</p>
 <dl class="docutils">
-<dt>axis</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Axis along which to sort. Default is -1, which means sort along the
+<dt>axis <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Axis along which to sort. Default is -1, which means sort along the
 last axis.</dd>
-<dt>kind</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;quicksort&#8217;, &#8216;mergesort&#8217;, &#8216;heapsort&#8217;}, optional</span><dd>Sorting algorithm. Default is &#8216;quicksort&#8217;.</dd>
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">str or list of str, optional</span><dd>When <cite>a</cite> is an array with fields defined, this argument specifies
+<dt>kind <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;quicksort&#8217;, &#8216;mergesort&#8217;, &#8216;heapsort&#8217;}, optional</span></dt>
+<dd>Sorting algorithm. Default is &#8216;quicksort&#8217;.</dd>
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">str or list of str, optional</span></dt>
+<dd>When <cite>a</cite> is an array with fields defined, this argument specifies
 which fields to compare first, second, etc.  A single field can
 be specified as a string, and not all fields need be specified,
 but unspecified fields will still be used, in the order in which
@@ -210,7 +210,7 @@ lexsort : Indirect stable sort on multiple keys.
 searchsorted : Find elements in sorted array.
 partition: Partial sort.</p>
 <p>See <code class="docutils literal"><span class="pre">sort</span></code> for notes on the different sorting algorithms.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
 <span class="go">array([[1, 4],</span>
@@ -223,7 +223,7 @@ partition: Partial sort.</p>
 </div>
 <p>Use the <cite>order</cite> keyword to specify a field to use when sorting a
 structured array:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;S1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;S1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">)])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
 <span class="go">array([(&#39;c&#39;, 1), (&#39;a&#39;, 2)],</span>

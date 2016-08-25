@@ -207,7 +207,7 @@ strings and implements the standard stateful transform processing. See
 redundancy detection) if they contain the same token stream. Basically
 this means that the source code must be identical except for
 whitespace:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;a+b&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;a+b&quot;</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;a + b&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">EvalFactor</span><span class="p">(</span><span class="s2">&quot;b + a&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

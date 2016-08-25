@@ -11,6 +11,7 @@ patsy.util
       :toctree:
 
    
+      StringIO
       asarray_or_pandas
       assert_no_pickling
       atleast_2d_column_default
@@ -58,6 +59,8 @@ patsy.util
    
       PushbackAdapter
       SortAnythingKey
+      widest_complex
+      widest_float
 
    .. toctree::
        :maxdepth: 1
@@ -66,6 +69,8 @@ patsy.util
    
        generated/patsy.util.PushbackAdapter
        generated/patsy.util.SortAnythingKey
+       generated/patsy.util.widest_complex
+       generated/patsy.util.widest_float
 
    
    

@@ -1,0 +1,6 @@
+patsy.util.widest_complex.mean
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.mean

@@ -1,0 +1,94 @@
+patsy.util.widest_float
+=======================
+
+.. currentmodule:: patsy.util
+.. autoclass:: widest_float
+   :members: __init__
+   :undoc-members:
+
+
+Methods
+-------
+.. autosummary::
+   :toctree:
+
+
+   ~widest_float.all
+   ~widest_float.any
+   ~widest_float.argmax
+   ~widest_float.argmin
+   ~widest_float.argsort
+   ~widest_float.astype
+   ~widest_float.byteswap
+   ~widest_float.choose
+   ~widest_float.clip
+   ~widest_float.compress
+   ~widest_float.conj
+   ~widest_float.conjugate
+   ~widest_float.copy
+   ~widest_float.cumprod
+   ~widest_float.cumsum
+   ~widest_float.diagonal
+   ~widest_float.dump
+   ~widest_float.dumps
+   ~widest_float.fill
+   ~widest_float.flatten
+   ~widest_float.getfield
+   ~widest_float.item
+   ~widest_float.itemset
+   ~widest_float.max
+   ~widest_float.mean
+   ~widest_float.min
+   ~widest_float.newbyteorder
+   ~widest_float.nonzero
+   ~widest_float.prod
+   ~widest_float.ptp
+   ~widest_float.put
+   ~widest_float.ravel
+   ~widest_float.repeat
+   ~widest_float.reshape
+   ~widest_float.resize
+   ~widest_float.round
+   ~widest_float.searchsorted
+   ~widest_float.setfield
+   ~widest_float.setflags
+   ~widest_float.sort
+   ~widest_float.squeeze
+   ~widest_float.std
+   ~widest_float.sum
+   ~widest_float.swapaxes
+   ~widest_float.take
+   ~widest_float.tobytes
+   ~widest_float.tofile
+   ~widest_float.tolist
+   ~widest_float.tostring
+   ~widest_float.trace
+   ~widest_float.transpose
+   ~widest_float.var
+   ~widest_float.view
+
+
+
+
+
+Attributes
+----------
+.. autosummary::
+  :toctree:
+
+
+   ~widest_float.T
+   ~widest_float.base
+   ~widest_float.data
+   ~widest_float.dtype
+   ~widest_float.flags
+   ~widest_float.flat
+   ~widest_float.imag
+   ~widest_float.itemsize
+   ~widest_float.nbytes
+   ~widest_float.ndim
+   ~widest_float.real
+   ~widest_float.shape
+   ~widest_float.size
+   ~widest_float.strides
+

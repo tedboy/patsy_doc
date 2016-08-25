@@ -11,6 +11,7 @@ patsy.parse_formula
       :toctree:
 
    
+      StringIO
       infix_parse
       parse_formula
       pretty_untokenize

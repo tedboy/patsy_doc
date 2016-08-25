@@ -1,0 +1,6 @@
+patsy.util.widest_float.repeat
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.repeat

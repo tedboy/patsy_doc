@@ -198,15 +198,15 @@ unless the F_CONTIGUOUS flag in the array is set, in which case it
 means &#8216;Fortran&#8217; order.</p>
 <p>This function is a compatibility alias for tobytes. Despite its name it returns bytes not strings.</p>
 <dl class="docutils">
-<dt>order</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, None}, optional</span><dd>Order of the data for multidimensional arrays:
+<dt>order <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;C&#8217;, &#8216;F&#8217;, None}, optional</span></dt>
+<dd>Order of the data for multidimensional arrays:
 C, Fortran, or the same as for the original array.</dd>
 </dl>
 <dl class="docutils">
-<dt>s</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bytes</span><dd>Python bytes exhibiting a copy of <cite>a</cite>&#8216;s raw data.</dd>
+<dt>s <span class="classifier-delimiter">:</span> <span class="classifier">bytes</span></dt>
+<dd>Python bytes exhibiting a copy of <cite>a</cite>&#8216;s raw data.</dd>
 </dl>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
 <span class="go">b&#39;\x00\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">tobytes</span><span class="p">(</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>

@@ -1,0 +1,6 @@
+patsy.util.widest_complex.flat
+==============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.flat

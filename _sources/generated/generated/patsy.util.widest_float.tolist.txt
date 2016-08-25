@@ -1,0 +1,6 @@
+patsy.util.widest_float.tolist
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.tolist

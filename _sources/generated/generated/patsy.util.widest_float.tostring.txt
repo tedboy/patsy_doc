@@ -1,0 +1,6 @@
+patsy.util.widest_float.tostring
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.tostring

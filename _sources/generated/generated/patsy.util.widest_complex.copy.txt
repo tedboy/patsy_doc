@@ -1,0 +1,6 @@
+patsy.util.widest_complex.copy
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.copy

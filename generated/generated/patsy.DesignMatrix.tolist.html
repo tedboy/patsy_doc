@@ -195,11 +195,11 @@
 Data items are converted to the nearest compatible Python type.</p>
 <p>none</p>
 <dl class="docutils">
-<dt>y</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">list</span><dd>The possibly nested list of array elements.</dd>
+<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>The possibly nested list of array elements.</dd>
 </dl>
 <p>The array may be recreated, <code class="docutils literal"><span class="pre">a</span> <span class="pre">=</span> <span class="pre">np.array(a.tolist())</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 <span class="go">[1, 2]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>

@@ -1,0 +1,6 @@
+patsy.util.widest_float.getfield
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.getfield

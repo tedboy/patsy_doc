@@ -1,0 +1,6 @@
+patsy.util.widest_float.clip
+============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.clip

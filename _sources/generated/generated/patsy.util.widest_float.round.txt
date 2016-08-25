@@ -1,0 +1,6 @@
+patsy.util.widest_float.round
+=============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.round

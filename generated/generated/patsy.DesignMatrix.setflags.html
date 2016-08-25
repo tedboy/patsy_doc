@@ -200,12 +200,12 @@ ultimate owner of the memory exposes a writeable buffer interface,
 or is a string. (The exception for string is made so that unpickling
 can be done without copying memory.)</p>
 <dl class="docutils">
-<dt>write</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>Describes whether or not <cite>a</cite> can be written to.</dd>
-<dt>align</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>Describes whether or not <cite>a</cite> is aligned properly for its type.</dd>
-<dt>uic</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>Describes whether or not <cite>a</cite> is a copy of another &#8220;base&#8221; array.</dd>
+<dt>write <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Describes whether or not <cite>a</cite> can be written to.</dd>
+<dt>align <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Describes whether or not <cite>a</cite> is aligned properly for its type.</dd>
+<dt>uic <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>Describes whether or not <cite>a</cite> is a copy of another &#8220;base&#8221; array.</dd>
 </dl>
 <p>Array flags provide information about how the memory area used
 for the array is to be interpreted. There are 6 Boolean flags
@@ -219,7 +219,7 @@ by .base). When this array is deallocated, the base array will be
 updated with the contents of this array.</p>
 <p>All flags can be accessed using their first (upper case) letter as well
 as the full name.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span>
 <span class="go">array([[3, 1, 7],</span>
 <span class="go">       [2, 0, 0],</span>
 <span class="go">       [8, 5, 9]])</span>

@@ -158,17 +158,17 @@
 <span class="c1"># http://www.ats.ucla.edu/stat/r/library/contrast_coding.htm</span>
 <span class="c1"># http://www.ats.ucla.edu/stat/sas/webbooks/reg/chapter5/sasreg5.htm</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
 <span class="c1"># These are made available in the patsy.* namespace</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ContrastMatrix&quot;</span><span class="p">,</span> <span class="s2">&quot;Treatment&quot;</span><span class="p">,</span> <span class="s2">&quot;Poly&quot;</span><span class="p">,</span> <span class="s2">&quot;Sum&quot;</span><span class="p">,</span> <span class="s2">&quot;Helmert&quot;</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
-<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">triu_indices</span><span class="p">,</span> <span class="n">tril_indices</span><span class="p">,</span> <span class="n">diag_indices</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="kn">import</span> <span class="n">triu_indices</span><span class="p">,</span> <span class="n">tril_indices</span><span class="p">,</span> <span class="n">diag_indices</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">repr_pretty_delegate</span><span class="p">,</span> <span class="n">repr_pretty_impl</span><span class="p">,</span>
                         <span class="n">safe_issubdtype</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
 
@@ -210,7 +210,7 @@
     <span class="c1"># smoke test</span>
     <span class="nb">repr</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">ContrastMatrix</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
 
     <span class="n">assert_no_pickling</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
@@ -228,7 +228,7 @@
             <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">unicode</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
@@ -282,7 +282,7 @@
     <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="c1"># For integer levels, we check identity before treating it as an index</span>
     <span class="k">assert</span> <span class="n">_get_level</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span> <span class="n">_get_level</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
@@ -317,14 +317,14 @@
 <span class="sd">    using ``Treatment(reference=-1)`` will produce contrasts that are</span>
 <span class="sd">    &quot;equivalent to those produced by many (but not all) SAS procedures&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Treatment.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.__init__.html#patsy.Treatment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Treatment.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.__init__.html#patsy.Treatment.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="o">=</span> <span class="n">reference</span></div>
 
 <div class="viewcode-block" id="Treatment.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.code_with_intercept.html#patsy.Treatment.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_dummy_code</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Treatment.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Treatment.code_without_intercept.html#patsy.Treatment.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">reference</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">reference</span> <span class="o">=</span> <span class="n">_get_level</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">)</span>
@@ -394,13 +394,13 @@
 <span class="sd">    rank encodings are always dummy-coded, regardless of what contrast you</span>
 <span class="sd">    have set.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Poly.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.__init__.html#patsy.Poly.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Poly.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.__init__.html#patsy.Poly.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span></div>
 
     <span class="k">def</span> <span class="nf">_code_either</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
         <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scores</span>
-        <span class="k">if</span> <span class="n">scores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">scores</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
         <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n</span><span class="p">:</span>
@@ -428,10 +428,10 @@
             <span class="k">return</span> <span class="n">ContrastMatrix</span><span class="p">(</span><span class="n">q</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
 <div class="viewcode-block" id="Poly.code_with_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.code_with_intercept.html#patsy.Poly.code_with_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_with_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Poly.code_without_intercept"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Poly.code_without_intercept.html#patsy.Poly.code_without_intercept">[docs]</a>    <span class="k">def</span> <span class="nf">code_without_intercept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_either</span><span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="n">levels</span><span class="p">)</span></div>
 
     <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
 
@@ -443,12 +443,12 @@
     <span class="n">expected</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">7.07106781186548e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">],</span>
                 <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.816496580927726</span><span class="p">],</span>
                 <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">7.07106781186547e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">]]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
     <span class="n">matrix</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">code_without_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
     <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3)&#39;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
                        <span class="p">[[</span><span class="o">-</span><span class="mf">7.07106781186548e-01</span><span class="p">,</span> <span class="mf">0.408248290463863</span><span class="p">],</span>
                         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.816496580927726</span><span class="p">],</span>
@@ -457,7 +457,7 @@
     <span class="n">matrix</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
     <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3, scores=c(0, 10, 11))&#39;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
                        <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.813733471206735</span><span class="p">,</span> <span class="mf">0.0671156055214024</span><span class="p">],</span>
                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.348742916231458</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7382716607354268</span><span class="p">],</span>
@@ -468,13 +468,13 @@
     <span class="n">matrix</span> <span class="o">=</span> <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">column_suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;.Constant&quot;</span><span class="p">,</span> <span class="s2">&quot;.Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;.Quadratic&quot;</span><span class="p">]</span>
     <span class="c1"># Values from R &#39;options(digits=15); contr.poly(3, scores=c(0, 10, 12))&#39;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">matrix</span><span class="p">,</span>
                        <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.806559132617443</span><span class="p">,</span> <span class="mf">0.127000127000191</span><span class="p">],</span>
                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.293294230042706</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.762000762001143</span><span class="p">],</span>
                         <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.513264902574736</span><span class="p">,</span> <span class="mf">0.635000635000952</span><span class="p">]])</span>
 
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="n">PatsyError</span><span class="p">,</span>
                   <span class="n">Poly</span><span class="p">(</span><span class="n">scores</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">code_with_intercept</span><span class="p">,</span>
                   <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">])</span>
@@ -513,11 +513,11 @@
 
 <span class="sd">    This is equivalent to R&#39;s `contr.sum`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="Sum.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.__init__.html#patsy.Sum.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Sum.__init__"><a class="viewcode-back" href="../../generated/generated/patsy.builtins.Sum.__init__.html#patsy.Sum.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">omit</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="o">=</span> <span class="n">omit</span></div>
 
     <span class="k">def</span> <span class="nf">_omit_i</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">levels</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="c1"># We assume below that this is positive</span>
             <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -733,10 +733,10 @@
 <span class="c1">#   -- a function returning one of the above</span>
 <span class="c1">#   -- None, in which case the above rules are applied to &#39;default&#39;</span>
 <span class="c1"># This function always returns a ContrastMatrix.</span>
-<span class="k">def</span> <span class="nf">code_contrast_matrix</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">contrast</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">contrast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">code_contrast_matrix</span><span class="p">(</span><span class="n">intercept</span><span class="p">,</span> <span class="n">levels</span><span class="p">,</span> <span class="n">contrast</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">contrast</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="n">default</span>
-    <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">contrast</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">contrast</span><span class="p">):</span>
         <span class="n">contrast</span> <span class="o">=</span> <span class="n">contrast</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contrast</span><span class="p">,</span> <span class="n">ContrastMatrix</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">contrast</span>

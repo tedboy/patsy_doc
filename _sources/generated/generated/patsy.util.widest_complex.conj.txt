@@ -1,0 +1,6 @@
+patsy.util.widest_complex.conj
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.conj

@@ -1,0 +1,6 @@
+patsy.util.widest_float.imag
+============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_float.imag

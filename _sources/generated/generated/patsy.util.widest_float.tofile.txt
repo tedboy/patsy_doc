@@ -1,0 +1,6 @@
+patsy.util.widest_float.tofile
+==============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.tofile

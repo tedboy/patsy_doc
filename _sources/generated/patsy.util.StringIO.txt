@@ -1,0 +1,6 @@
+patsy.util.StringIO
+===================
+
+.. currentmodule:: patsy.util
+
+.. autofunction:: StringIO

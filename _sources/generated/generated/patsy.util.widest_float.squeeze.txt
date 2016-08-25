@@ -1,0 +1,6 @@
+patsy.util.widest_float.squeeze
+===============================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_float.squeeze

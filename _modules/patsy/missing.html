@@ -189,9 +189,9 @@
 <span class="c1"># returned to the original caller if they used return_type=&quot;dataframe&quot;,</span>
 <span class="c1"># though).</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">patsy</span> <span class="k">import</span> <span class="n">PatsyError</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">safe_isnan</span><span class="p">,</span> <span class="n">safe_scalar_isnan</span><span class="p">,</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy</span> <span class="kn">import</span> <span class="n">PatsyError</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">safe_isnan</span><span class="p">,</span> <span class="n">safe_scalar_isnan</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
 
 <span class="c1"># These are made available in the patsy.* namespace</span>
@@ -274,10 +274,10 @@
 
 <span class="sd">        Note that here `obj` is a single scalar value.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s2">&quot;NaN&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">NA_types</span> <span class="ow">and</span> <span class="n">safe_scalar_isnan</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="s2">&quot;None&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">NA_types</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">True</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="s2">&quot;None&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">NA_types</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
 
 <div class="viewcode-block" id="NAAction.is_numerical_NA"><a class="viewcode-back" href="../../generated/generated/patsy.NAAction.is_numerical_NA.html#patsy.NAAction.is_numerical_NA">[docs]</a>    <span class="k">def</span> <span class="nf">is_numerical_NA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arr</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns a 1-d mask array indicating which rows in an array of</span>
@@ -317,7 +317,7 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_NA</span> <span class="o">==</span> <span class="s2">&quot;drop&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_NA_drop</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="n">origins</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span> <span class="c1"># pragma: no cover</span>
-            <span class="k">assert</span> <span class="kc">False</span></div>
+            <span class="k">assert</span> <span class="bp">False</span></div>
 
     <span class="k">def</span> <span class="nf">_handle_NA_raise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="n">origins</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">is_NA</span><span class="p">,</span> <span class="n">origin</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">is_NAs</span><span class="p">,</span> <span class="n">origins</span><span class="p">):</span>
@@ -336,7 +336,7 @@
     <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span></div>
 
 <span class="k">def</span> <span class="nf">test_NAAction_basic</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="k">import</span> <span class="n">assert_raises</span>
+    <span class="kn">from</span> <span class="nn">nose.tools</span> <span class="kn">import</span> <span class="n">assert_raises</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">NAAction</span><span class="p">,</span> <span class="n">on_NA</span><span class="o">=</span><span class="s2">&quot;pord&quot;</span><span class="p">)</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">NAAction</span><span class="p">,</span> <span class="n">NA_types</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span> <span class="s2">&quot;asdf&quot;</span><span class="p">))</span>
     <span class="n">assert_raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">NAAction</span><span class="p">,</span> <span class="n">NA_types</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">)</span>
@@ -355,7 +355,7 @@
                 <span class="n">arr</span><span class="p">[</span><span class="n">nan_rows</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">exp_NA_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
             <span class="k">if</span> <span class="s2">&quot;NaN&quot;</span> <span class="ow">in</span> <span class="n">NA_types</span><span class="p">:</span>
-                <span class="n">exp_NA_mask</span><span class="p">[</span><span class="n">nan_rows</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">exp_NA_mask</span><span class="p">[</span><span class="n">nan_rows</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">got_NA_mask</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">is_numerical_NA</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">got_NA_mask</span><span class="p">,</span> <span class="n">exp_NA_mask</span><span class="p">)</span>
 
@@ -364,7 +364,7 @@
         <span class="n">action</span> <span class="o">=</span> <span class="n">NAAction</span><span class="p">(</span><span class="n">NA_types</span><span class="o">=</span><span class="n">NA_types</span><span class="p">)</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">action</span><span class="o">.</span><span class="n">is_categorical_NA</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">action</span><span class="o">.</span><span class="n">is_categorical_NA</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">action</span><span class="o">.</span><span class="n">is_categorical_NA</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;None&quot;</span> <span class="ow">in</span> <span class="n">NA_types</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">action</span><span class="o">.</span><span class="n">is_categorical_NA</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;None&quot;</span> <span class="ow">in</span> <span class="n">NA_types</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">action</span><span class="o">.</span><span class="n">is_categorical_NA</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;NaN&quot;</span> <span class="ow">in</span> <span class="n">NA_types</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">test_NAAction_drop</span><span class="p">():</span>
@@ -377,11 +377,11 @@
                              <span class="p">[</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">],</span>
                              <span class="p">[</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]]),</span>
                  <span class="p">]</span>
-    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]),</span>
+    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">]),</span>
               <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
-              <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]),</span>
+              <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">]),</span>
               <span class="p">]</span>
-    <span class="n">out_values</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">in_values</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">out_values</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">in_values</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">out_values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">out_values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">])</span>
@@ -393,12 +393,12 @@
     <span class="c1"># no-NA just passes through:</span>
     <span class="n">in_arrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">]),</span>
                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])]</span>
-    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">])]</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">got_arrs</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">in_arrs</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">])]</span> <span class="o">*</span> <span class="mi">2</span>
+    <span class="n">got_arrs</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">in_arrs</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">got_arrs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">in_arrs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">got_arrs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">in_arrs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="k">import</span> <span class="n">Origin</span>
+    <span class="kn">from</span> <span class="nn">patsy.origin</span> <span class="kn">import</span> <span class="n">Origin</span>
     <span class="n">o1</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">o2</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="s2">&quot;asdf&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
@@ -406,11 +406,11 @@
     <span class="n">in_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">in_arrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">]),</span>
                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])]</span>
-    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]),</span>
-              <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])]</span>
+    <span class="n">is_NAs</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">]),</span>
+              <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">])]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">action</span><span class="o">.</span><span class="n">handle_NA</span><span class="p">(</span><span class="n">in_arrs</span><span class="p">,</span> <span class="n">is_NAs</span><span class="p">,</span> <span class="p">[</span><span class="n">o1</span><span class="p">,</span> <span class="n">o2</span><span class="p">])</span>
-        <span class="k">assert</span> <span class="kc">False</span>
+        <span class="k">assert</span> <span class="bp">False</span>
     <span class="k">except</span> <span class="n">PatsyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">e</span><span class="o">.</span><span class="n">origin</span> <span class="ow">is</span> <span class="n">o2</span>
 </pre></div>

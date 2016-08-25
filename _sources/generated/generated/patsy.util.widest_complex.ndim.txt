@@ -1,0 +1,6 @@
+patsy.util.widest_complex.ndim
+==============================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_complex.ndim

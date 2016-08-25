@@ -177,12 +177,12 @@
 <span class="c1"># because right now I&#39;m not sure how to tell whether we are being called for</span>
 <span class="c1"># fitting versus being called for prediction.</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="k">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">patsy.util</span> <span class="kn">import</span> <span class="p">(</span><span class="n">atleast_2d_column_default</span><span class="p">,</span>
                         <span class="n">asarray_or_pandas</span><span class="p">,</span> <span class="n">pandas_friendly_reshape</span><span class="p">,</span>
                         <span class="n">wide_dtype_for</span><span class="p">,</span> <span class="n">safe_issubdtype</span><span class="p">,</span>
                         <span class="n">no_pickling</span><span class="p">,</span> <span class="n">assert_no_pickling</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="k">import</span> <span class="n">wraps</span>
+<span class="kn">from</span> <span class="nn">patsy.compat</span> <span class="kn">import</span> <span class="n">wraps</span>
 
 <span class="c1"># These are made available in the patsy.* namespace</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;stateful_transform&quot;</span><span class="p">,</span>
@@ -239,7 +239,7 @@
 <span class="sd">    Equivalent to ``standardize(x, rescale=False)``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
@@ -247,7 +247,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_count</span> <span class="o">+=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">this_total</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="c1"># This is to handle potentially multi-column x&#39;s:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">this_total</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+=</span> <span class="n">this_total</span>
@@ -266,7 +266,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="n">x_arr</span><span class="o">.</span><span class="n">dtype</span>
         <span class="n">mean_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
-        <span class="n">centered</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">mean_val</span>
+        <span class="n">centered</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">mean_val</span>
         <span class="k">return</span> <span class="n">pandas_friendly_reshape</span><span class="p">(</span><span class="n">centered</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
     <span class="n">__getstate__</span> <span class="o">=</span> <span class="n">no_pickling</span>
@@ -296,12 +296,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_n</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">=</span> <span class="bp">None</span>
 
-    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">memorize_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">wide_dtype_for</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="c1"># XX this can surely be vectorized but I am feeling lazy:</span>
@@ -314,13 +314,13 @@
     <span class="k">def</span> <span class="nf">memorize_finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">rescale</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="c1"># XX: this forces all inputs to double-precision real, even if the</span>
         <span class="c1"># input is single- or extended-precision or complex. But I got all</span>
         <span class="c1"># tangled up in knots trying to do that without breaking something</span>
         <span class="c1"># else (e.g. by requiring an extra copy).</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">x_2d</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">asarray_or_pandas</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">x_2d</span> <span class="o">=</span> <span class="n">atleast_2d_column_default</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">preserve_pandas</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">center</span><span class="p">:</span>
             <span class="n">x_2d</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span>
         <span class="k">if</span> <span class="n">rescale</span><span class="p">:</span>

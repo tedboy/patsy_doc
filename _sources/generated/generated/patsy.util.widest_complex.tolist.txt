@@ -1,0 +1,6 @@
+patsy.util.widest_complex.tolist
+================================
+
+.. currentmodule:: patsy.util
+
+.. automethod:: widest_complex.tolist

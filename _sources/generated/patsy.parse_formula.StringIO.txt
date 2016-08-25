@@ -1,0 +1,6 @@
+patsy.parse_formula.StringIO
+============================
+
+.. currentmodule:: patsy.parse_formula
+
+.. autofunction:: StringIO

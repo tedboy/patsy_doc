@@ -1,0 +1,6 @@
+patsy.util.widest_float.T
+=========================
+
+.. currentmodule:: patsy.util
+
+.. autoattribute:: widest_float.T

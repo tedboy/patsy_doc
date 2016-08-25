@@ -192,13 +192,13 @@
 <code class="descclassname">DesignMatrix.</code><code class="descname">base</code><a class="headerlink" href="#patsy.DesignMatrix.base" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base object if memory is from some other object.</p>
 <p>The base of an array that owns its memory is None:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="kc">None</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="bp">None</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>Slicing creates a view, whose memory is shared with x:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="n">x</span>
 <span class="go">True</span>
 </pre></div>
